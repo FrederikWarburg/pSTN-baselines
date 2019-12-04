@@ -5,13 +5,15 @@ from utils.writer import Writer
 import torch
 from utils.evaluate import evaluate
 
-def run_test(epoch=-1):
+def run_test(epoch=-1, model = None):
     print('Running Test')
     opt = TestOptions().parse()
     opt.serial_batches = True  # no shuffle
     dataset = DataLoader(opt)
-    model = create_model(opt)
-    model.eval()
+
+    if model == None:
+        model = create_model(opt)
+
     writer = Writer(opt)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -19,6 +21,7 @@ def run_test(epoch=-1):
 
     # test
     writer.reset_counter()
+    model.eval()
     with torch.no_grad():
         for i, (input, label) in enumerate(dataset):
             input,label = input.to(device), label.to(device)

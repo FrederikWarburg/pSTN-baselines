@@ -52,7 +52,7 @@ if __name__ == '__main__':
             print('saving the model at the end of epoch %d, iters %d' %
                   (epoch, total_steps))
 
-            acc = run_test(epoch)
+            acc = run_test(epoch, model)
             writer.plot_acc(acc, epoch)
 
             is_best = acc > best_acc
