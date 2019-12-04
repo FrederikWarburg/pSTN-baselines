@@ -8,7 +8,7 @@ from utils.evaluate import evaluate
 def run_test(epoch=-1, model = None):
     print('Running Test')
     opt = TestOptions().parse()
-    opt.serial_batches = True  # no shuffle
+    opt.shuffle = False  # no shuffle
     dataset = DataLoader(opt)
 
     if model == None:
