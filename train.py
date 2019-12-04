@@ -23,6 +23,7 @@ if __name__ == '__main__':
     model.to(device)
 
     for epoch in range(opt.epochs):
+        model.train()
         epoch_start_time = time.time()
         iter_data_time = time.time()
         epoch_iter = 0

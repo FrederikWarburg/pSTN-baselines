@@ -4,18 +4,41 @@ from torchvision.datasets.folder import default_loader
 from torchvision.datasets.utils import download_url
 from torch.utils.data import Dataset
 from torchvision import transforms
+from PIL import Image
+
+def scale_keep_ar_min_fixed(img, fixed_min):
+    ow, oh = img.size
+
+    if ow < oh:
+
+        nw = fixed_min
+
+        nh = nw * oh // ow
+
+    else:
+
+        nh = fixed_min
+
+        nw = nh * ow // oh
+    return img.resize((nw, nh), Image.BICUBIC)
 
 def transform(opt):
 
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                       std=[0.229, 0.224, 0.225])
 
-    transform = transforms.Compose([transforms.Resize((448, 448)),
-                                    transforms.ToTensor(), normalize])
+    transform_list = []
+    transform_list.append(transforms.Lambda(lambda img:scale_keep_ar_min_fixed(img, 448)))
+    if opt.is_train:
+        transform_list.append(transforms.RandomHorizontalFlip(p=0.5))
+        transform_list.append(transforms.RandomCrop((448, 448)))
+    else:
+        transform_list.append(transforms.CenterCrop((448, 448)))
 
-    #transform = transforms.Compose([transforms.ToTensor(), normalize, ])
+    transform_list.append(transforms.ToTensor())
+    transform_list.append(normalize)
 
-    return transform
+    return transforms.Compose(transform_list)
 
 class Cub2011(Dataset):
     base_folder = 'CUB_200_2011/images'
