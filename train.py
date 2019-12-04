@@ -5,6 +5,7 @@ from models import create_model, create_optimizer, create_criterion, save_networ
 from utils.writer import Writer
 from test import run_test
 import torch
+from utils.evaluate import evaluate
 
 if __name__ == '__main__':
     opt = TrainOptions().parse()
@@ -42,6 +43,7 @@ if __name__ == '__main__':
             loss.backward()
             optimizer.step()
 
+            print("training acc", evaluate(pred, label))
             if total_steps % opt.print_freq == 0:
                 t = (time.time() - iter_start_time) / opt.batch_size
                 writer.print_current_losses(epoch, epoch_iter, loss, t, t_data)

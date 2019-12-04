@@ -12,6 +12,7 @@ def run_test(epoch=-1, model = None):
     dataset = DataLoader(opt)
 
     if model == None:
+        print("create new model")
         model = create_model(opt)
 
     writer = Writer(opt)
