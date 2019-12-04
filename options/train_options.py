@@ -13,6 +13,7 @@ class TrainOptions(BaseOptions):
 
         self.parser.add_argument('--print_freq', type=int, default=10, help='frequency of showing training results on console')
         self.parser.add_argument('--run_test_freq', type=int, default=1, help='frequency of running test in training script')
+        self.parser.add_argument('--save_dir', type=str, default='', help='path for saving models')
 
         self.parser.add_argument('--no_vis', action='store_true', help='will not use tensorboard')
 
