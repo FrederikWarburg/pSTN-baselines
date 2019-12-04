@@ -20,7 +20,6 @@ if __name__ == '__main__':
     best_acc = 0
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print("device", device)
     model.to(device)
 
     for epoch in range(opt.epochs):
@@ -58,6 +57,7 @@ if __name__ == '__main__':
 
             is_best = acc > best_acc
             save_network(model, opt, epoch, is_best)
+            model.to(device)
 
         print('End of epoch %d \t Time Taken: %d sec' %
               (epoch, time.time() - epoch_start_time))
