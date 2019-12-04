@@ -5,7 +5,7 @@ class TrainOptions(BaseOptions):
         BaseOptions.initialize(self)
 
         self.parser.add_argument('--lr', type=float, default=0.1)
-        self.parser.add_argument('--momentum', type=float, default=1)
+        self.parser.add_argument('--momentum', type=float, default=0)
         self.parser.add_argument('--weightDecay', type=float, default=1e-5)
         self.parser.add_argument('--optimizer', type=str, default='sgd')
         self.parser.add_argument('--epochs', type=int, default=10)
