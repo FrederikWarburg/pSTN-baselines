@@ -13,10 +13,15 @@ def run_test(epoch=-1):
     model = create_model(opt)
     model.eval()
     writer = Writer(opt)
+
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+
     # test
     writer.reset_counter()
     with torch.no_grad():
         for i, (input, label) in enumerate(dataset):
+            input,label = input.to(device), label.to(device)
             pred = model(input)
 
             ncorrect, nexamples = evaluate(pred, label)

@@ -4,6 +4,7 @@ from data import DataLoader
 from models import create_model, create_optimizer, create_criterion, save_network
 from utils.writer import Writer
 from test import run_test
+import torch
 
 if __name__ == '__main__':
     opt = TrainOptions().parse()
@@ -18,12 +19,16 @@ if __name__ == '__main__':
     total_steps = 0
     best_acc = 0
 
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+
     for epoch in range(opt.epochs):
         epoch_start_time = time.time()
         iter_data_time = time.time()
         epoch_iter = 0
 
         for i, (input, label) in enumerate(dataset):
+            input,label = input.to(device), label.to(device)
             iter_start_time = time.time()
             if total_steps % opt.print_freq == 0:
                 t_data = iter_start_time - iter_data_time
