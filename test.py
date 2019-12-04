@@ -20,8 +20,9 @@ def run_test(epoch=-1):
             pred = model(input)
 
             ncorrect, nexamples = evaluate(pred, label)
-            print(ncorrect,nexamples)
+
             writer.update_counter(ncorrect, nexamples)
+
     writer.print_acc(epoch, writer.acc)
     return writer.acc
 
