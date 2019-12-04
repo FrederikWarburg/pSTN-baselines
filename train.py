@@ -20,6 +20,7 @@ if __name__ == '__main__':
     best_acc = 0
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print("device", device)
     model.to(device)
 
     for epoch in range(opt.epochs):
