@@ -10,7 +10,7 @@ class InceptionClassifier(nn.Module):
             raise NotImplementedError
         else:
             # "Inception architecture with batch normalisation pretrained on ImageNet"
-            inception = models.googlenet(pretrained = True)
+            inception = models.googlenet(pretrained=True)
 
             # "remove the last layer (1000-way ILSVRC classifier)"
             layers = list(inception.children())[:-1]
