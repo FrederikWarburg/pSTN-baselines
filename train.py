@@ -64,6 +64,6 @@ if __name__ == '__main__':
 
         print('End of epoch %d \t Time Taken: %d sec' %
               (epoch, time.time() - epoch_start_time))
-        scheduler.step()
+        #scheduler.step()
 
     writer.close()

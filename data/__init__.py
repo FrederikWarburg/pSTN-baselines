@@ -13,11 +13,12 @@ class DataLoader:
 
     def __init__(self, opt):
         self.opt = opt
+
         self.dataset = CreateDataset(opt)
         self.dataloader = torch.utils.data.DataLoader(
             self.dataset,
             batch_size=opt.batch_size,
-            shuffle=opt.shuffle,
+            shuffle=not opt.no_shuffle,
             num_workers=int(opt.num_threads))
 
     def __len__(self):
