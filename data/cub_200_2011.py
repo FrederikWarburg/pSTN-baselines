@@ -27,11 +27,8 @@ class Cub2011(Dataset):
         self.loader = default_loader
         self.train = opt.is_train
 
-        self._download()
-
-        if not self._check_integrity():
-            raise RuntimeError('Dataset not found or corrupted.' +
-                               ' You can use download=True to download it')
+        if opt.download:
+            self._download()
 
     def _load_metadata(self):
         images = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'images.txt'), sep=' ', names=['img_id', 'filepath'])
@@ -56,6 +53,8 @@ class Cub2011(Dataset):
             filepath = os.path.join(self.root, self.base_folder, row.filepath)
             if not os.path.isfile(filepath):
                 print(filepath)
+                raise RuntimeError('Dataset not found or corrupted.' +
+                               ' You can use download=True to download it')
                 return False
         return True
 
