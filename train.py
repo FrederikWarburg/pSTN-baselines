@@ -58,8 +58,8 @@ if __name__ == '__main__':
             is_best = acc > best_acc
             save_network(model, opt, epoch, is_best)
 
-        print('End of epoch %d / %d \t Time Taken: %d sec' %
-              (epoch, opt.niter + opt.niter_decay, time.time() - epoch_start_time))
+        print('End of epoch %d \t Time Taken: %d sec' %
+              (epoch, time.time() - epoch_start_time))
         scheduler.step()
 
     writer.close()
