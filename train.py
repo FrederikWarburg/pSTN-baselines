@@ -1,3 +1,6 @@
+# import comet_ml in the top of your file
+from comet_ml import Experiment
+
 import time
 from options.train_options import TrainOptions
 from data import DataLoader
@@ -7,8 +10,16 @@ from test import run_test
 import torch
 from utils.evaluate import evaluate
 
+
+
 if __name__ == '__main__':
+
+    # Add the following code anywhere in your machine learning file
+    experiment = Experiment(api_key="C36XTCgndYu3554YtBCTV73aV",
+                        project_name="pstn-baselines", workspace="frederikwarburg")
+
     opt = TrainOptions().parse()
+    experiment.log_parameters(vars(opt))
     dataset = DataLoader(opt)
     dataset_size = len(dataset)
     print('#training network on = %d images' % dataset_size)
@@ -23,51 +34,55 @@ if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
-    for epoch in range(opt.epochs):
-        model.train()
-        epoch_start_time = time.time()
-        iter_data_time = time.time()
-        epoch_iter = 0
+    with experiment.train():
 
-        for i, (input, label) in enumerate(dataset):
-            input,label = input.to(device), label.to(device)
-            iter_start_time = time.time()
-            if total_steps % opt.print_freq == 0:
-                t_data = iter_start_time - iter_data_time
-            total_steps += opt.batch_size
-            epoch_iter += opt.batch_size
-
-            optimizer.zero_grad()
-            output = model(input)
-            loss = criterion(output, label)
-            loss.backward()
-            optimizer.step()
-
-            if total_steps % opt.print_freq == 0:
-                t = (time.time() - iter_start_time) / opt.batch_size
-                writer.print_current_losses(epoch, epoch_iter, loss, t, t_data)
-                writer.plot_loss(loss, epoch, epoch_iter, dataset_size)
-
+        for epoch in range(opt.epochs):
+            model.train()
+            epoch_start_time = time.time()
             iter_data_time = time.time()
+            epoch_iter = 0
 
-        if epoch % opt.run_test_freq == 0:
-            print('saving the model at the end of epoch %d, iters %d' %
-                  (epoch, total_steps))
+            for i, (input, label) in enumerate(dataset):
+                input,label = input.to(device), label.to(device)
+                iter_start_time = time.time()
+                if total_steps % opt.print_freq == 0:
+                    t_data = iter_start_time - iter_data_time
+                total_steps += opt.batch_size
+                epoch_iter += opt.batch_size
 
-            # evaluate on training set
-            acc = run_test(epoch, model, True)
-            writer.plot_acc(acc, epoch, 'train')
+                optimizer.zero_grad()
+                output = model(input)
+                loss = criterion(output, label)
+                loss.backward()
+                optimizer.step()
 
-            # evaluate on test set
-            acc = run_test(epoch, model)
-            writer.plot_acc(acc, epoch, 'test')
+                if total_steps % opt.print_freq == 0:
+                    t = (time.time() - iter_start_time) / opt.batch_size
+                    writer.print_current_losses(epoch, epoch_iter, loss, t, t_data)
+                    writer.plot_loss(loss, epoch, epoch_iter, dataset_size)
 
-            is_best = acc > best_acc
-            save_network(model, opt, epoch, is_best)
-            model.to(device)
+                iter_data_time = time.time()
 
-        print('End of epoch %d \t Time Taken: %d sec' %
-              (epoch, time.time() - epoch_start_time))
-        scheduler.step()
+            if epoch % opt.run_test_freq == 0:
+                print('saving the model at the end of epoch %d, iters %d' %
+                      (epoch, total_steps))
+
+                # evaluate on training set
+                acc = run_test(epoch, model, True)
+                experiment.log_metric("train_acc", 100 * acc, step=epoch)
+                writer.plot_acc(acc, epoch, 'train')
+
+                # evaluate on test set
+                acc = run_test(epoch, model)
+                experiment.log_metric("test_acc", 100 * acc, step=epoch)
+                writer.plot_acc(acc, epoch, 'test')
+
+                is_best = acc > best_acc
+                save_network(model, opt, epoch, is_best)
+                model.to(device)
+
+            print('End of epoch %d \t Time Taken: %d sec' %
+                  (epoch, time.time() - epoch_start_time))
+            scheduler.step()
 
     writer.close()
