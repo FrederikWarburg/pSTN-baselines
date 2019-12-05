@@ -22,9 +22,9 @@ class InceptionClassifier(nn.Module):
     def forward(self, x):
 
         x = self.encoder(x)
-
+        print(x)
         x = x.view(-1, 1024)
-        print("forward!")
+
         x = self.fc1(x)
 
         x = self.softmax(x)
