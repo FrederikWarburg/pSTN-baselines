@@ -1,3 +1,4 @@
+import numpy as np
 from .base_options import BaseOptions
 
 class TrainOptions(BaseOptions):
@@ -10,6 +11,7 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--optimizer', type=str, default='sgd')
         self.parser.add_argument('--epochs', type=int, default=10)
         self.parser.add_argument('--criterion', type=str, default='crossentropy')
+        self.parser.add_argument('--freeze_layers', type=int, default=np.inf)
 
         self.parser.add_argument('--print_freq', type=int, default=10, help='frequency of showing training results on console')
         self.parser.add_argument('--run_test_freq', type=int, default=1, help='frequency of running test in training script')

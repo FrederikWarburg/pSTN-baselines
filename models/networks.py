@@ -1,6 +1,7 @@
 import torchvision.models as models
 import torch.nn as nn
 import torch
+import numpy as np
 
 class InceptionClassifier(nn.Module):
     def __init__(self, opt):
@@ -16,6 +17,15 @@ class InceptionClassifier(nn.Module):
             layers = list(inception.children())[:-1]
 
             self.encoder = nn.Sequential(*layers)
+
+            if opt.is_train:
+                count = 0
+                for child in self.encoder.children():
+                    for param in child.parameters():
+                        if count < opt.freeze_layers:
+                            param.requires_grad = False
+
+                        count += 1
 
             self.fc1 = nn.Linear(1024, opt.num_classes)
             self.softmax = nn.Softmax(dim=1)

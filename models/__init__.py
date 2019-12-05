@@ -14,7 +14,7 @@ def create_model(opt):
 def create_optimizer(model, opt):
 
     if opt.optimizer.lower() == 'sgd':
-        optimizer = torch.optim.SGD(model.parameters(), lr=opt.lr,
+        optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr,
                                             momentum=opt.momentum,
                                             weight_decay=opt.weightDecay)
 
