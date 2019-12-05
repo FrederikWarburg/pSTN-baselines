@@ -7,3 +7,4 @@ class TestOptions(BaseOptions):
 
         self.is_train = False
         self.data_augmentation = False
+        self.no_shuffle = True  # no shuffle

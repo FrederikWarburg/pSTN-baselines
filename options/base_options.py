@@ -39,6 +39,9 @@ class BaseOptions:
             self.initialize()
         self.opt, unknown = self.parser.parse_known_args()
         self.opt.is_train = self.is_train   # train or test
+        if not self.opt.is_train:
+            self.opt.data_augmentation = self.data_augmentation   # train or test
+        self.opt.no_shuffle = self.no_shuffle   # train or test
 
         args = vars(self.opt)
 

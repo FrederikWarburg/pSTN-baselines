@@ -8,7 +8,7 @@ from utils.evaluate import evaluate
 def run_test(epoch=-1, model = None, training_data = False):
     print('Running Test')
     opt = TestOptions().parse()
-    opt.no_shuffle = True  # no shuffle
+
     opt.is_train = training_data
     dataset = DataLoader(opt)
     opt.is_train = False

@@ -23,3 +23,4 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--no_vis', action='store_true', help='will not use tensorboard')
 
         self.is_train = True
+        self.no_shuffle = False  # shuffle
