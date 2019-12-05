@@ -31,12 +31,14 @@ def transform(opt):
     transform_list = []
     transform_list.append(transforms.Lambda(lambda img:scale_keep_ar_min_fixed(img, 448)))
     if opt.is_train:
-        transform_list.append(transforms.RandomHorizontalFlip(p=0.5))
-        transform_list.append(transforms.RandomCrop((448, 448)))
-        #transform_list.append(transforms.Resize((448, 448)))
+        if opt.data_augmentation:
+            transform_list.append(transforms.RandomHorizontalFlip(p=0.5))
+            transform_list.append(transforms.RandomCrop((448, 448)))
+        else:
+            transform_list.append(transforms.CenterCrop((448, 448)))
     else:
-        #transform_list.append(transforms.CenterCrop((448, 448)))
-        transform_list.append(transforms.Resize((448, 448)))
+        transform_list.append(transforms.CenterCrop((448, 448)))
+        #transform_list.append(transforms.Resize((448, 448)))
 
     transform_list.append(transforms.ToTensor())
     transform_list.append(normalize)
