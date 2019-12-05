@@ -38,12 +38,11 @@ if __name__ == '__main__':
             epoch_iter += opt.batch_size
 
             optimizer.zero_grad()
-            pred = model(input)
-            loss = criterion(pred, label)
+            output = model(input)
+            loss = criterion(output, label)
             loss.backward()
             optimizer.step()
-            print(pred, torch.argmax(pred,dim=1), label)
-            print("training acc", evaluate(pred, label))
+
             if total_steps % opt.print_freq == 0:
                 t = (time.time() - iter_start_time) / opt.batch_size
                 writer.print_current_losses(epoch, epoch_iter, loss, t, t_data)

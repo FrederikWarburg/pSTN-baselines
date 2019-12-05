@@ -14,6 +14,7 @@ class InceptionClassifier(nn.Module):
 
             # "remove the last layer (1000-way ILSVRC classifier)"
             layers = list(inception.children())[:-1]
+
             self.encoder = nn.Sequential(*layers)
 
             self.fc1 = nn.Linear(1024, opt.num_classes)
@@ -22,7 +23,7 @@ class InceptionClassifier(nn.Module):
     def forward(self, x):
 
         x = self.encoder(x)
-        print(x)
+
         x = x.view(-1, 1024)
 
         x = self.fc1(x)
