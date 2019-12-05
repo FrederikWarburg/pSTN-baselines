@@ -6,3 +6,4 @@ class TestOptions(BaseOptions):
         self.parser.add_argument('--results_dir', type=str, default='./results/', help='saves results here.')
 
         self.is_train = False
+        self.data_augmentation = False
