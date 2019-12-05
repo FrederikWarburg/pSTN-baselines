@@ -18,7 +18,7 @@ def create_optimizer(model, opt):
                                             momentum=opt.momentum,
                                             weight_decay=opt.weightDecay)
 
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=0.1)
 
     else:
         raise ValueError('Unsupported or optimizer: {}!'.format(opt.optimizer))
