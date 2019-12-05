@@ -12,6 +12,7 @@ class BaseOptions:
         # data params
         self.parser.add_argument('--dataroot', required=True, help='path to images')
         self.parser.add_argument('--max_dataset_size', type=int, default=float("inf"), help='Maximum number of samples per epoch')
+        self.parser.add_argument('--num_classes', type=int, default=200, help='Maximum number of classes per epoch')
         self.parser.add_argument('--download', action='store_true', help='download dataset')
         self.parser.add_argument('--no_shuffle', action='store_true', help='if true shuffle')
 

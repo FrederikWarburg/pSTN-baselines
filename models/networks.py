@@ -16,15 +16,17 @@ class InceptionClassifier(nn.Module):
             layers = list(inception.children())[:-1]
             self.encoder = nn.Sequential(*layers)
 
-            self.fc1 = nn.Linear(1024,200)
+            self.fc1 = nn.Linear(1024, opt.num_classes)
             self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
 
         x = self.encoder(x)
-        x = torch.squeeze(x)
-
+        print(x.size())
+        x = x.view(-1, 1024)
+        print(x.size())
         x = self.fc1(x)
+        print()
         x = self.softmax(x)
 
         return x

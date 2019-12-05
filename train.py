@@ -42,7 +42,7 @@ if __name__ == '__main__':
             loss = criterion(pred, label)
             loss.backward()
             optimizer.step()
-
+            print(pred, torch.argmax(pred,dim=1), label)
             print("training acc", evaluate(pred, label))
             if total_steps % opt.print_freq == 0:
                 t = (time.time() - iter_start_time) / opt.batch_size
@@ -55,12 +55,17 @@ if __name__ == '__main__':
             print('saving the model at the end of epoch %d, iters %d' %
                   (epoch, total_steps))
 
+            # evaluate on training set
+            acc = run_test(epoch, model, True)
+            writer.plot_acc(acc, epoch, 'train')
+
+            # evaluate on test set
             acc = run_test(epoch, model)
-            writer.plot_acc(acc, epoch)
+            writer.plot_acc(acc, epoch, 'test')
 
             is_best = acc > best_acc
-            save_network(model, opt, epoch, is_best)
-            model.to(device)
+            #save_network(model, opt, epoch, is_best)
+            #model.to(device)
 
         print('End of epoch %d \t Time Taken: %d sec' %
               (epoch, time.time() - epoch_start_time))

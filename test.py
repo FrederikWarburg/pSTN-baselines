@@ -5,11 +5,13 @@ from utils.writer import Writer
 import torch
 from utils.evaluate import evaluate
 
-def run_test(epoch=-1, model = None):
+def run_test(epoch=-1, model = None, training_data = False):
     print('Running Test')
     opt = TestOptions().parse()
     opt.no_shuffle = True  # no shuffle
+    opt.is_train = training_data
     dataset = DataLoader(opt)
+    opt.is_train = False
 
     if model == None:
         print("create new model")
@@ -32,7 +34,8 @@ def run_test(epoch=-1, model = None):
 
             writer.update_counter(ncorrect, nexamples)
 
-    writer.print_acc(epoch, writer.acc)
+    mode = 'train' if training_data else 'test'
+    writer.print_acc(epoch, writer.acc, mode)
     return writer.acc
 
 

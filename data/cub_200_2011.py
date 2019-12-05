@@ -5,6 +5,7 @@ from torchvision.datasets.utils import download_url
 from torch.utils.data import Dataset
 from torchvision import transforms
 from PIL import Image
+import numpy as np
 
 def scale_keep_ar_min_fixed(img, fixed_min):
     ow, oh = img.size
@@ -47,10 +48,12 @@ class Cub2011(Dataset):
     tgz_md5 = '97eceeb196236b17998738112f37df78'
 
     def __init__(self, opt):
+
         self.root = os.path.expanduser(opt.dataroot)
         self.transform = transform(opt)
         self.loader = default_loader
         self.train = opt.is_train
+        self.num_classes = opt.num_classes
 
         if opt.download:
             self._download()
@@ -71,6 +74,8 @@ class Cub2011(Dataset):
             self.data = self.data[self.data.is_training_img == 1]
         else:
             self.data = self.data[self.data.is_training_img == 0]
+
+        self.data = self.data[self.data.target < self.num_classes + 1]
 
     def _check_integrity(self):
         try:
