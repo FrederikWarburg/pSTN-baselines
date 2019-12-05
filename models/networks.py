@@ -14,9 +14,9 @@ class InceptionClassifier(nn.Module):
             inception = models.googlenet(pretrained=True)
 
             # "remove the last layer (1000-way ILSVRC classifier)"
-            layers = list(inception.children())[:-1]
+            #layers = list(inception.children())#[:-1]
 
-            self.encoder = nn.Sequential(*layers)
+            self.encoder = inception #nn.Sequential(*layers)
 
             if opt.is_train:
                 count = 0
@@ -27,14 +27,14 @@ class InceptionClassifier(nn.Module):
 
                         count += 1
 
-            self.fc1 = nn.Linear(1024, opt.num_classes)
+            self.fc1 = nn.Linear(1000, opt.num_classes)
             self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
 
         x = self.encoder(x)
 
-        x = x.view(-1, 1024)
+        #x = x.view(-1, 1024)
 
         x = self.fc1(x)
 
