@@ -24,7 +24,7 @@ class InceptionClassifier(nn.Module):
         x = self.encoder(x)
 
         x = x.view(-1, 1024)
-        print(x)
+        print("forward!")
         x = self.fc1(x)
 
         x = self.softmax(x)
