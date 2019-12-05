@@ -42,6 +42,12 @@ class Writer:
         with open(self.log_name, "a") as log_file:
             log_file.write('%s\n' % message)
 
+    def plot_time(self, epoch, i, time_to_fetch_data, time_model):
+        iters = i + (epoch - 1) * n
+        if self.display:
+            self.display.add_scalar('time/fetching_data', time_to_fetch_data, iters)
+            self.display.add_scalar('time/forward_and_backward_pass', time_model, iters)
+
     def plot_loss(self, loss, epoch, i, n):
         iters = i + (epoch - 1) * n
         if self.display:
