@@ -20,7 +20,7 @@ class InceptionClassifier(nn.Module):
 
             if opt.is_train:
                 count = 0
-                for child in self.encoder.children():
+                for i, child in enumerate(self.encoder.children()):
                     for param in child.parameters():
                         if count < opt.freeze_layers:
                             param.requires_grad = False
