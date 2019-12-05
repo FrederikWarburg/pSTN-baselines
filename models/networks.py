@@ -27,7 +27,7 @@ class InceptionClassifier(nn.Module):
 
                         count += 1
 
-            self.fc1 = nn.Linear(1000, opt.num_classes)
+            self.fc1 = nn.Linear(1024, opt.num_classes)
             self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
