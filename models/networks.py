@@ -26,7 +26,8 @@ class InceptionClassifier(nn.Module):
                             param.requires_grad = False
 
                         count += 1
-            self.dropout = nn.Dropout(0.7)
+
+            self.dropout = nn.Dropout(opt.dropout_rate)
             self.fc1 = nn.Linear(1024, opt.num_classes)
             self.softmax = nn.Softmax(dim=1)
 

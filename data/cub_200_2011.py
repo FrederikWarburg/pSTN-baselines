@@ -6,6 +6,10 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 from PIL import Image
 import numpy as np
+from utils.utils import make_affine_parameters
+from torch import distributions
+import torch
+import torch.nn.functional as F
 
 def scale_keep_ar_min_fixed(img, fixed_min):
     ow, oh = img.size
@@ -23,24 +27,42 @@ def scale_keep_ar_min_fixed(img, fixed_min):
         nw = nh * ow // oh
     return img.resize((nw, nh), Image.BICUBIC)
 
+
+def transform_image_manual(x, sigma):
+
+    gaussian = distributions.normal.Normal(0, 1)  # split up the multivariate Gaussian into 1d Gaussians
+    epsilon = gaussian.sample(sample_shape=torch.Size([4]))
+    random_params = epsilon * sigma
+    random_params[1] += 1 # scale is centered around 1
+    theta = make_affine_parameters(random_params)
+
+    x = x.unsqueeze(0)
+    grid = F.affine_grid(theta, x.size())  # makes the flow field on a grid
+    x_transformed = F.grid_sample(x, grid)  # interpolates x on the grid
+    return x_transformed.squeeze(0)
+
 def transform(opt):
 
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                       std=[0.229, 0.224, 0.225])
 
     transform_list = []
-    transform_list.append(transforms.Lambda(lambda img:scale_keep_ar_min_fixed(img, 448)))
+    transform_list.append(transforms.Lambda(lambda img:scale_keep_ar_min_fixed(img, opt.smallest_size)))
     if opt.is_train:
         if opt.data_augmentation:
-            transform_list.append(transforms.RandomHorizontalFlip(p=0.5))
-            transform_list.append(transforms.RandomCrop((448, 448)))
+            #transform_list.append(transforms.RandomHorizontalFlip(p=0.5))
+            #transform_list.append(transforms.RandomCrop((opt.crop_size, opt.crop_size)))
+            transform_list.append(transforms.CenterCrop((opt.crop_size, opt.crop_size)))
+            transform_list.append(transforms.ToTensor())
+            transform_list.append(lambda img: transform_image_manual(img, opt.sigma))
         else:
-            transform_list.append(transforms.CenterCrop((448, 448)))
+            transform_list.append(transforms.CenterCrop((opt.crop_size, opt.crop_size)))
+            transform_list.append(transforms.ToTensor())
     else:
-        transform_list.append(transforms.CenterCrop((448, 448)))
+        transform_list.append(transforms.CenterCrop((opt.crop_size, opt.crop_size)))
         #transform_list.append(transforms.Resize((448, 448)))
+        transform_list.append(transforms.ToTensor())
 
-    transform_list.append(transforms.ToTensor())
     transform_list.append(normalize)
 
     return transforms.Compose(transform_list)

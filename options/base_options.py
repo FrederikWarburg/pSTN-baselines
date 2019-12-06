@@ -15,12 +15,15 @@ class BaseOptions:
         self.parser.add_argument('--num_classes', type=int, default=200, help='Maximum number of classes per epoch')
         self.parser.add_argument('--download', action='store_true', help='download dataset')
         self.parser.add_argument('--no_shuffle', action='store_true', help='if true shuffle')
-
+        self.parser.add_argument('--smallest_size', type=int, default=512, help='smallest side of input images')
+        self.parser.add_argument('--crop_size', type=int, default=512, help='smallest side of input images')
 
         # network params
         self.parser.add_argument('--model', type=str, default='inception', help='model name')
         self.parser.add_argument('--batch_size', type=int, default=16, help='input batch size')
         self.parser.add_argument('--resume_ckpt', type=str, default=None, help='path to pretrained model')
+        self.parser.add_argument('--dropout_rate', type=float, default=0.5)
+
 
         # general params
         self.parser.add_argument('--num_threads', default=0, type=int, help='# threads for loading data')
