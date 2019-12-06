@@ -11,6 +11,9 @@ from torch import distributions
 import torch
 import torch.nn.functional as F
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="torch.nn.functional")
+
 def scale_keep_ar_min_fixed(img, fixed_min):
     ow, oh = img.size
 
