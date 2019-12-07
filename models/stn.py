@@ -58,6 +58,7 @@ class STN(nn.Module):
         xs = self.relu(xs)
         theta = self.fc2(xs)
 
+        print("theta", theta)
         affine_params = make_affine_parameters(theta)
         grid = F.affine_grid(affine_params, x.size())  # makes the flow field on a grid
         x = F.grid_sample(x, grid)  # interpolates x on the grid
