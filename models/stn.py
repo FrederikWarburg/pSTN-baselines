@@ -11,7 +11,7 @@ class STN(nn.Module):
         super().__init__()
 
         self.N = 1
-        self.num_param = 4 if opt.fix_scale_and_rot else 2
+        self.num_param = 2 if opt.fix_scale_and_rot else 4
 
         # Spatial transformer localization-network
         self.init_localizer(opt)

@@ -33,13 +33,13 @@ def scale_keep_ar_min_fixed(img, fixed_min):
 
 def transform_image_manual(x, opt):
 
-    num_param = 4 if opt.fix_scale_and_rot else 2
+    num_param = 2 if opt.fix_scale_and_rot else 4
 
     gaussian = distributions.normal.Normal(0, 1)  # split up the multivariate Gaussian into 1d Gaussians
     epsilon = gaussian.sample(sample_shape=torch.Size([num_param]))
 
     random_params = epsilon * opt.sigma
-    random_params[1] += 1 # scale is centered around 1
+    if num_param == 4: random_params[1] += 1 # scale is centered around 1
     theta = make_affine_parameters(random_params.unsqueeze(0))
 
     x = x.unsqueeze(0)

@@ -13,7 +13,7 @@ def denormalize(image):
 def make_affine_parameters(mean_params):
 
     if mean_params.shape[1] == 2: # only perform crop - fix scale and rotation.
-        theta = torch.ones(mean_params.shape[0],device=mean_params.device)
+        theta = torch.zeros(mean_params.shape[0],device=mean_params.device)
         scale = 0.5 * torch.ones(mean_params.shape[0],device=mean_params.device)
         translation_x = mean_params[:, 0]
         translation_y = mean_params[:, 1]
