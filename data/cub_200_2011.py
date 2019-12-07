@@ -31,13 +31,16 @@ def scale_keep_ar_min_fixed(img, fixed_min):
     return img.resize((nw, nh), Image.BICUBIC)
 
 
-def transform_image_manual(x, sigma):
+def transform_image_manual(x, opt):
+
+    num_param = 4 if opt.fix_scale_and_rot else 2
 
     gaussian = distributions.normal.Normal(0, 1)  # split up the multivariate Gaussian into 1d Gaussians
-    epsilon = gaussian.sample(sample_shape=torch.Size([4]))
-    random_params = epsilon * sigma
+    epsilon = gaussian.sample(sample_shape=torch.Size([num_param]))
+
+    random_params = epsilon * opt.sigma
     random_params[1] += 1 # scale is centered around 1
-    theta = make_affine_parameters(random_params)
+    theta = make_affine_parameters(random_params.unsqueeze(0))
 
     x = x.unsqueeze(0)
     grid = F.affine_grid(theta, x.size())  # makes the flow field on a grid
@@ -57,7 +60,7 @@ def transform(opt):
             #transform_list.append(transforms.RandomCrop((opt.crop_size, opt.crop_size)))
             transform_list.append(transforms.CenterCrop((opt.crop_size, opt.crop_size)))
             transform_list.append(transforms.ToTensor())
-            transform_list.append(lambda img: transform_image_manual(img, opt.sigma))
+            transform_list.append(lambda img: transform_image_manual(img, opt))
         else:
             transform_list.append(transforms.CenterCrop((opt.crop_size, opt.crop_size)))
             transform_list.append(transforms.ToTensor())
@@ -105,6 +108,7 @@ class Cub2011(Dataset):
             self.data = self.data[self.data.is_training_img == 0]
 
         self.data = self.data[self.data.target < self.num_classes + 1]
+
 
     def _check_integrity(self):
         try:

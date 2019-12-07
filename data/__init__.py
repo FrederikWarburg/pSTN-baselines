@@ -15,6 +15,7 @@ class DataLoader:
         self.opt = opt
 
         self.dataset = CreateDataset(opt)
+
         self.dataloader = torch.utils.data.DataLoader(
             self.dataset,
             batch_size=opt.batch_size,

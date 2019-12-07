@@ -8,9 +8,6 @@ from models import create_model, create_optimizer, create_criterion, save_networ
 from utils.writer import Writer
 from test import run_test
 import torch
-from utils.evaluate import evaluate
-
-
 
 if __name__ == '__main__':
 

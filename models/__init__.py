@@ -3,8 +3,11 @@ from os.path import join
 
 def create_model(opt):
     if opt.model.lower() == 'inception':
-        from .networks import InceptionClassifier
+        from .inception import InceptionClassifier
         model = InceptionClassifier(opt)
+    elif opt.model.lower() == 'stn':
+        from .stn import STN
+        model = STN(opt)
     else:
         raise ValueError('Unsupported or model: {}!'.format(opt.model))
 
