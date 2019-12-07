@@ -31,7 +31,12 @@ def make_affine_parameters(mean_params):
     d = scale * torch.sin(theta)
     e = scale * torch.cos(theta)
     f = translation_y
-
+    print("a", a)
+    print("b", b)
+    print("c", c)
+    print("d", d)
+    print("e", e)
+    print("f", f)
     param_tensor = torch.stack([a, b, c, d, e, f], dim=1)
 
     affine_matrix = param_tensor.view([-1, 2, 3])
