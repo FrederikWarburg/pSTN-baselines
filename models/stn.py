@@ -27,6 +27,15 @@ class STN(nn.Module):
         self.cnn = nn.Sequential(*layers)
         # add three weight layers
 
+        if opt.is_train:
+            count = 0
+            for i, child in enumerate(self.cnn.children()):
+                for param in child.parameters():
+                    if count < opt.freeze_layers:
+                        param.requires_grad = False
+
+                    count += 1
+
         # 1) "1 x 1 conv layer to reduce the number of feature channels from 1024 to 128"
         self.conv = nn.Conv2d(1024, 128, 1)
         # 2) "fully-connected layer with 128-D output"
