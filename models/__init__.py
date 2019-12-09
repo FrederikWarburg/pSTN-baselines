@@ -20,6 +20,10 @@ def create_optimizer(model, opt):
         if opt.model.lower() == 'stn':
             # the learning rate of the parameters that are part of the localizer are multiplied 1e-4
             optimizer = torch.optim.SGD([
+                {'params': model.cnn.parameters()},
+                {'params': model.conv.parameters()},
+                {'params': model.fc1.parameters()},
+                {'params': model.fc2.parameters()},
                 {'params': model.classifier.parameters(), 'lr': opt.lr, 'momentum': opt.momentum},
             ], lr=opt.lr_loc, momentum=opt.momentum)
         else:
