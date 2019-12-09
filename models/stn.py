@@ -77,6 +77,7 @@ class STN(nn.Module):
 
         for b in range(batch_size):
             for i in range(self.N):
+                print("{} <= {},{},{}".format(b*self.N + i, b, i*self.num_param, (i+1)*self.num_param))
                 theta_split[b*self.N + i] = theta[b, i*self.num_param:(i+1)*self.num_param]
 
         affine_params = make_affine_parameters(theta_split)
