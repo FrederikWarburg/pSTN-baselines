@@ -6,6 +6,7 @@ from models.inception import InceptionClassifier
 from utils.utils import make_affine_parameters
 import torchvision.models as models
 import torch
+import matplotlib.pyplot as plt
 
 class STN(nn.Module):
     def __init__(self, opt):
@@ -45,6 +46,12 @@ class STN(nn.Module):
         # 3) #fully connected layer with 2N-D output, where N is the number of transformers.
         self.fc2 = nn.Linear(128, self.num_param*self.N)
 
+        # Initialize the weights/bias with identity transformation
+        self.fc2.weight.data.zero_()
+        if self.num_param == 2:
+            self.fc2.bias.data.zero_()
+        elif self.num_param == 4:
+            self.fc2.bias.data.copy_(torch.tensor([0, 1, 0, 0], dtype=torch.float).repeat(self.N))
 
 
     def init_classifier(self, opt):
@@ -89,7 +96,7 @@ class STN(nn.Module):
             for i in range(self.N):
                 theta_split[b*self.N + i] = theta[b, i*self.num_param:(i+1)*self.num_param]
 
-        affine_params = make_affine_parameters(theta)
+        affine_params = make_affine_parameters(theta_split)
         grid = F.affine_grid(affine_params, x.size())  # makes the flow field on a grid
         x = F.grid_sample(x, grid)  # interpolates x on the grid
 
@@ -99,6 +106,13 @@ class STN(nn.Module):
         batch_size = x.size()[0]
 
         x = self.stn(x)
+
+        for xb in x:
+            print(xb.shape)
+            xb = xb.permute(1,2,0)
+            print(xb.shape)
+            plt.imshow(xb.detach().numpy())
+            plt.show()
 
         x = self.encoder(x)
 
