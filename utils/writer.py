@@ -92,8 +92,16 @@ class Writer:
                 input = input.to(device)
                 x_stn, theta = model.forward_viz_stn(input)
 
+                for x in input:
+                    x = np.transpose(x.cpu().numpy(),(1,2,0))
+                    x = denormalize(x)
+                    x = np.transpose(x, (2,0,1))
+
+                    self.display.add_image("input_{}/input".format(i), x, epoch)
+
                 print("==> theta", theta)
-                for j,x in enumerate(x_stn):
+
+                for j,x in enumerate(x_stn, 1):
 
                     x = np.transpose(x.cpu().numpy(),(1,2,0))
                     x = denormalize(x)
