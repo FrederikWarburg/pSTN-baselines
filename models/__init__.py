@@ -17,9 +17,20 @@ def create_model(opt):
 def create_optimizer(model, opt):
 
     if opt.optimizer.lower() == 'sgd':
-        optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr,
+        if opt.model.lower() == 'stn':
+            # the learning rate of the parameters that are part of the localizer are multiplied 1e-4
+            optimizer = torch.optim.SGD([
+                {'params': model.cnn.parameters(), 'lr': opt.lr * 1e-4},
+                {'params': model.conv.parameters(), 'lr': opt.lr * 1e-4},
+                {'params': model.fc1.parameters(), 'lr': opt.lr * 1e-4},
+                {'params': model.fc2.parameters(), 'lr': opt.lr * 1e-4}
+            ], lr=opt.lr, momentum=opt.momentum)
+        else:
+            optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr,
                                             momentum=opt.momentum,
                                             weight_decay=opt.weightDecay)
+
+
 
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=0.1)
 
