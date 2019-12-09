@@ -6,6 +6,7 @@ from models.inception import InceptionClassifier
 from utils.utils import make_affine_parameters
 import torchvision.models as models
 import torch
+import matplotlib.pyplot as plt
 
 
 class STN(nn.Module):
@@ -76,6 +77,7 @@ class STN(nn.Module):
         self.fc = nn.Linear(1024*self.N, 200)
 
     def stn(self, x):
+
         batch_size, channels, height, width = x.size()
         xs = self.cnn(x)
 
@@ -89,6 +91,7 @@ class STN(nn.Module):
         # [im1, im2, im3] => [im1, im1, im2, im2, im3, im3]
         # [theta1, theta2, theta3] => [theta1[:num_params],theta1[num_params:], theta2[:num_params],theta2[num_params:],theta3[:num_params],theta3[num_params:]
         theta_split = torch.zeros((batch_size*self.N,self.num_param), device=theta.device) #[b * N, num_params]
+
         x = x.repeat(self.N, 1, 1, 1) # [b*N, im]
 
         for b in range(batch_size):
@@ -96,6 +99,7 @@ class STN(nn.Module):
                 theta_split[b*self.N + i] = theta[b, i*self.num_param:(i+1)*self.num_param]
 
         affine_params = make_affine_parameters(theta_split)
+
         grid = F.affine_grid(affine_params, x.size())  # makes the flow field on a grid
 
         x = F.grid_sample(x, grid)  # interpolates x on the grid

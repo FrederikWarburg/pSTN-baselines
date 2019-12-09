@@ -5,6 +5,7 @@ from .utils import denormalize
 from options.test_options import TestOptions
 from data import DataLoader
 import torch
+import matplotlib.pyplot as plt
 
 try:
     from tensorboardX import SummaryWriter
@@ -91,11 +92,12 @@ class Writer:
             for i, (input, label) in enumerate(dataset):
                 input = input.to(device)
                 x_stn, theta, pred = model.forward_viz_stn(input)
-                print("==> theta", theta)
 
+                print("==> theta", theta)
                 for j,x in enumerate(x_stn):
+
                     x = np.transpose(x.cpu().numpy(),(1,2,0))
-                    x = denormalize(x).astype(dtype = np.uint8)
+                    x = denormalize(x)
                     x = np.transpose(x, (2,0,1))
 
                     self.display.add_image("input_{}/parallel_{}".format(i,j), x, epoch)
