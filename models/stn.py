@@ -53,26 +53,9 @@ class STN(nn.Module):
             self.fc2.bias.data.copy_(torch.tensor([0, 1, 0, 0], dtype=torch.float).repeat(self.N))
 
     def init_classifier(self, opt):
-         # "Inception architecture with batch normalisation pretrained on ImageNet"
-        inception = models.googlenet(pretrained=True)
+        from .inception import InceptionClassifier
 
-        # "remove the last layer (1000-way ILSVRC classifier)"
-        layers = list(inception.children())[:-2]
-
-        self.encoder = nn.Sequential(*layers)
-
-        if opt.is_train:
-            count = 0
-            for i, child in enumerate(self.encoder.children()):
-                for param in child.parameters():
-                    if count < opt.freeze_layers:
-                        param.requires_grad = False
-
-                    count += 1
-
-        self.dropout = nn.Dropout(opt.dropout_rate)
-
-        self.fc = nn.Linear(1024*self.N, 200)
+        self.classifier = InceptionClassifier(opt)
 
     def stn(self, x):
 
@@ -105,27 +88,15 @@ class STN(nn.Module):
         return x, theta_split
 
     def forward(self, x):
-        batch_size = x.size()[0]
 
         x, _ = self.stn(x)
 
-        x = self.encoder(x)
-
-        x = x.view(batch_size, self.N * 1024) #[b, N*feature_size]
-
-        x = self.fc(x)
+        x = self.classifier(x)
 
         return x
 
     def forward_viz_stn(self, input):
-        batch_size = input.size()[0]
 
         x_stn, theta = self.stn(input)
 
-        pred = self.encoder(x_stn)
-
-        pred = pred.view(batch_size, self.N * 1024) #[b, N*feature_size]
-
-        pred = self.fc(pred)
-
-        return x_stn, theta, pred
+        return x_stn, theta

@@ -8,6 +8,8 @@ class InceptionClassifier(nn.Module):
         if opt.resume_ckpt != None:
             raise NotImplementedError
         else:
+            self.N = opt.N
+
             # "Inception architecture with batch normalisation pretrained on ImageNet"
             inception = models.googlenet(pretrained=True)
 
@@ -26,13 +28,14 @@ class InceptionClassifier(nn.Module):
                         count += 1
 
             self.dropout = nn.Dropout(opt.dropout_rate)
-            self.fc1 = nn.Linear(1024, opt.num_classes)
+            self.fc1 = nn.Linear(self.N * 1024, opt.num_classes)
+
 
     def forward(self, x):
 
         x = self.encoder(x)
 
-        x = x.view(-1, 1024)
+        x = x.view(-1, self.N * 1024)
 
         x = self.dropout(x)
         x = self.fc1(x)
