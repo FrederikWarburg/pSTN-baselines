@@ -77,6 +77,9 @@ class Writer:
 
 
     def visualize_transformation(self, model, epoch):
+
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
         print('Running Vizualization')
         opt = TestOptions().parse()
         opt.max_dataset_size = 5
@@ -86,7 +89,7 @@ class Writer:
         model.eval()
         with torch.no_grad():
             for i, (input, label) in enumerate(dataset):
-                input = input.to(model.device)
+                input = input.to(device)
                 x_stn, theta, pred = model.forward_viz_stn(input)
 
                 for j,x in enumerate(x_stn):
