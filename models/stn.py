@@ -53,7 +53,6 @@ class STN(nn.Module):
         elif self.num_param == 4:
             self.fc2.bias.data.copy_(torch.tensor([0, 1, 0, 0], dtype=torch.float).repeat(self.N))
 
-
     def init_classifier(self, opt):
          # "Inception architecture with batch normalisation pretrained on ImageNet"
         inception = models.googlenet(pretrained=True)
