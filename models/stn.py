@@ -81,11 +81,11 @@ class STN(nn.Module):
 
         affine_params = make_affine_parameters(theta_split)
 
-        grid = F.affine_grid(affine_params, x.size())  # makes the flow field on a grid
+        grid = F.affine_grid(affine_params, x_split.size())  # makes the flow field on a grid
 
-        x = F.grid_sample(x, grid)  # interpolates x on the grid
+        x_split = F.grid_sample(x_split, grid)  # interpolates x on the grid
 
-        return x, theta_split
+        return x_split, theta_split
 
     def forward(self, x):
 
