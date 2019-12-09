@@ -8,6 +8,7 @@ from models import create_model, create_optimizer, create_criterion, save_networ
 from utils.writer import Writer
 from test import run_test
 import torch
+from utils.evaluate import evaluate
 
 if __name__ == '__main__':
 
@@ -34,10 +35,12 @@ if __name__ == '__main__':
     with experiment.train():
 
         for epoch in range(opt.epochs):
+
             model.train()
             epoch_start_time = time.time()
             iter_data_time = time.time()
             epoch_iter = 0
+            ncorrect, nexamples = 0, 0
 
             for i, (input, label) in enumerate(dataset):
                 input,label = input.to(device), label.to(device)
@@ -60,14 +63,16 @@ if __name__ == '__main__':
 
                 iter_data_time = time.time()
 
+                predictions = evaluate(output, label)
+                ncorrect, nexamples = ncorrect + predictions[0], nexamples + predictions[1]
+
+            acc = ncorrect / nexamples
+            experiment.log_metric("train_acc", 100 * acc, step=epoch)
+            writer.plot_acc(acc, epoch, 'train')
+
             if epoch % opt.run_test_freq == 0:
                 print('saving the model at the end of epoch %d, iters %d' %
                       (epoch, total_steps))
-
-                # evaluate on training set
-                acc = run_test(epoch, model, True)
-                experiment.log_metric("train_acc", 100 * acc, step=epoch)
-                writer.plot_acc(acc, epoch, 'train')
 
                 # evaluate on test set
                 acc = run_test(epoch, model)

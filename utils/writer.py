@@ -91,6 +91,7 @@ class Writer:
             for i, (input, label) in enumerate(dataset):
                 input = input.to(device)
                 x_stn, theta, pred = model.forward_viz_stn(input)
+                print("==> theta", theta)
 
                 for j,x in enumerate(x_stn):
                     x = np.transpose(x.cpu().numpy(),(1,2,0))
