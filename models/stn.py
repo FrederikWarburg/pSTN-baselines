@@ -6,7 +6,7 @@ from models.inception import InceptionClassifier
 from utils.utils import make_affine_parameters
 import torchvision.models as models
 import torch
-import matplotlib.pyplot as plt
+
 
 class STN(nn.Module):
     def __init__(self, opt):
@@ -106,13 +106,6 @@ class STN(nn.Module):
         batch_size = x.size()[0]
 
         x = self.stn(x)
-
-        for xb in x:
-            print(xb.shape)
-            xb = xb.permute(1,2,0)
-            print(xb.shape)
-            plt.imshow(xb.detach().numpy())
-            plt.show()
 
         x = self.encoder(x)
 
