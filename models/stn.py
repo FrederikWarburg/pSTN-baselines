@@ -47,12 +47,11 @@ class STN(nn.Module):
         self.fc2 = nn.Linear(128, self.num_param*self.N)
 
         # Initialize the weights/bias with identity transformation
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        self.fc2.weight.data.zero_().to(device)
+        self.fc2.weight.data.zero_()
         if self.num_param == 2:
-            self.fc2.bias.data.zero_().to(device)
+            self.fc2.bias.data.zero_()
         elif self.num_param == 4:
-            self.fc2.bias.data.copy_(torch.tensor([0, 1, 0, 0], dtype=torch.float).repeat(self.N).to(device))
+            self.fc2.bias.data.copy_(torch.tensor([0, 1, 0, 0], dtype=torch.float).repeat(self.N))
 
     def init_classifier(self, opt):
          # "Inception architecture with batch normalisation pretrained on ImageNet"
@@ -98,8 +97,7 @@ class STN(nn.Module):
 
         affine_params = make_affine_parameters(theta_split)
         grid = F.affine_grid(affine_params, x.size())  # makes the flow field on a grid
-        print("affine", affine_params.device)
-        print("grid", grid.device)
+
         x = F.grid_sample(x, grid)  # interpolates x on the grid
 
         return x
