@@ -2,7 +2,7 @@ import os
 import time
 import numpy as np
 from .utils import denormalize
-from options.test_options import TestOptions
+from options.train_options import TrainOptions
 from data import DataLoader
 import torch
 
@@ -81,7 +81,7 @@ class Writer:
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         print('Running Vizualization')
-        opt = TestOptions().parse()
+        opt = TrainOptions().parse()
         opt.max_dataset_size = 5
         opt.batch_size = 1
 
