@@ -47,13 +47,12 @@ class STN(nn.Module):
         self.fc2 = nn.Linear(128, self.num_param*self.N)
 
         # Initialize the weights/bias with identity transformation
-        self.fc2.weight.data.zero_()
+        #self.fc2.weight.data.zero_()
         if self.num_param == 2:
-            pass
-            #self.fc2.bias.data.zero_()
+
+            self.fc2.bias.data.zero_()
         elif self.num_param == 4:
-            pass
-            #self.fc2.bias.data.copy_(torch.tensor([0, 1, 0, 0], dtype=torch.float).repeat(self.N))
+            self.fc2.bias.data.copy_(torch.tensor([0, 1, 0, 0], dtype=torch.float).repeat(self.N))
 
     def init_classifier(self, opt):
          # "Inception architecture with batch normalisation pretrained on ImageNet"
