@@ -5,7 +5,6 @@ from .utils import denormalize
 from options.test_options import TestOptions
 from data import DataLoader
 import torch
-import matplotlib.pyplot as plt
 
 try:
     from tensorboardX import SummaryWriter

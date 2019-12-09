@@ -6,8 +6,6 @@ from models.inception import InceptionClassifier
 from utils.utils import make_affine_parameters
 import torchvision.models as models
 import torch
-import matplotlib.pyplot as plt
-
 
 class STN(nn.Module):
     def __init__(self, opt):
