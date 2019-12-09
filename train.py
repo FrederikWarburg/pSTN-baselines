@@ -78,6 +78,9 @@ if __name__ == '__main__':
                 save_network(model, opt, epoch, is_best)
                 model.to(device)
 
+                if opt.visualize and opt.model == 'stn':
+                    writer.visualize_transformation(model, epoch)
+
             print('End of epoch %d \t Time Taken: %d sec' %
                   (epoch, time.time() - epoch_start_time))
             scheduler.step()

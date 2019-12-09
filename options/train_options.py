@@ -16,7 +16,7 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--data_augmentation', type=bool, default=False)
         self.parser.add_argument('--sigma', type=float, default=0.1, help='the amount of data augmentation')
 
-
+        self.parser.add_argument('--visualize', type=bool, default=False, help='plots images of transformations to tensorboard')
         self.parser.add_argument('--print_freq', type=int, default=10, help='frequency of showing training results on console')
         self.parser.add_argument('--run_test_freq', type=int, default=1, help='frequency of running test in training script')
         self.parser.add_argument('--save_dir', type=str, default='', help='path for saving models')

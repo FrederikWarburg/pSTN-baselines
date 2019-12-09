@@ -1,5 +1,10 @@
 import os
 import time
+import numpy as np
+from .utils import denormalize
+from options.test_options import TestOptions
+from data import DataLoader
+import torch
 
 try:
     from tensorboardX import SummaryWriter
@@ -69,6 +74,26 @@ class Writer:
     def plot_acc(self, acc, epoch, mode):
         if self.display:
             self.display.add_scalar('data/{}_acc'.format(mode), acc, epoch)
+
+
+    def visualize_transformation(self, model, epoch):
+        print('Running Vizualization')
+        opt = TestOptions().parse()
+        opt.max_dataset_size = 5
+        opt.batch_size = 1
+
+        dataset = DataLoader(opt)
+        model.eval()
+        with torch.no_grad():
+            for i, (input, label) in enumerate(dataset):
+                x_stn, theta, pred = model.forward_viz_stn(input)
+
+                for j,x in enumerate(x_stn):
+                    x = np.transpose(x.numpy(),(1,2,0))
+                    x = denormalize(x).astype(dtype = np.uint8)
+                    x = np.transpose(x, (2,0,1))
+
+                    self.display.add_image("input_{}/parallel_{}".format(i,j), x, epoch)
 
     def reset_counter(self):
         """

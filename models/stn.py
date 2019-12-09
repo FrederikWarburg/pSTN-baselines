@@ -100,12 +100,12 @@ class STN(nn.Module):
 
         x = F.grid_sample(x, grid)  # interpolates x on the grid
 
-        return x
+        return x, theta_split
 
     def forward(self, x):
         batch_size = x.size()[0]
 
-        x = self.stn(x)
+        x, _ = self.stn(x)
 
         x = self.encoder(x)
 
@@ -114,3 +114,16 @@ class STN(nn.Module):
         x = self.fc(x)
 
         return x
+
+    def forward_viz_stn(self, input):
+        batch_size = input.size()[0]
+
+        x_stn, theta = self.stn(input)
+
+        pred = self.encoder(x_stn)
+
+        pred = pred.view(batch_size, self.N * 1024) #[b, N*feature_size]
+
+        pred = self.fc(pred)
+
+        return x_stn, theta, pred
