@@ -24,6 +24,7 @@ class BaseOptions:
         self.parser.add_argument('--batch_size', type=int, default=16, help='input batch size')
         self.parser.add_argument('--resume_ckpt', type=str, default=None, help='path to pretrained model')
         self.parser.add_argument('--dropout_rate', type=float, default=0.5)
+        self.parser.add_argument('--N', type=float, default=1, help='number of parallel tracks')
 
         # general params
         self.parser.add_argument('--num_threads', default=0, type=int, help='# threads for loading data')
