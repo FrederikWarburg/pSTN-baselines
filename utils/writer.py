@@ -101,13 +101,13 @@ class Writer:
 
                 print("==> theta", theta)
 
-                for j,x in enumerate(x_stn, 1):
+                for j,x in enumerate(x_stn):
 
                     x = np.transpose(x.cpu().numpy(),(1,2,0))
                     x = denormalize(x)
                     x = np.transpose(x, (2,0,1))
 
-                    self.display.add_image("input_{}/parallel_{}".format(i,j), x, epoch)
+                    self.display.add_image("input_{}/parallel_{}".format(i,j+1), x, epoch)
 
     def reset_counter(self):
         """

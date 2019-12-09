@@ -48,7 +48,7 @@ class STN(nn.Module):
         # Initialize the weights/bias with identity transformation
         self.fc2.weight.data.zero_()
         if self.num_param == 2:
-            self.fc2.bias.data.zero_()
+            self.fc2.bias.data.normal_(0, 1).clamp_(min=-0.5,max=0.5)
         elif self.num_param == 4:
             self.fc2.bias.data.copy_(torch.tensor([0, 1, 0, 0], dtype=torch.float).repeat(self.N))
 
