@@ -85,7 +85,7 @@ class STN(nn.Module):
         xs = self.fc1(xs)
         xs = self.relu(xs)
         theta = self.fc2(xs) # [b, num_params * N]
-        print("==> theta", theta)
+
         # [im1, im2, im3] => [im1, im1, im2, im2, im3, im3]
         # [theta1, theta2, theta3] => [theta1[:num_params],theta1[num_params:], theta2[:num_params],theta2[num_params:],theta3[:num_params],theta3[num_params:]
         theta_split = torch.zeros((batch_size*self.N,self.num_param), device=theta.device) #[b * N, num_params]
