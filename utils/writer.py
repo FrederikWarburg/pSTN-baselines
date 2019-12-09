@@ -93,7 +93,7 @@ class Writer:
                 x_stn, theta, pred = model.forward_viz_stn(input)
 
                 for j,x in enumerate(x_stn):
-                    x = np.transpose(x.numpy(),(1,2,0))
+                    x = np.transpose(x.cpu().numpy(),(1,2,0))
                     x = denormalize(x).astype(dtype = np.uint8)
                     x = np.transpose(x, (2,0,1))
 
