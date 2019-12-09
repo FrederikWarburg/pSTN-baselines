@@ -98,8 +98,8 @@ class STN(nn.Module):
 
         affine_params = make_affine_parameters(theta_split)
         grid = F.affine_grid(affine_params, x.size())  # makes the flow field on a grid
-        print("affine", affine_params)
-        print("grid", grid)
+        print("affine", affine_params.device)
+        print("grid", grid.device)
         x = F.grid_sample(x, grid)  # interpolates x on the grid
 
         return x
