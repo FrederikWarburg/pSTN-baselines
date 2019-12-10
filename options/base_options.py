@@ -45,6 +45,7 @@ class BaseOptions:
         self.opt.is_train = self.is_train   # train or test
         if not self.opt.is_train:
             self.opt.data_augmentation = self.data_augmentation   # train or test
+            self.opt.horizontal_flip = self.horizontal_flip   # train or test
         self.opt.no_shuffle = self.no_shuffle   # train or test
 
         args = vars(self.opt)

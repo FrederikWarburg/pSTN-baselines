@@ -7,4 +7,5 @@ class TestOptions(BaseOptions):
 
         self.is_train = False
         self.data_augmentation = False
+        self.horizontal_flip = False
         self.no_shuffle = True  # no shuffle

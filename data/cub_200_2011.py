@@ -56,9 +56,11 @@ def transform(opt):
     transform_list.append(transforms.Lambda(lambda img:scale_keep_ar_min_fixed(img, opt.smallest_size)))
     if opt.is_train:
         if opt.data_augmentation:
-            #transform_list.append(transforms.RandomHorizontalFlip(p=0.5))
-            #transform_list.append(transforms.RandomCrop((opt.crop_size, opt.crop_size)))
-            transform_list.append(transforms.CenterCrop((opt.crop_size, opt.crop_size)))
+            if opt.horizontal_flip:
+                transform_list.append(transforms.RandomHorizontalFlip(p=0.5))
+                transform_list.append(transforms.RandomCrop((opt.crop_size, opt.crop_size)))
+            else:
+                transform_list.append(transforms.CenterCrop((opt.crop_size, opt.crop_size)))
             transform_list.append(transforms.ToTensor())
             transform_list.append(lambda img: transform_image_manual(img, opt))
         else:

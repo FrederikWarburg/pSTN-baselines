@@ -15,6 +15,7 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--freeze_layers', type=int, default=np.inf)
         self.parser.add_argument('--step_size', type=float, default=50, help='Scheduler update every n (default 50) epochs')
         self.parser.add_argument('--data_augmentation', type=bool, default=False)
+        self.parser.add_argument('--horizontal_flip', type=bool, default=False)
         self.parser.add_argument('--sigma', type=float, default=0.1, help='the amount of data augmentation')
 
         self.parser.add_argument('--visualize', type=bool, default=False, help='plots images of transformations to tensorboard')
