@@ -77,9 +77,9 @@ class Writer:
 
     def plot_theta(self, image_id, theta, epoch):
 
+        type_ = 'crop' if len(theta) == 2 else 'affine'
         theta = theta.cpu().numpy().reshape(-1)
 
-        type_ = 'crop' if len(theta) == 2 else 'affine'
         for i, val in enumerate(theta):
             self.display.add_scalar('theta_{}/{}_{}'.format(image_id, type_, i), val, epoch)
 
