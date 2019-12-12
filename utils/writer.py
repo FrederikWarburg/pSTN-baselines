@@ -82,7 +82,7 @@ class Writer:
 
         print('Running Vizualization')
         opt = TestOptions().parse()
-        opt.max_dataset_size = 5
+        opt.max_dataset_size = 20
         opt.batch_size = 1
 
         dataset = DataLoader(opt)
