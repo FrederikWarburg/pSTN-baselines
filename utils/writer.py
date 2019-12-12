@@ -75,6 +75,11 @@ class Writer:
         if self.display:
             self.display.add_scalar('data/{}_acc'.format(mode), acc, epoch)
 
+    def plot_theta(self, image_id, theta, epoch):
+
+        for i, val in enumerate(theta):
+            self.display.add_scalar('theta/theta_{}_{}_{}'.format(image_id, i, len(theta)), val, epoch)
+
 
     def visualize_transformation(self, model, epoch):
 
@@ -91,6 +96,7 @@ class Writer:
             for i, (input, label) in enumerate(dataset):
                 input = input.to(device)
                 x_stn, theta = model.forward_viz_stn(input)
+                self.plot_theta(i, theta, epoch)
 
                 for x in input:
                     x = np.transpose(x.cpu().numpy(),(1,2,0))
@@ -98,6 +104,7 @@ class Writer:
                     x = np.transpose(x, (2,0,1))
 
                     self.display.add_image("input_{}/input".format(i), x, epoch)
+
 
                 print("==> theta", theta)
 
