@@ -98,7 +98,7 @@ class Writer:
         with torch.no_grad():
             for i, (input, label) in enumerate(dataset):
                 input = input.to(device)
-                x_stn, theta = model.forward_viz_stn(input)
+                x_stn, theta = model.stn(input)
                 self.plot_theta(i, theta, epoch)
 
                 for x in input:

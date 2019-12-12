@@ -48,7 +48,8 @@ class STN(nn.Module):
         # Initialize the weights/bias with identity transformation
         self.fc2.weight.data.zero_()
         if self.num_param == 2:
-            self.fc2.bias.data.normal_(0, 1).clamp_(min=-0.5,max=0.5)
+            #self.fc2.bias.data.normal_(0, 1).clamp_(min=-0.5,max=0.5)
+            self.fc2.bias.copy_(torch.tensor([0, 0], dtype=torch.float).repeat(self.N))
         elif self.num_param == 4:
             self.fc2.bias.data.copy_(torch.tensor([0, 1, 0, 0], dtype=torch.float).repeat(self.N))
 
@@ -95,8 +96,4 @@ class STN(nn.Module):
 
         return x
 
-    def forward_viz_stn(self, input):
 
-        x_stn, theta = self.stn(input)
-
-        return x_stn, theta
