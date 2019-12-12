@@ -90,6 +90,7 @@ class STN(nn.Module):
     def forward(self, x):
 
         x, _ = self.stn(x)
+        print("theta", _)
 
         x = self.classifier(x)
 
