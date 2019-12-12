@@ -77,8 +77,9 @@ class Writer:
 
     def plot_theta(self, image_id, theta, epoch):
         theta = theta.cpu().numpy()[0]
+        type_ = 'crop' if len(theta) == 2 else 'affine'
         for i, val in enumerate(theta):
-            self.display.add_scalar('theta/theta_{}_{}_{}'.format(image_id, i, len(theta)), val, epoch)
+            self.display.add_scalar('theta_{}/{}_{}'.format(image_id, i, type_), val, epoch)
 
 
     def visualize_transformation(self, model, epoch):
