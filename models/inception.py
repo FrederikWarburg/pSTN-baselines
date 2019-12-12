@@ -30,6 +30,7 @@ class InceptionClassifier(nn.Module):
             self.dropout = nn.Dropout(opt.dropout_rate)
             self.fc1 = nn.Linear(self.N * 1024, opt.num_classes)
 
+            self.logsoftmax = nn.LogSoftmax(dim=1)
 
     def forward(self, x):
 
@@ -39,5 +40,7 @@ class InceptionClassifier(nn.Module):
 
         x = self.dropout(x)
         x = self.fc1(x)
+
+        x = self.logsoftmax(x)
 
         return x

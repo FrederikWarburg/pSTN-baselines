@@ -11,7 +11,7 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--weightDecay', type=float, default=1e-5)
         self.parser.add_argument('--optimizer', type=str, default='sgd')
         self.parser.add_argument('--epochs', type=int, default=10)
-        self.parser.add_argument('--criterion', type=str, default='crossentropy')
+        self.parser.add_argument('--criterion', type=str, default='nllloss')
         self.parser.add_argument('--freeze_layers', type=int, default=np.inf)
         self.parser.add_argument('--step_size', type=float, default=50, help='Scheduler update every n (default 50) epochs')
         self.parser.add_argument('--data_augmentation', type=bool, default=False)
