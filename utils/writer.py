@@ -76,7 +76,7 @@ class Writer:
             self.display.add_scalar('data/{}_acc'.format(mode), acc, epoch)
 
     def plot_theta(self, image_id, theta, epoch):
-        theta = theta.numpy()[0]
+        theta = theta.cpu().numpy()[0]
         for i, val in enumerate(theta):
             self.display.add_scalar('theta/theta_{}_{}_{}'.format(image_id, i, len(theta)), val, epoch)
 
