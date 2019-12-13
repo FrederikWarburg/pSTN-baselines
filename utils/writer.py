@@ -113,16 +113,6 @@ class Writer:
                     im = np.transpose(im, (2,0,1))
                     self.display.add_image("input_{}/input".format(i), im, epoch)
 
-                print("==> theta", theta)
-
-                for j,x in enumerate(x_stn):
-
-                    x = np.transpose(x.cpu().numpy(),(1,2,0))
-                    x = denormalize(x)
-                    x = np.transpose(x, (2,0,1))
-
-                    self.display.add_image("input_{}/parallel_{}".format(i,j+1), x, epoch)
-
     def reset_counter(self):
         """
         counts # of correct examples

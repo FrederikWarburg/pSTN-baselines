@@ -13,6 +13,8 @@ def denormalize(image):
 
 def add_bounding_boxes(image, theta, num_param):
 
+    color = [(255, 0, 0) ,(0, 255, 0),(0, 0, 255), (255, 255, 0),(255, 0, 255),(0, 255, 255)]
+
     image *= 255
     im = image.astype(np.uint8).copy()
 
@@ -27,7 +29,7 @@ def add_bounding_boxes(image, theta, num_param):
             x = int(w//2 - theta[i*num_param] * w * 2)
             y = int(h//2 - theta[i*num_param + 1] * h * 2)
 
-            cv2.rectangle(im, (x,y),(x + w, y + h),(255,0,0), 5)
+            cv2.rectangle(im, (x,y),(x + w, y + h), color[i%len(color)], 5)
 
     return im
 
