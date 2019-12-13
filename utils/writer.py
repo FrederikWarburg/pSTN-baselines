@@ -107,10 +107,10 @@ class Writer:
                 for im, crop in zip(input, theta):
                     im = np.transpose(im.cpu().numpy(),(1,2,0))
                     im = denormalize(im)
+
+                    im = add_bounding_boxes(im, theta, num_param)
+
                     im = np.transpose(im, (2,0,1))
-
-                    add_bounding_boxes(im, theta, num_param)
-
                     self.display.add_image("input_{}/input".format(i), im, epoch)
 
                 print("==> theta", theta)

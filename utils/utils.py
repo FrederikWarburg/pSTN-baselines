@@ -11,17 +11,24 @@ def denormalize(image):
     im = (image - np.min(image)) / (np.max(image) - np.min(image))
     return im
 
-def add_bounding_boxes(im, theta, num_param):
+def add_bounding_boxes(image, theta, num_param):
+
+    image *= 255
+    image = np.transpose(image, (1,2,0))
+    im = image.astype(np.uint8).copy()
+
+    theta = theta.reshape(-1).cpu().numpy()
+
     for i in range(len(theta)//num_param):
 
         if num_param == 2:
-            w = 0.5 * input.shape[2]
-            h = 0.5 * input.shape[3]
-            x = theta[i*num_param] - w//2
-            y = theta[i*num_param + 1] - h//2
+            w = int(0.5 * im.shape[0])
+            h = int(0.5 * im.shape[1])
 
-            # Let (x,y) be the top-left coordinate of the rectangle and (w,h) be its width and height.
-            cv2.rectangle(im, (x,y),(w,h),(0,255,0),2)
+            x = int(w//2 - theta[i*num_param] * w * 2)
+            y = int(h//2 - theta[i*num_param + 1] * h * 2)
+
+            cv2.rectangle(im, (x,y),(w,h),(255,0,0), 5)
 
     return im
 
