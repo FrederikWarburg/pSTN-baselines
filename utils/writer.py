@@ -1,10 +1,11 @@
 import os
 import time
 import numpy as np
-from .utils import denormalize
+from .utils import denormalize, add_bounding_boxes
 from options.test_options import TestOptions
 from data import DataLoader
 import torch
+
 
 try:
     from tensorboardX import SummaryWriter
@@ -93,6 +94,8 @@ class Writer:
         opt.max_dataset_size = 20
         opt.batch_size = 1
 
+        num_param = 2 if opt.fix_scale_and_rot else 4
+
         dataset = DataLoader(opt)
         model.eval()
         with torch.no_grad():
@@ -101,13 +104,14 @@ class Writer:
                 x_stn, theta = model.stn(input)
                 self.plot_theta(i, theta, epoch)
 
-                for x in input:
-                    x = np.transpose(x.cpu().numpy(),(1,2,0))
-                    x = denormalize(x)
-                    x = np.transpose(x, (2,0,1))
+                for im, crop in zip(input, theta):
+                    im = np.transpose(im.cpu().numpy(),(1,2,0))
+                    im = denormalize(im)
+                    im = np.transpose(im, (2,0,1))
 
-                    self.display.add_image("input_{}/input".format(i), x, epoch)
+                    add_bounding_boxes(im, theta, num_param)
 
+                    self.display.add_image("input_{}/input".format(i), im, epoch)
 
                 print("==> theta", theta)
 
