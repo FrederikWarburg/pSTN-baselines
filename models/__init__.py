@@ -24,12 +24,12 @@ def create_optimizer(model, opt):
                 {'params': model.conv.parameters()},
                 {'params': model.fc1.parameters()},
                 {'params': model.fc2.parameters()},
-                {'params': model.classifier.parameters(), 'lr': opt.lr, 'momentum': opt.momentum},
-            ], lr=opt.lr_loc, momentum=opt.momentum)
+                {'params': model.classifier.parameters(), 'lr': opt.lr},
+            ], lr=opt.lr_loc*opt.lr, momentum=opt.momentum, weight_decay=opt.weightDecay)
         else:
             optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr,
-                                            momentum=opt.momentum,
-                                            weight_decay=opt.weightDecay)
+                                                momentum=opt.momentum,
+                                                weight_decay=opt.weightDecay)
 
 
 
