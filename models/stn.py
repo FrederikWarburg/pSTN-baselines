@@ -59,7 +59,8 @@ class STN(nn.Module):
         self.classifier = InceptionClassifier(opt)
 
     def stn(self, x):
-
+        print(self.fc2.weight.data)
+        print(self.fc2.bias.data)
         batch_size, channels, height, width = x.size()
         xs = self.cnn(x)
 
