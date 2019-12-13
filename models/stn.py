@@ -72,22 +72,16 @@ class STN(nn.Module):
 
         # [im1, im2, im3] => [im1, im1, im2, im2, im3, im3]
         # [theta1, theta2, theta3] => [theta1[:num_params],theta1[num_params:], theta2[:num_params],theta2[num_params:],theta3[:num_params],theta3[num_params:]
-        theta_split = torch.zeros((batch_size*self.N,self.num_param), device=theta.device) #[b * N, num_params]
-        x_split = torch.zeros((batch_size*self.N, channels,height,width), device=theta.device) #[b*N, im]
+        x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).reshape(batch_size * self.N, channels, height, width)
+        theta = theta.reshape(batch_size*self.N, self.num_param)
 
-        for b in range(batch_size):
-            for i in range(self.N):
-                theta_split[b*self.N + i] = theta[b, i*self.num_param:(i+1)*self.num_param]
-                x_split[b*self.N + i] = x[b]
-        print(theta_split)
-        print(theta.split([b*self.N, self.num_param]))
-        affine_params = make_affine_parameters(theta_split)
+        affine_params = make_affine_parameters(theta)
 
-        grid = F.affine_grid(affine_params, x_split.size())  # makes the flow field on a grid
+        grid = F.affine_grid(affine_params, x.size())  # makes the flow field on a grid
 
-        x_split = F.grid_sample(x_split, grid)  # interpolates x on the grid
+        x = F.grid_sample(x, grid)  # interpolates x on the grid
 
-        return x_split, theta_split
+        return x, theta
 
     def forward(self, x):
 
