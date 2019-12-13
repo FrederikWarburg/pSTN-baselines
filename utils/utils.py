@@ -15,7 +15,6 @@ def add_bounding_boxes(image, theta, num_param):
     print(image.shape)
 
     image *= 255
-    image = np.transpose(image, (1,2,0))
     im = image.astype(np.uint8).copy()
 
     theta = theta.reshape(-1).cpu().numpy()
