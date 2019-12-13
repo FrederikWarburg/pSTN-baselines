@@ -12,6 +12,7 @@ def denormalize(image):
     return im
 
 def add_bounding_boxes(image, theta, num_param):
+    print(image.shape)
 
     image *= 255
     image = np.transpose(image, (1,2,0))
