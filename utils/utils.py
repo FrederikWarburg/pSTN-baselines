@@ -27,7 +27,7 @@ def add_bounding_boxes(image, theta, num_param):
             x = int(w//2 - theta[i*num_param] * w * 2)
             y = int(h//2 - theta[i*num_param + 1] * h * 2)
 
-            cv2.rectangle(im, (x,y),(w,h),(255,0,0), 5)
+            cv2.rectangle(im, (x,y),(x + w, y + h),(255,0,0), 5)
 
     return im
 
