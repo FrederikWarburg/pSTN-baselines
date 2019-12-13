@@ -12,7 +12,6 @@ def denormalize(image):
     return im
 
 def add_bounding_boxes(image, theta, num_param):
-    print(image.shape)
 
     image *= 255
     im = image.astype(np.uint8).copy()
