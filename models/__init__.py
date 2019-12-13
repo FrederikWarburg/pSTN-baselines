@@ -17,7 +17,7 @@ def create_model(opt):
 def create_optimizer(model, opt):
 
     if opt.optimizer.lower() == 'sgd':
-        if opt.model.lower() == 'stn':
+        if opt.model.lower() == 'stn' and opt.lr_loc > 0:
             # the learning rate of the parameters that are part of the localizer are multiplied 1e-4
             optimizer = torch.optim.SGD([
                 {'params': model.cnn.parameters()},
