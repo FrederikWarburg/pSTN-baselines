@@ -79,7 +79,8 @@ class STN(nn.Module):
             for i in range(self.N):
                 theta_split[b*self.N + i] = theta[b, i*self.num_param:(i+1)*self.num_param]
                 x_split[b*self.N + i] = x[b]
-
+        print(theta_split)
+        print(theta.split([b*self.N, self.num_param]))
         affine_params = make_affine_parameters(theta_split)
 
         grid = F.affine_grid(affine_params, x_split.size())  # makes the flow field on a grid
