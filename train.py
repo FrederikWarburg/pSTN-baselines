@@ -80,7 +80,7 @@ if __name__ == '__main__':
                 writer.plot_acc(acc, epoch, 'test')
 
                 is_best = acc > best_acc
-                save_network(model, opt, epoch, is_best)
+                #save_network(model, opt, epoch, is_best)
                 model.to(device)
 
                 if opt.visualize and opt.model == 'stn':

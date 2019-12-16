@@ -88,7 +88,7 @@ class STN(nn.Module):
         x, _ = self.stn(x)
 
         x = self.classifier(x)
-
         return x
+
 
 
