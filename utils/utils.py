@@ -12,25 +12,35 @@ def denormalize(image):
     im = (image - np.min(image)) / (np.max(image) - np.min(image))
     return im
 
-def add_bounding_boxes(image, theta, num_param):
+def add_bounding_boxes(image, theta_mu, theta_sigma, num_param, num_samples = 1):
 
     color = [(255, 0, 0) ,(0, 255, 0),(0, 0, 255), (255, 255, 0),(255, 0, 255),(0, 255, 255)]
 
     image *= 255
     im = image.astype(np.uint8).copy()
+    w = int(0.5 * im.shape[0])
+    h = int(0.5 * im.shape[1])
 
-    theta = theta.reshape(-1).cpu().numpy()
+    theta_mu = theta_mu.reshape(-1).cpu().numpy()
+    theta_sigma = theta_sigma.reshape(-1).cpu().numpy()
 
-    for i in range(len(theta)//num_param):
+    count = 0
+    for i in range(len(theta_mu)//num_param):
 
-        if num_param == 2:
-            w = int(0.5 * im.shape[0])
-            h = int(0.5 * im.shape[1])
+        for j in range(num_samples):
 
-            x = int(w//2 - theta[i*num_param] * w * 2)
-            y = int(h//2 - theta[i*num_param + 1] * h * 2)
+            eps = np.random.standard_normal(2)
 
-            cv2.rectangle(im, (x,y),(x + w, y + h), color[i%len(color)], 5)
+            x = eps[0] * theta_sigma[i*num_param] + theta_mu[i*num_param]
+            y = eps[1] * theta_sigma[i*num_param + 1] + theta_mu[i*num_param + 1]
+
+            if num_param == 2:
+                x = int(w//2 - x * w * 2)
+                y = int(h//2 - y * h * 2)
+
+                cv2.rectangle(im, (x,y),(x + w, y + h), color[count%len(color)], 5)
+
+                count += 1
 
     return im
 

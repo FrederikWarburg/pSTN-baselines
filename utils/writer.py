@@ -92,7 +92,7 @@ class Writer:
         print('Running Vizualization')
         opt = TestOptions().parse()
         opt.max_dataset_size = 20
-        opt.batch_size = 1
+        opt.batch_size = 1 # only works for bs = 1
 
         num_param = 2 if opt.fix_scale_and_rot else 4
 
@@ -101,14 +101,24 @@ class Writer:
         with torch.no_grad():
             for i, (input, label) in enumerate(dataset):
                 input = input.to(device)
-                x_stn, theta = model.stn(input)
-                self.plot_theta(i, theta, epoch)
 
-                for im, crop in zip(input, theta):
+                if opt.model.lower() == 'stn':
+                    _, theta = model.stn(input)
+                    theta_mu, theta_sigma = theta, 0
+                    num_samples = 1
+                elif opt.model.lower() == 'pstn':
+                    _, theta = model.pstn(input)
+                    theta_mu, theta_sigma = theta
+                    num_samples = self.opt.samples
+
+                self.plot_theta(i, theta_mu, epoch)
+
+                for i, im in enumerate(input):
+
                     im = np.transpose(im.cpu().numpy(),(1,2,0))
                     im = denormalize(im)
 
-                    im = add_bounding_boxes(im, theta, num_param)
+                    im = add_bounding_boxes(im, theta_mu, theta_sigma, num_param, num_samples)
 
                     im = np.transpose(im, (2,0,1))
                     self.display.add_image("input_{}/input".format(i), im, epoch)
