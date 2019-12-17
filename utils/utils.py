@@ -2,6 +2,8 @@ import os
 import torch
 import numpy as np
 import cv2
+from torch import distributions
+
 
 def mkdir(path):
     if not os.path.exists(path):
@@ -33,7 +35,17 @@ def add_bounding_boxes(image, theta, num_param):
 
     return im
 
-def make_affine_parameters(mean_params):
+def make_affine_parameters(mean_params, sigma_params = None):
+
+    if sigma_params != None:
+        # combine mean and std and reshape
+        gaussian = distributions.normal.Normal(0, 1)
+        # split up the diagonal-cov. multivariate Gaussian into 1d Gaussians and perform sampling
+        epsilon = gaussian.sample(sample_shape=torch.Size([S_total * self.theta_dim])).to(self.device)
+        epsilon = epsilon.view(S_total, self.theta_dim)
+        epsilon_times_sigma = torch.mul(sigma_q_tensor.to(self.device), epsilon)
+
+        mean_params = (mean_theta_tensor.to(self.device) + epsilon_times_sigma).view(S_total, self.theta_dim)
 
     if mean_params.shape[1] == 2: # only perform crop - fix scale and rotation.
         theta = torch.zeros(mean_params.shape[0], device=mean_params.device)

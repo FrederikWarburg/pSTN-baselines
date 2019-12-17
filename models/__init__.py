@@ -46,6 +46,9 @@ def create_criterion(opt):
         criterion = torch.nn.CrossEntropyLoss()
     elif opt.criterion.lower() == 'nllloss':
         criterion = torch.nn.NLLLoss()
+    elif opt.criterion.lower() == 'elbo':
+        from .loss import elbo
+        criterion = Elbo()
     else:
         raise ValueError('Unsupported or optimizer: {}!'.format(opt.criterion))
 
