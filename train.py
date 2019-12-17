@@ -4,7 +4,8 @@ from comet_ml import Experiment
 import time
 from options.train_options import TrainOptions
 from data import DataLoader
-from models import create_model, create_optimizer, create_criterion, save_network
+from models import create_model, create_optimizer, save_network
+from loss import create_criterion
 from utils.writer import Writer
 from test import run_test
 import torch

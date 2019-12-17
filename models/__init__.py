@@ -8,11 +8,13 @@ def create_model(opt):
     elif opt.model.lower() == 'stn':
         from .stn import STN
         model = STN(opt)
+    elif opt.model.lower() == 'pstn':
+        from .pstn import PSTN
+        model = PSTN(opt)
     else:
         raise ValueError('Unsupported or model: {}!'.format(opt.model))
 
     return model
-
 
 def create_optimizer(model, opt):
 
@@ -39,21 +41,6 @@ def create_optimizer(model, opt):
         raise ValueError('Unsupported or optimizer: {}!'.format(opt.optimizer))
 
     return optimizer, scheduler
-
-def create_criterion(opt):
-
-    if opt.criterion.lower() == 'crossentropy':
-        criterion = torch.nn.CrossEntropyLoss()
-    elif opt.criterion.lower() == 'nllloss':
-        criterion = torch.nn.NLLLoss()
-    elif opt.criterion.lower() == 'elbo':
-        from .loss import elbo
-        criterion = Elbo()
-    else:
-        raise ValueError('Unsupported or optimizer: {}!'.format(opt.criterion))
-
-    return criterion
-
 
 def save_network(model, opt, which_epoch, is_best = False):
         """save model to disk"""

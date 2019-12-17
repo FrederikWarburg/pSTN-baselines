@@ -12,6 +12,7 @@ class Elbo(nn.Module):
 
     def forward(self, x, label):
 
-        x, mu, sigma = x.split()
+        # split x into its stacked componets
+        x, mu, sigma = x
 
         return elbo(x, mu, sigma, label, sigma_prior = self.sigma_prior)

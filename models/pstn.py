@@ -6,7 +6,7 @@ from utils.utils import make_affine_parameters
 import torchvision.models as models
 import torch
 
-class pSTN(nn.Module):
+class PSTN(nn.Module):
     def __init__(self, opt):
         super().__init__()
 
@@ -74,7 +74,7 @@ class pSTN(nn.Module):
         mu_xs = F.relu(self.mu_fc1(xs))
         theta_mu = self.mu_fc2(mu_xs)
 
-        sigma_xs = F.relue(self.sigma_fc1(xs))
+        sigma_xs = F.relu(self.sigma_fc1(xs))
         theta_sigma = self.sigma_fc2(sigma_xs)
 
         #TODO: CHekc this is correct
@@ -106,9 +106,10 @@ class pSTN(nn.Module):
 
         x = self.classifier(x)
 
+        x = x.view(-1, self.num_samples, 200)
+
         if self.training:
-            x = x.mean(dim=1)
-            x = torch.cat([x, mu, sigma])
+            x = (x.mean(dim=1), mu, sigma)
         else:
             x = torch.log(torch.tensor(1/self.num_samples)) + torch.logsumexp(x, dim=1)
 
