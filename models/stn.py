@@ -48,8 +48,8 @@ class STN(nn.Module):
         # Initialize the weights/bias with identity transformation
         self.fc2.weight.data.zero_()
         if self.num_param == 2:
-            #self.fc2.bias.data.normal_(0, 1).clamp_(min=-0.5,max=0.5)
-            self.fc2.bias.data.copy_(torch.tensor([0, 0], dtype=torch.float).repeat(self.N))
+            self.fc2.bias.data.normal_(0, 1).clamp_(min=-0.5,max=0.5)
+            #self.fc2.bias.data.copy_(torch.tensor([0, 0], dtype=torch.float).repeat(self.N))
         elif self.num_param == 4:
             self.fc2.bias.data.copy_(torch.tensor([0, 1, 0, 0], dtype=torch.float).repeat(self.N))
 
@@ -70,24 +70,27 @@ class STN(nn.Module):
         xs = self.relu(xs)
         theta = self.fc2(xs) # [b, num_params * N]
 
-        # [im1, im2, im3] => [im1, im1, im2, im2, im3, im3]
-        # [theta1, theta2, theta3] => [theta1[:num_params],theta1[num_params:], theta2[:num_params],theta2[num_params:],theta3[:num_params],theta3[num_params:]
-        x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).reshape(batch_size * self.N, channels, height, width)
-        theta = theta.reshape(batch_size*self.N, self.num_param)
+        # [im1, im2, im3] => [im1, im2, im3, im1, im2, im3]
+        # [theta1, theta2, theta3] => [theta1[:num_params],theta2[:num_params], theta3[:num_params],theta1[num_params:],theta2[num_params:],theta3[num_params:]
+        x = x.repeat(self.N, 1, 1, 1)
+        theta_s = torch.zeros(batch_size*self.N, self.num_param, requires_grad=True, device=theta.device)
+        for i in range(self.N):
+            theta_s[i*batch_size:(i+1)*batch_size, :] = theta[:, i*self.num_param: (i+1)*self.num_param]
 
-        affine_params = make_affine_parameters(theta)
+        affine_params = make_affine_parameters(theta_s)
 
         grid = F.affine_grid(affine_params, x.size())  # makes the flow field on a grid
 
         x = F.grid_sample(x, grid)  # interpolates x on the grid
 
-        return x, theta
+        return x, theta_s
 
     def forward(self, x):
 
         x, _ = self.stn(x)
 
         x = self.classifier(x)
+
         return x
 
 
