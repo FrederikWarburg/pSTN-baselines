@@ -50,8 +50,7 @@ class STN(nn.Module):
         if self.num_param == 2:
             #self.fc2.bias.data.normal_(0, 1).clamp_(min=-0.5,max=0.5)
             #self.fc2.bias.data.copy_(torch.tensor([0, 0], dtype=torch.float).repeat(self.N))
-            bias = torch.tensor([[1,1],[1,3],[3,1],[3,3]], dtype=torch.float)*0.5*opt.crop_size
-            print(bias[:self.N].view(-1))
+            bias = torch.tensor([[1,1],[1,3],[3,1],[3,3]], dtype=torch.float)*0.5#*opt.crop_size
             self.fc2.bias.data.copy_(bias[:self.N].view(-1))
 
         elif self.num_param == 4:
