@@ -1,17 +1,19 @@
 import torch
 import torch.nn.functional as F
-from torch import distributions as dist
+from torch.distributions import MultivariateNormal, kl
 
 def kl_div(mu, sigma, sigma_prior):
 
     mu = mu.view(-1)
     sigma = sigma.view(-1)
+
     mu_prior = torch.zeros_like(mu, device=mu.device)
     #if opt == 'affine': mu_prior[:, 1] = 1
 
-    p = dist.MultivariateNormal(loc=mu_prior, scale_tril=sigma_prior*torch.eye(len(mu_prior)))
-    q = dist.MultivariateNormal(loc=mu, scale_tril=sigma*torch.eye(len(mu)))
-    kl_loss = dist.kl_divergence(q, p)
+    p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_prior*torch.eye(len(mu_prior), device=mu.device))
+    q = MultivariateNormal(loc=mu, scale_tril=abs(torch.diag(sigma)))
+
+    kl_loss = kl.kl_divergence(q, p)
 
     return kl_loss
 
