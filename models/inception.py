@@ -48,7 +48,7 @@ class InceptionClassifier(nn.Module):
         batch_size = x.shape[0] // self.N
         xs = x.split([batch_size]*self.N)
 
-        features = torch.zeros(batch_size, self.feature_size*self.N, requires_grad = True, device=x.device)
+        features = torch.empty(batch_size, self.feature_size*self.N, requires_grad = False, device=x.device)
         for branch_ix in range(self.N):
             x = self.model._modules['branch_{}'.format(branch_ix)].forward(xs[branch_ix])
             features[:, branch_ix*self.feature_size:(branch_ix+1)*self.feature_size] = x.view(batch_size, self.feature_size)

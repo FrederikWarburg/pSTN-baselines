@@ -73,7 +73,7 @@ class STN(nn.Module):
         # [im1, im2, im3] => [im1, im2, im3, im1, im2, im3]
         # [theta1, theta2, theta3] => [theta1[:num_params],theta2[:num_params], theta3[:num_params],theta1[num_params:],theta2[num_params:],theta3[num_params:]
         x = x.repeat(self.N, 1, 1, 1)
-        theta_s = torch.zeros(batch_size*self.N, self.num_param, requires_grad=True, device=theta.device)
+        theta_s = torch.empty(batch_size*self.N, self.num_param, requires_grad=False, device=theta.device)
         for i in range(self.N):
             theta_s[i*batch_size:(i+1)*batch_size, :] = theta[:, i*self.num_param: (i+1)*self.num_param]
 
