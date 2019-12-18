@@ -50,11 +50,9 @@ class PSTN(nn.Module):
 
         # Initialize the weights/bias with identity transformation
         self.mu_fc2.weight.data.zero_()
-        #self.sigma_fc2.weight.data.zero_()
+
         if self.num_param == 2:
-            #self.fc2.bias.data.normal_(0, 1).clamp_(min=-0.5,max=0.5)
-            #self.fc2.bias.data.copy_(torch.tensor([0, 0], dtype=torch.float).repeat(self.N))
-            bias = torch.tensor([[-1,-1],[-1,1],[1,-1],[1,1]], dtype=torch.float)*0.25#*opt.crop_size
+            bias = torch.tensor([[-1,-1],[-1,1],[1,-1],[1,1]], dtype=torch.float)*0.25
             self.mu_fc2.bias.data.copy_(bias[:self.N].view(-1))
 
         elif self.num_param == 4:
@@ -131,11 +129,11 @@ class PSTN(nn.Module):
         # interpolates x on the grid
         x = F.grid_sample(x, grid)
 
-        return x, (theta_mu, theta_sigma)
+        return x, (theta_mu, theta_sigma), affine_params
 
     def forward(self, x):
 
-        x, theta = self.pstn(x)
+        x, theta, _ = self.pstn(x)
 
         x = self.classifier(x)
 

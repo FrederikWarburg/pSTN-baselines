@@ -103,14 +103,15 @@ class Writer:
                 input = input.to(device)
 
                 if opt.model.lower() == 'stn':
-                    _, theta = model.stn(input)
+                    x_crop, theta, affine_params = model.stn(input)
                     theta_mu, theta_sigma = theta, 0
                     num_samples = 1
                 elif opt.model.lower() == 'pstn':
-                    _, theta = model.pstn(input)
+                    x_crop, theta, affine_params = model.pstn(input)
                     theta_mu, theta_sigma = theta
                     num_samples = opt.test_samples
 
+                num_branches = self.opt.N
                 self.plot_theta(i, theta_mu, epoch)
 
                 for j, im in enumerate(input):
@@ -118,17 +119,22 @@ class Writer:
                     im = np.transpose(im.cpu().numpy(),(1,2,0))
                     im = denormalize(im)
 
-                    im = add_bounding_boxes(im, theta_mu, theta_sigma, num_param, num_samples)
+                    im = add_bounding_boxes(im, affine_params, num_branches, num_samples, mode_= 'crop')
 
                     im = np.transpose(im, (2,0,1))
                     self.display.add_image("input_{}/input".format(count), im, epoch)
 
-                    """
                     import matplotlib.pyplot as plt
                     im = np.transpose(im, (1,2,0))
+                    plt.subplot(1,2,1)
+                    plt.imshow(im)
+
+                    im = np.transpose(x_crop[0].cpu().numpy(),(1,2,0))
+                    im = denormalize(im)
+
+                    plt.subplot(1,2,2)
                     plt.imshow(im)
                     plt.show()
-                    """
 
                     count += 1
 

@@ -22,12 +22,23 @@ def create_optimizer(model, opt):
         if opt.model.lower() == 'stn' and opt.lr_loc > 0:
             # the learning rate of the parameters that are part of the localizer are multiplied 1e-4
             optimizer = torch.optim.SGD([
-                {'params': model.cnn.parameters()},
-                {'params': model.conv.parameters()},
-                {'params': model.fc1.parameters()},
-                {'params': model.fc2.parameters()},
+                {'params': model.cnn.parameters(),  'lr': opt.lr_loc*opt.lr},
+                {'params': model.conv.parameters(), 'lr': opt.lr_loc*opt.lr},
+                {'params': model.fc1.parameters(),  'lr': opt.lr_loc*opt.lr},
+                {'params': model.fc2.parameters(),  'lr': opt.lr_loc*opt.lr},
                 {'params': model.classifier.parameters(), 'lr': opt.lr},
-            ], lr=opt.lr_loc*opt.lr, momentum=opt.momentum, weight_decay=opt.weightDecay)
+            ], momentum=opt.momentum, weight_decay=opt.weightDecay)
+        elif opt.model.lower() == 'pstn' and opt.lr_loc > 0:
+            # the learning rate of the parameters that are part of the localizer are multiplied 1e-4
+            optimizer = torch.optim.SGD([
+                {'params': model.cnn.parameters(),        'lr': opt.lr_loc*opt.lr},
+                {'params': model.conv.parameters(),       'lr': opt.lr_loc*opt.lr},
+                {'params': model.mu_fc1.parameters(),     'lr': opt.lr_loc*opt.lr},
+                {'params': model.mu_fc2.parameters(),     'lr': opt.lr_loc*opt.lr},
+                {'params': model.sigma_fc1.parameters(),  'lr': opt.lr_loc*opt.lr},
+                {'params': model.sigma_fc2.parameters(),  'lr': opt.lr_loc*opt.lr},
+                {'params': model.classifier.parameters(), 'lr': opt.lr},
+            ], momentum=opt.momentum, weight_decay=opt.weightDecay)
         else:
             optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr,
                                                 momentum=opt.momentum,

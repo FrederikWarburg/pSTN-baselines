@@ -12,35 +12,32 @@ def denormalize(image):
     im = (image - np.min(image)) / (np.max(image) - np.min(image))
     return im
 
-def add_bounding_boxes(image, theta_mu, theta_sigma, num_param, num_samples = 1):
+def add_bounding_boxes(image, affine_params, num_branches, num_samples, mode_ = 'crop'):
 
     color = [(255, 0, 0) ,(0, 255, 0),(0, 0, 255), (255, 255, 0),(255, 0, 255),(0, 255, 255)]
 
     image *= 255
     im = image.astype(np.uint8).copy()
-    w = int(0.5 * im.shape[0])
-    h = int(0.5 * im.shape[1])
 
-    theta_mu = theta_mu.reshape(-1).cpu().numpy()
-    theta_sigma = theta_sigma.reshape(-1).cpu().numpy()
+    if mode_ == 'crop':
+        w = int(im.shape[0])
+        h = int(im.shape[1])
 
-    for i in range(len(theta_mu)//num_param):
+    for i in range(num_branches):
 
         for j in range(num_samples):
 
-
-            eps = np.random.standard_normal(2)
-
-            x = eps[0] * theta_sigma[i*num_param] + theta_mu[i*num_param]
-            y = eps[1] * theta_sigma[i*num_param + 1] + theta_mu[i*num_param + 1]
-
-            if num_param == 2:
-                x = int(w//2 - x * w * 2)
-                y = int(h//2 - y * h * 2)
-
-                cv2.rectangle(im, (x,y),(x + w, y + h), color[i%len(color)], 5)
+            if mode_ == 'crop':
+                x = affine_params[i*num_samples+j, 0, 2]
+                y = affine_params[i*num_samples+j, 1, 2]
+                print(x, y)
+                x = int(x*w//2 + w//4)
+                y = int(y*h//2 + h//4)
+                print(x, y)
+                cv2.rectangle(im, (x,y),(x + w//2, y + h//2), color[i%len(color)], 5)
 
     return im
+
 
 def make_affine_parameters(mean_params, sigma_params = None):
 
