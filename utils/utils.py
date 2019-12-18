@@ -28,6 +28,7 @@ def add_bounding_boxes(image, theta_mu, theta_sigma, num_param, num_samples = 1)
 
         for j in range(num_samples):
 
+
             eps = np.random.standard_normal(2)
 
             x = eps[0] * theta_sigma[i*num_param] + theta_mu[i*num_param]

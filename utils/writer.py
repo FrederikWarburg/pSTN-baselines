@@ -109,7 +109,7 @@ class Writer:
                 elif opt.model.lower() == 'pstn':
                     _, theta = model.pstn(input)
                     theta_mu, theta_sigma = theta
-                    num_samples = self.opt.samples
+                    num_samples = opt.test_samples
 
                 self.plot_theta(i, theta_mu, epoch)
 

@@ -4,8 +4,7 @@ class TestOptions(BaseOptions):
     def initialize(self):
         BaseOptions.initialize(self)
         self.parser.add_argument('--results_dir', type=str, default='./results/', help='saves results here.')
-
-        self.parser.add_argument('--samples', type=int, default=10, help='number of samples')
+        self.parser.add_argument('--test_samples', type=int, default=10, help='number of samples')
 
         self.is_train = False
         self.data_augmentation = False
