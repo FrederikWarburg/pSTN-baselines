@@ -12,7 +12,7 @@ class PSTN(nn.Module):
 
         self.N = opt.N
         self.num_classes = opt.num_classes
-        self.num_samples = opt.train_samples
+        self.num_samples = opt.test_samples
         self.train_samples = opt.train_samples
         self.test_samples = opt.test_samples
         self.num_param = 2 if opt.fix_scale_and_rot else 4
