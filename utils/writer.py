@@ -124,10 +124,12 @@ class Writer:
                     im = np.transpose(im, (2,0,1))
                     self.display.add_image("input_{}/input".format(i), im, epoch)
 
+                    """
                     import matplotlib.pyplot as plt
                     im = np.transpose(im, (1,2,0))
                     plt.imshow(im)
                     plt.show()
+                    """
 
     def reset_counter(self):
         """
