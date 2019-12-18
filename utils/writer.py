@@ -85,7 +85,7 @@ class Writer:
 
 
     def visualize_transformation(self, model, epoch):
-
+        model.eval()
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         print('Running Vizualization')
