@@ -25,6 +25,8 @@ class BaseOptions:
         self.parser.add_argument('--resume_ckpt', type=str, default=None, help='path to pretrained model')
         self.parser.add_argument('--dropout_rate', type=float, default=0.5)
         self.parser.add_argument('--N', type=int, default=1, help='number of parallel tracks')
+        self.parser.add_argument('--test_samples', type=int, default=10, help='number of samples')
+        self.parser.add_argument('--train_samples', type=int, default=1, help='number of samples')
 
         # general params
         self.parser.add_argument('--num_threads', default=0, type=int, help='# threads for loading data')

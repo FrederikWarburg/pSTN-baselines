@@ -28,6 +28,9 @@ def add_bounding_boxes(image, affine_params, num_branches, num_samples, mode_ = 
         for j in range(num_samples):
 
             if mode_ == 'crop':
+                print(affine_params)
+                print(affine_params.shape)
+                print(i, num_samples, j)
                 x = affine_params[i*num_samples+j, 0, 2]
                 y = affine_params[i*num_samples+j, 1, 2]
                 print(x, y)

@@ -12,7 +12,8 @@ class PSTN(nn.Module):
 
         self.N = opt.N
         self.num_classes = opt.num_classes
-        self.num_samples = opt.samples
+        self.train_samples = opt.train_samples
+        self.test_samples = opt.test_samples
         self.num_param = 2 if opt.fix_scale_and_rot else 4
 
         # Spatial transformer localization-network
@@ -27,7 +28,6 @@ class PSTN(nn.Module):
         # "remove the last pooling layer to preserve the spatial information"
         layers = list(inception.children())[:-3]
         self.cnn = nn.Sequential(*layers)
-        # add three weight layers
 
         if opt.is_train:
             count = 0
@@ -38,6 +38,7 @@ class PSTN(nn.Module):
 
                     count += 1
 
+        # add three weight layers
         self.conv = nn.Conv2d(1024, 128, 1)
 
         # mean regressor
@@ -132,6 +133,11 @@ class PSTN(nn.Module):
         return x, (theta_mu, theta_sigma), affine_params
 
     def forward(self, x):
+
+        if self.training:
+            self.num_samples = self.train_samples
+        else:
+            self.num_samples = self.test_samples
 
         x, theta, _ = self.pstn(x)
 
