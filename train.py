@@ -33,6 +33,9 @@ if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
+    if opt.visualize and opt.model.lower() in ['stn','pstn']:
+        writer.visualize_transformation(model, 0)
+
     with experiment.train():
 
         for epoch in range(opt.epochs):
