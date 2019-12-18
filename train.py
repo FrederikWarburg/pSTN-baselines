@@ -82,7 +82,6 @@ if __name__ == '__main__':
 
                 is_best = acc > best_acc
                 #save_network(model, opt, epoch, is_best)
-                model.to(device)
 
                 if opt.visualize and opt.model.lower() in ['stn','pstn']:
                     writer.visualize_transformation(model, epoch)

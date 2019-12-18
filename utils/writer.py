@@ -91,7 +91,7 @@ class Writer:
 
         print('Running Vizualization')
         opt = TestOptions().parse()
-        opt.max_dataset_size = 20
+        opt.max_dataset_size = 2
         opt.batch_size = 1 # only works for bs = 1
 
         num_param = 2 if opt.fix_scale_and_rot else 4
@@ -118,10 +118,16 @@ class Writer:
                     im = np.transpose(im.cpu().numpy(),(1,2,0))
                     im = denormalize(im)
 
+                    print(theta_mu, theta_sigma)
                     im = add_bounding_boxes(im, theta_mu, theta_sigma, num_param, num_samples)
 
                     im = np.transpose(im, (2,0,1))
                     self.display.add_image("input_{}/input".format(i), im, epoch)
+
+                    import matplotlib.pyplot as plt
+                    im = np.transpose(im, (1,2,0))
+                    plt.imshow(im)
+                    plt.show()
 
     def reset_counter(self):
         """

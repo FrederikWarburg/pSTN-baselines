@@ -43,14 +43,17 @@ def create_optimizer(model, opt):
     return optimizer, scheduler
 
 def save_network(model, opt, which_epoch, is_best = False):
-        """save model to disk"""
-        save_filename = '%s_net.pth' % (which_epoch)
-        save_path = join(opt.save_dir, save_filename)
-        if torch.cuda.device_count() > 1:
-            torch.save(model.module.cpu().state_dict(), save_path)
-            if is_best:
-                torch.save(model.module.cpu().state_dict(), join(opt.save_dir, "best_net.pth"))
-        else:
-            torch.save(model.cpu().state_dict(), save_path)
-            if is_best:
-                torch.save(model.cpu().state_dict(), join(opt.save_dir, "best_net.pth"))
+    """save model to disk"""
+    device = model.device
+    save_filename = '%s_net.pth' % (which_epoch)
+    save_path = join(opt.save_dir, save_filename)
+    if torch.cuda.device_count() > 1:
+        torch.save(model.module.cpu().state_dict(), save_path)
+        if is_best:
+            torch.save(model.module.cpu().state_dict(), join(opt.save_dir, "best_net.pth"))
+    else:
+        torch.save(model.cpu().state_dict(), save_path)
+        if is_best:
+            torch.save(model.cpu().state_dict(), join(opt.save_dir, "best_net.pth"))
+
+    model.to(device)

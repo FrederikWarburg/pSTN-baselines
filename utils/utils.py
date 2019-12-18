@@ -24,7 +24,6 @@ def add_bounding_boxes(image, theta_mu, theta_sigma, num_param, num_samples = 1)
     theta_mu = theta_mu.reshape(-1).cpu().numpy()
     theta_sigma = theta_sigma.reshape(-1).cpu().numpy()
 
-    count = 0
     for i in range(len(theta_mu)//num_param):
 
         for j in range(num_samples):
@@ -38,9 +37,7 @@ def add_bounding_boxes(image, theta_mu, theta_sigma, num_param, num_samples = 1)
                 x = int(w//2 - x * w * 2)
                 y = int(h//2 - y * h * 2)
 
-                cv2.rectangle(im, (x,y),(x + w, y + h), color[count%len(color)], 5)
-
-                count += 1
+                cv2.rectangle(im, (x,y),(x + w, y + h), color[i%len(color)], 5)
 
     return im
 

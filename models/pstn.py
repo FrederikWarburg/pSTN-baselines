@@ -39,10 +39,12 @@ class PSTN(nn.Module):
 
         self.conv = nn.Conv2d(1024, 128, 1)
 
+        # mean regressor
         self.mu_fc1 = nn.Linear(128*(opt.crop_size//32)**2, 128)
-        self.sigma_fc1 = nn.Linear(128*(opt.crop_size//32)**2, 128)
-
         self.mu_fc2 = nn.Linear(128, self.num_param*self.N)
+
+        # variance regressor
+        self.sigma_fc1 = nn.Linear(128*(opt.crop_size//32)**2, 128)
         self.sigma_fc2 = nn.Linear(128, self.num_param*self.N)
 
         # Initialize the weights/bias with identity transformation
@@ -101,7 +103,7 @@ class PSTN(nn.Module):
 
         # estimate sigma with variance regressor
         sigma_xs = F.relu(self.sigma_fc1(xs))
-        theta_sigma = self.sigma_fc2(sigma_xs)
+        theta_sigma = F.softplus(self.sigma_fc2(sigma_xs))
 
         # repeat x in the batch dim so we avoid for loop
         x = x.repeat(self.N*self.num_samples, 1, 1, 1)
@@ -112,7 +114,7 @@ class PSTN(nn.Module):
 
         # split the shared theta into the N branches
         for i in range(self.N):
-            theta_sigma_upsample[i*batch_size:(i+1)*batch_size, :] = theta_mu[:, i*self.num_param: (i+1)*self.num_param]
+            theta_mu_upsample[i*batch_size:(i+1)*batch_size, :] = theta_mu[:, i*self.num_param: (i+1)*self.num_param]
             theta_sigma_upsample[i*batch_size:(i+1)*batch_size, :] = theta_sigma[:, i*self.num_param: (i+1)*self.num_param]
 
         # repeat for the number of samples

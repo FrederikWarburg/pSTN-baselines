@@ -11,7 +11,7 @@ def kl_div(mu, sigma, sigma_prior):
     #if opt == 'affine': mu_prior[:, 1] = 1
 
     p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_prior*torch.eye(len(mu_prior), device=mu.device))
-    q = MultivariateNormal(loc=mu, scale_tril=abs(torch.diag(sigma)))
+    q = MultivariateNormal(loc=mu, scale_tril=torch.diag(sigma))
 
     kl_loss = kl.kl_divergence(q, p)
 
