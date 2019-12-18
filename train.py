@@ -65,6 +65,10 @@ if __name__ == '__main__':
                     writer.print_current_losses(epoch, epoch_iter, loss, t, t_data)
                     writer.plot_loss(loss, epoch, epoch_iter, dataset_size)
 
+                    if opt.criterion.lower() == 'elbo':
+                        print(criterion.nll, criterion.kl, criterion.rec)
+                        writer.plot_loss_components(criterion.nll, criterion.kl, criterion.rec, epoch, epoch_iter, dataset_size)
+
                 iter_data_time = time.time()
 
                 predictions = evaluate(output, label)

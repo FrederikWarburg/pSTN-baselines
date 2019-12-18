@@ -29,6 +29,4 @@ def elbo(x, mu, sigma, label, sigma_prior = 0.1):
     # RECONSTRUCTION LOSS
     reconstruction_loss = 0
 
-    loss = nll_loss + kl_loss + reconstruction_loss
-
-    return loss
+    return nll_loss, kl_loss, reconstruction_loss

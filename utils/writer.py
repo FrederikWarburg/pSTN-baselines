@@ -54,6 +54,14 @@ class Writer:
             self.display.add_scalar('time/fetching_data', time_to_fetch_data, iters)
             self.display.add_scalar('time/forward_and_backward_pass', time_model, iters)
 
+    def plot_loss_components(self, nll,kl,rec, epoch, i, n):
+        iters = i + (epoch - 1) * n
+        if self.display:
+            self.display.add_scalar('loss/nll', nll, iters)
+            self.display.add_scalar('loss/kl', kl, iters)
+            self.display.add_scalar('loss/rec', rec, iters)
+
+
     def plot_loss(self, loss, epoch, i, n):
         iters = i + (epoch - 1) * n
         if self.display:
