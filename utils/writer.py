@@ -78,11 +78,10 @@ class Writer:
 
     def plot_theta(self, image_id, theta, epoch):
 
-        type_ = 'crop' if len(theta) == 2 else 'affine'
         theta = theta.cpu().numpy().reshape(-1)
 
-        for i, val in enumerate(theta):
-            self.display.add_scalar('theta_{}/{}_{}'.format(image_id, type_, i), val, epoch)
+        for i, value in enumerate(theta):
+            self.display.add_scalar('image_{}/theta_{}'.format(image_id, i), value, epoch)
 
 
     def visualize_transformation(self, model, epoch):
@@ -98,6 +97,7 @@ class Writer:
 
         dataset = DataLoader(opt)
         model.eval()
+        count = 0
         with torch.no_grad():
             for i, (input, label) in enumerate(dataset):
                 input = input.to(device)
@@ -113,16 +113,15 @@ class Writer:
 
                 self.plot_theta(i, theta_mu, epoch)
 
-                for i, im in enumerate(input):
+                for j, im in enumerate(input):
 
                     im = np.transpose(im.cpu().numpy(),(1,2,0))
                     im = denormalize(im)
 
-                    print(theta_mu, theta_sigma)
                     im = add_bounding_boxes(im, theta_mu, theta_sigma, num_param, num_samples)
 
                     im = np.transpose(im, (2,0,1))
-                    self.display.add_image("input_{}/input".format(i), im, epoch)
+                    self.display.add_image("input_{}/input".format(count), im, epoch)
 
                     """
                     import matplotlib.pyplot as plt
@@ -130,6 +129,8 @@ class Writer:
                     plt.imshow(im)
                     plt.show()
                     """
+
+                    count += 1
 
     def reset_counter(self):
         """

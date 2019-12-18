@@ -11,6 +11,7 @@ class PSTN(nn.Module):
         super().__init__()
 
         self.N = opt.N
+        self.num_classes = opt.num_classes
         self.num_samples = opt.samples
         self.num_param = 2 if opt.fix_scale_and_rot else 4
 
@@ -138,7 +139,7 @@ class PSTN(nn.Module):
 
         x = self.classifier(x)
 
-        x = x.view(-1, self.num_samples, 200)
+        x = x.view(-1, self.num_samples, self.num_classes)
 
         if self.training:
             mu, sigma = theta
