@@ -90,7 +90,7 @@ class Writer:
 
         print('Running Vizualization')
         opt = TestOptions().parse()
-        opt.max_dataset_size = 2
+        opt.max_dataset_size = opt.num_visualizations
         opt.batch_size = 1 # only works for bs = 1
 
         num_param = 2 if opt.fix_scale_and_rot else 4
