@@ -11,6 +11,7 @@ class BaseOptions:
     def initialize(self):
         # data params
         self.parser.add_argument('--dataroot', required=True, help='path to images')
+        self.parser.add_argument('--dataset', default='cub', help='which dataset to use')
         self.parser.add_argument('--max_dataset_size', type=int, default=float("inf"), help='Maximum number of samples per epoch')
         self.parser.add_argument('--num_classes', type=int, default=200, help='Maximum number of classes per epoch')
         self.parser.add_argument('--download', action='store_true', help='download dataset')
@@ -27,6 +28,7 @@ class BaseOptions:
         self.parser.add_argument('--N', type=int, default=1, help='number of parallel tracks')
         self.parser.add_argument('--test_samples', type=int, default=10, help='number of samples')
         self.parser.add_argument('--train_samples', type=int, default=1, help='number of samples')
+        self.parser.add_argument('--basenet', default='inception', type=str, help='base network to use')
 
         # general params
         self.parser.add_argument('--num_threads', default=0, type=int, help='# threads for loading data')

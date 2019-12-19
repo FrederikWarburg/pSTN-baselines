@@ -127,6 +127,9 @@ class Writer:
                     im = np.transpose(im.cpu().numpy(),(1,2,0))
                     im = denormalize(im)
 
+                    if im.shape[2] == 1:
+                        im = np.stack((im[:,:,0],)*3, axis=-1)
+
                     im = add_bounding_boxes(im, affine_params, num_branches, num_samples, mode_= 'crop')
 
                     im = np.transpose(im, (2,0,1))
@@ -134,19 +137,22 @@ class Writer:
 
                     count += 1
 
-                    """
                     import matplotlib.pyplot as plt
                     im = np.transpose(im, (1,2,0))
+
                     plt.subplot(1,2,1)
                     plt.imshow(im)
 
                     im = np.transpose(x_crop[0].cpu().numpy(),(1,2,0))
                     im = denormalize(im)
 
+                    if im.shape[2] == 1:
+                        im = np.stack((im[:,:,0],)*3, axis=-1)
+
                     plt.subplot(1,2,2)
                     plt.imshow(im)
                     plt.show()
-                    """
+
 
 
 

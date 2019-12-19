@@ -1,10 +1,13 @@
 import torch.utils.data
 from data.cub_200_2011 import Cub2011
+from data.mnist import Mnist4x4grid
 
 def CreateDataset(opt):
     """loads dataset class"""
-
-    dataset = Cub2011(opt)
+    if opt.dataset.lower() == 'cub':
+        dataset = Cub2011(opt)
+    elif opt.dataset.lower() == 'mnist':
+        dataset = Mnist4x4grid(opt)
 
     return dataset
 

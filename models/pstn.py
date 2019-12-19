@@ -61,9 +61,12 @@ class PSTN(nn.Module):
             self.mu_fc2.bias.data.copy_(torch.tensor([0, 1, 0, 0], dtype=torch.float).repeat(self.N))
 
     def init_classifier(self, opt):
-        from .inception import InceptionClassifier
-
-        self.classifier = InceptionClassifier(opt)
+        if opt.basenet.lower() == 'inception':
+            from .inceptionclassifier import InceptionClassifier
+            self.classifier = InceptionClassifier(opt)
+        elif opt.basenet.lower() == 'simpleconv':
+            from .simpleclassifier import SimpleClassifier
+            self.classifier = SimpleClassifier(opt)
 
     def pstn(self, x):
         """
