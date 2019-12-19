@@ -23,7 +23,6 @@ def elbo(x, mu, sigma, label, sigma_prior = 0.1):
     nll_loss = F.nll_loss(x, label, reduction='sum')
 
     # KL LOSS
-    #TODO: maybe we can use built in pytorch class: KLDivLoss()
     kl_loss = kl_div(mu, sigma, sigma_prior)
 
     # RECONSTRUCTION LOSS
