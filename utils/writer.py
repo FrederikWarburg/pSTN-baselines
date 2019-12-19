@@ -137,6 +137,8 @@ class Writer:
 
                     count += 1
 
+
+                    """
                     import matplotlib.pyplot as plt
                     im = np.transpose(im, (1,2,0))
 
@@ -152,7 +154,7 @@ class Writer:
                     plt.subplot(1,2,2)
                     plt.imshow(im)
                     plt.show()
-
+                    """
 
 
 
