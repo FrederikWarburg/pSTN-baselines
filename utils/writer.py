@@ -117,6 +117,8 @@ class Writer:
                     theta_mu, theta_sigma = theta
                     num_samples = opt.test_samples
 
+                    self.plot_theta_sigma(i, theta_sigma, epoch)
+
                 num_branches = self.opt.N
                 self.plot_theta(i, theta_mu, epoch)
 

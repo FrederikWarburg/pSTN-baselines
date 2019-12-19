@@ -4,18 +4,18 @@ from torch.distributions import MultivariateNormal, kl
 
 def kl_div(mu, sigma, sigma_prior):
 
-    mu = mu.view(-1)
-    sigma = sigma.view(-1)
+    batch_size, params = mu.shape
 
+    sigma = torch.diag_embed(sigma)
     mu_prior = torch.zeros_like(mu, device=mu.device)
-    #if opt == 'affine': mu_prior[:, 1] = 1
+    sigma_prior = sigma_prior * torch.eye(params, device=mu.device).unsqueeze(0).repeat(batch_size, 1, 1)
 
-    p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_prior*torch.eye(len(mu_prior), device=mu.device))
-    q = MultivariateNormal(loc=mu, scale_tril=torch.diag(sigma))
+    p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_prior)
+    q = MultivariateNormal(loc=mu, scale_tril=sigma)
 
     kl_loss = kl.kl_divergence(q, p)
 
-    return kl_loss
+    return kl_loss.mean()
 
 def elbo(x, mu, sigma, label, sigma_prior = 0.1):
 
