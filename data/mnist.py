@@ -12,12 +12,12 @@ class Mnist4x4grid(Dataset):
         self.num_images = 2
 
     def __len__(self):
-        return self.dataset.__len__() // self.num_images
+        return self.dataset.__len__() #// self.num_images
 
     def __getitem__(self, idx):
 
         im1, target1 = self.data[idx], int(self.targets[idx])
-        im2, target2 = self.data[self.__len__() + idx], int(self.targets[self.__len__() + idx])
+        #im2, target2 = self.data[self.__len__() + idx], int(self.targets[self.__len__() + idx])
 
         w,h = im1.shape
         im = torch.zeros((64,64), dtype=torch.float)
@@ -26,10 +26,10 @@ class Mnist4x4grid(Dataset):
         pos = np.asarray([[0,0],[0,1],[1,0],[1,1]])[pos]
 
         im[pos[0,0]*w:(pos[0,0]+1)*w, pos[0,1]*h:(pos[0,1]+1)*h] = im1.type(torch.float)
-        im[pos[1,0]*w:(pos[1,0]+1)*w, pos[1,1]*h:(pos[1,1]+1)*h] = im2.type(torch.float)
+        #im[pos[1,0]*w:(pos[1,0]+1)*w, pos[1,1]*h:(pos[1,1]+1)*h] = im2.type(torch.float)
 
-        target = ''
-        for item in sorted([target1,target2]):
-            target += str(item)
+        #target = ''
+        #for item in sorted([target1,target2]):
+        #    target += str(item)
 
-        return im.unsqueeze(0), int(target)
+        return im.unsqueeze(0), target1#int(target)
