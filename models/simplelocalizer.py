@@ -58,7 +58,7 @@ class SimpleLocalizer(nn.Module):
             theta_upsample[i*batch_size:(i+1)*batch_size, :] = theta[:, i*self.num_param: (i+1)*self.num_param]
 
         affine_params = make_affine_parameters(theta_upsample)
-
+        print(affine_params)
         grid = F.affine_grid(affine_params, x.size())
         x = F.grid_sample(x, grid)
 
