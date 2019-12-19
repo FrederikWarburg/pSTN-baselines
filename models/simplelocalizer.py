@@ -8,7 +8,7 @@ class SimpleLocalizer(nn.Module):
         super().__init__()
 
         self.N = opt.N
-        self.num_param = 2 if opt.fix_scale_and_rot else 4
+        self.num_param = opt.num_param
 
         # Spatial transformer localization-network
         self.localization = nn.Sequential(

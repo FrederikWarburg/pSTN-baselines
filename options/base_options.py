@@ -18,7 +18,7 @@ class BaseOptions:
         self.parser.add_argument('--no_shuffle', action='store_true', help='if true shuffle')
         self.parser.add_argument('--smallest_size', type=int, default=256, help='smallest side of input images')
         self.parser.add_argument('--crop_size', type=int, default=224, help='smallest side of input images')
-        self.parser.add_argument('--fix_scale_and_rot', action='store_true', help='if we use a affine (s, r, tx, ty) or crop (0.5, 1, tx, ty) transformation')
+        self.parser.add_argument('--num_param', default=2, type=int, help='if we use a affine (s, r, tx, ty) or crop (0.5, 1, tx, ty) transformation')
 
         # network params
         self.parser.add_argument('--model', type=str, default='inception', help='model name')

@@ -33,7 +33,7 @@ def scale_keep_ar_min_fixed(img, fixed_min):
 
 def transform_image_manual(x, opt):
     # we always applies the same data augmentation during training
-    num_param = 4 #2 if opt.fix_scale_and_rot else 4
+    num_param = opt.num_param #2 if opt.fix_scale_and_rot else 4
 
     gaussian = distributions.normal.Normal(0, 1)  # split up the multivariate Gaussian into 1d Gaussians
     epsilon = gaussian.sample(sample_shape=torch.Size([num_param]))
