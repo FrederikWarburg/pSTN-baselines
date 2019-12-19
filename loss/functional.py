@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from torch.distributions import MultivariateNormal, kl
 
-def kl_div(mu, sigma, sigma_prior):
+def kl_div(mu, sigma, sigma_prior, reduction = 'mean'):
 
     batch_size, params = mu.shape
 
@@ -15,7 +15,10 @@ def kl_div(mu, sigma, sigma_prior):
 
     kl_loss = kl.kl_divergence(q, p)
 
-    return kl_loss.mean()
+    if reduction == 'mean':
+        return kl_loss.mean()
+    elif reduction == 'sum':
+        return kl_loss.sum()
 
 def elbo(x, mu, sigma, label, sigma_prior = 0.1):
 
@@ -23,7 +26,7 @@ def elbo(x, mu, sigma, label, sigma_prior = 0.1):
     nll_loss = F.nll_loss(x, label, reduction='mean')
 
     # KL LOSS
-    kl_loss = kl_div(mu, sigma, sigma_prior)
+    kl_loss = kl_div(mu, sigma, sigma_prior, reduction='mean')
 
     # RECONSTRUCTION LOSS
     reconstruction_loss = 0
