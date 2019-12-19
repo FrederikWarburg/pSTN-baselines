@@ -34,6 +34,11 @@ class SimpleLocalizer(nn.Module):
         self.fc_loc[2].weight.data.zero_()
         if self.num_param == 2:
             self.fc_loc[2].bias.data.copy_(torch.zeros(self.num_param*self.N, dtype=torch.float))
+        if self.num_param == 6:
+            self.fc_loc[2].bias.data.copy_(torch.tensor([1,0,0,
+                                                         0,1,0]*self.N, dtype=torch.float))
+
+
 
     def forward(self, x):
 

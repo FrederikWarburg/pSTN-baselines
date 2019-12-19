@@ -51,11 +51,14 @@ def make_affine_parameters(mean_params, sigma_params = None):
         scale = 0.5 * torch.ones(mean_params.shape[0], device=mean_params.device)
         translation_x = mean_params[:, 0]
         translation_y = mean_params[:, 1]
-    else:
+    elif mean_params.shape[1] == 4:
         theta = mean_params[:, 0]
         scale = mean_params[:, 1]
         translation_x = mean_params[:, 2]
         translation_y = mean_params[:, 3]
+    elif mean_params.shape[1] == 6:
+        affine_matrix = mean_params.view([-1, 2, 3])
+        return affine_matrix
 
     # theta is rotation angle in radians
     a = scale * torch.cos(theta)
