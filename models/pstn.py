@@ -54,7 +54,7 @@ class PSTN(nn.Module):
         self.mu_fc2.weight.data.zero_()
 
         if self.num_param == 2:
-            bias = torch.tensor([[-1,-1],[-1,1],[1,-1],[1,1]], dtype=torch.float)*0.25
+            bias = torch.tensor([[-1,-1],[-1,1],[1,-1],[1,1]], dtype=torch.float)*0.5
             self.mu_fc2.bias.data.copy_(bias[:self.N].view(-1))
 
         elif self.num_param == 4:
