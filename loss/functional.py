@@ -20,7 +20,7 @@ def kl_div(mu, sigma, sigma_prior):
 def elbo(x, mu, sigma, label, sigma_prior = 0.1):
 
     # NLL LOSS
-    nll_loss = F.nll_loss(x, label, reduction='sum')
+    nll_loss = F.nll_loss(x, label, reduction='mean')
 
     # KL LOSS
     kl_loss = kl_div(mu, sigma, sigma_prior)
