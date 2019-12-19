@@ -62,7 +62,7 @@ def transform(opt):
             else:
                 transform_list.append(transforms.CenterCrop((opt.crop_size, opt.crop_size)))
             transform_list.append(transforms.ToTensor())
-            transform_list.append(lambda img: transform_image_manual(img, opt))
+            #transform_list.append(lambda img: transform_image_manual(img, opt))
         else:
             transform_list.append(transforms.CenterCrop((opt.crop_size, opt.crop_size)))
             transform_list.append(transforms.ToTensor())
