@@ -25,10 +25,9 @@ def add_bounding_boxes(image, affine_params, num_branches, num_samples, mode_ = 
 
     for j in range(num_samples):
         for i in range(num_branches):
-
             if mode_ == 'crop':
-                x = affine_params[i*num_samples+j, 0, 2]
-                y = affine_params[i*num_samples+j, 1, 2]
+                x = affine_params[j*num_branches+i, 0, 2]
+                y = affine_params[j*num_branches+i, 1, 2]
 
                 # define bbox by top left corner and define coordinates system with origo in top left corner
                 x = int(x*w//2 + w//4)
