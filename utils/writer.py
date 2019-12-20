@@ -124,11 +124,9 @@ class Writer:
 
             out_grid = self.convert_image_np(torchvision.utils.make_grid(transformed_input_tensor))
 
-            print(out_grid)
-            print(in_grid)
             # Plot the results side-by-side
-            self.display.add_image("Database_images".format, in_grid, epoch)
-            self.display.add_image("Transformed".format, out_grid, epoch)
+            self.display.add_image("Database_images".format, (in_grid*255).astype(int), epoch)
+            self.display.add_image("Transformed".format, (out_grid*255).astype(int), epoch)
 
     def visualize_transformation(self, model, epoch):
         model.eval()
