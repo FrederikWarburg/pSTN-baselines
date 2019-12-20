@@ -5,6 +5,7 @@ from .utils import denormalize, add_bounding_boxes
 from options.test_options import TestOptions
 from data import DataLoader
 import torch
+import torchvision
 
 
 try:
@@ -91,6 +92,42 @@ class Writer:
         for i, value in enumerate(theta):
             self.display.add_scalar('image_{}/theta_{}'.format(image_id, i), value, epoch)
 
+    def convert_image_np(self, inp):
+        """Convert a Tensor to numpy image."""
+        inp = inp.numpy().transpose((1, 2, 0))
+        mean = np.array([0.485, 0.456, 0.406])
+        std = np.array([0.229, 0.224, 0.225])
+        inp = std * inp + mean
+        inp = np.clip(inp, 0, 1)
+        return inp
+
+        # We want to visualize the output of the spatial transformers layer
+        # after the training, we visualize a batch of input images and
+        # the corresponding transformed batch using STN.
+
+
+    def visualize_stn(self, model, test_loader, device, epoch):
+        with torch.no_grad():
+            # Get a batch of training data
+            data = next(iter(test_loader))[0].to(device)
+
+            input_tensor = data.cpu()
+            transformed_input_tensor, theta = model.stn(data)
+            transformed_input_tensor = transformed_input_tensor.cpu()
+
+            print("scale", min(theta[0]).cpu().numpy(), max(theta[0]).cpu().numpy())
+            print("tx", min(theta[1]).cpu().numpy(), max(theta[1]).cpu().numpy())
+            print("ty", min(theta[2]).cpu().numpy(), max(theta[2]).cpu().numpy())
+
+            in_grid = self.convert_image_np(
+                torchvision.utils.make_grid(input_tensor))
+
+            out_grid = self.convert_image_np(
+                torchvision.utils.make_grid(transformed_input_tensor))
+
+            # Plot the results side-by-side
+            self.display.add_image("Database_images".format, in_grid, epoch)
+            self.display.add_image("Transformed".format, out_grid, epoch)
 
     def visualize_transformation(self, model, epoch):
         model.eval()
@@ -157,7 +194,7 @@ class Writer:
                     """
 
 
-
+        self.visualize_stn(model, dataset, device, epoch)
 
     def reset_counter(self):
         """
