@@ -198,8 +198,9 @@ class Writer:
                     plt.show()
                     """
 
-        dataset = DataLoader(opt)
         opt.batch_size = 64
+        dataset = DataLoader(opt)
+
         self.visualize_stn(model, dataset, device, epoch)
 
     def reset_counter(self):
