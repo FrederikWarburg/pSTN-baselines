@@ -1,6 +1,6 @@
 # import comet_ml in the top of your file
 from comet_ml import Experiment
-
+import torch.nn.functional as F
 import time
 from options.train_options import TrainOptions
 from data import DataLoader
@@ -26,7 +26,6 @@ if __name__ == '__main__':
     model = create_model(opt)
     optimizer, scheduler = create_optimizer(model, opt)
     criterion = create_criterion(opt)
-    criterion =
     writer = Writer(opt)
     total_steps = 0
     best_acc = 0
