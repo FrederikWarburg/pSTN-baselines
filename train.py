@@ -9,6 +9,8 @@ from loss import create_criterion
 from utils.writer import Writer
 from test import run_test
 import torch
+import torch.optim as optim
+
 from utils.evaluate import evaluate
 
 if __name__ == '__main__':
@@ -24,8 +26,9 @@ if __name__ == '__main__':
     print('#training network on = %d images' % dataset_size)
 
     model = create_model(opt)
-    optimizer, scheduler = create_optimizer(model, opt)
-    criterion = create_criterion(opt)
+    #optimizer, scheduler = create_optimizer(model, opt)
+    optimizer = optim.SGD(model.parameters(), lr=0.01)
+    #criterion = create_criterion(opt)
     writer = Writer(opt)
     total_steps = 0
     best_acc = 0
@@ -53,6 +56,7 @@ if __name__ == '__main__':
                     t_data = iter_start_time - iter_data_time
                 total_steps += opt.batch_size
                 epoch_iter += opt.batch_size
+
 
                 optimizer.zero_grad()
                 output = model(input)
