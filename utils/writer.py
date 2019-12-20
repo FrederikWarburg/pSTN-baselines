@@ -131,8 +131,8 @@ class Writer:
             out_grid = np.transpose(out_grid, (2,0,1))
 
             # Plot the results side-by-side
-            self.display.add_image("Database_images".format, in_grid, epoch)
-            self.display.add_image("Transformed".format, out_grid, epoch)
+            self.display.add_image("Database_images", in_grid, epoch)
+            self.display.add_image("Transformed_images", out_grid, epoch)
 
     def visualize_transformation(self, model, epoch):
         model.eval()
