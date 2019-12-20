@@ -35,7 +35,7 @@ def add_bounding_boxes(image, affine_params, num_branches, num_samples, mode_ = 
                 x = int(x*w//2 + w//4)
                 y = int(y*h//2 + h//4)
 
-                cv2.rectangle(im, (x,y),(x + w//2, y + h//2), color[i%len(color)], 5)
+                cv2.rectangle(im, (x,y),(x + w//2, y + h//2), color[i%len(color)], 1)
 
     return im
 
