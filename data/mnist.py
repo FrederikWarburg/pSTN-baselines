@@ -43,10 +43,15 @@ class Mnist4x4grid(Dataset):
 
             c, w,h = im1.shape
 
-            x = i*w #np.random.randint(0,32-w)
+            x = i*w + i*8 #np.random.randint(0,32-w)
 
             im[:,y:y+h,x:x+w] = im1.type(torch.float)
             target += str(target1)
+
+        import matplotlib.pyplot as plt
+
+        plt.imshow(im[0])
+        plt.show()
 
         transform = transforms.Compose([transforms.Normalize((0.1307,), (0.3081,))])
         im = transform(im)
