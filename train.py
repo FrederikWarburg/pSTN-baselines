@@ -26,9 +26,9 @@ if __name__ == '__main__':
     print('#training network on = %d images' % dataset_size)
 
     model = create_model(opt)
-    #optimizer, scheduler = create_optimizer(model, opt)
-    optimizer = optim.SGD(model.parameters(), lr=0.01)
-    #criterion = create_criterion(opt)
+    optimizer, scheduler = create_optimizer(model, opt)
+
+    criterion = create_criterion(opt)
     writer = Writer(opt)
     total_steps = 0
     best_acc = 0
@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
                 optimizer.zero_grad()
                 output = model(input)
-                loss = F.nll_loss(output, label)
+                loss = criterion(output, label)
                 loss.backward()
                 optimizer.step()
 
@@ -98,6 +98,6 @@ if __name__ == '__main__':
 
             print('End of epoch %d \t Time Taken: %d sec' %
                   (epoch, time.time() - epoch_start_time))
-            #scheduler.step()
+            scheduler.step()
 
     writer.close()
