@@ -40,6 +40,7 @@ def create_optimizer(model, opt):
                 {'params': model.classifier.parameters(), 'lr': opt.lr},
             ], momentum=opt.momentum, weight_decay=opt.weightDecay)
         else:
+            print("=> SGD all parameters chosen")
             optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr,
                                                 momentum=opt.momentum,
                                                 weight_decay=opt.weightDecay)

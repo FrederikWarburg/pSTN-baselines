@@ -26,6 +26,7 @@ if __name__ == '__main__':
     model = create_model(opt)
     optimizer, scheduler = create_optimizer(model, opt)
     criterion = create_criterion(opt)
+    criterion =
     writer = Writer(opt)
     total_steps = 0
     best_acc = 0
@@ -56,7 +57,7 @@ if __name__ == '__main__':
 
                 optimizer.zero_grad()
                 output = model(input)
-                loss = criterion(output, label)
+                loss = F.nll_loss(output, label)
                 loss.backward()
                 optimizer.step()
 
@@ -66,7 +67,6 @@ if __name__ == '__main__':
                     writer.plot_loss(loss, epoch, epoch_iter, dataset_size)
 
                     if opt.criterion.lower() == 'elbo':
-                        print(criterion.nll, criterion.kl, criterion.rec)
                         writer.plot_loss_components(criterion.nll, criterion.kl, criterion.rec, epoch, epoch_iter, dataset_size)
 
                 iter_data_time = time.time()
@@ -95,6 +95,6 @@ if __name__ == '__main__':
 
             print('End of epoch %d \t Time Taken: %d sec' %
                   (epoch, time.time() - epoch_start_time))
-            scheduler.step()
+            #scheduler.step()
 
     writer.close()

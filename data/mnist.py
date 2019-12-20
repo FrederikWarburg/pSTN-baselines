@@ -11,8 +11,7 @@ class Mnist4x4grid(Dataset):
                                            transforms.ToTensor()
                                        ]),
                                       train = opt.is_train,
-                                      download = opt.download,)
-        self.data, self.targets = self.dataset.data, self.dataset.targets
+                                      download = opt.download)
 
     def __len__(self):
         return self.dataset.__len__()
