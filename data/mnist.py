@@ -21,7 +21,7 @@ class Mnist4x4grid(Dataset):
 
         im1, target1 = self.dataset.__getitem__(idx)
 
-        w,h = im1.shape
+        c, w,h = im1.shape
         im = torch.zeros((64,64), dtype=torch.float)
 
         x = np.random.randint(0,64-w)
