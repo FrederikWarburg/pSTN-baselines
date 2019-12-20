@@ -112,7 +112,7 @@ class Writer:
             data = next(iter(test_loader))[0].to(device)
 
             input_tensor = data.cpu()
-            transformed_input_tensor, theta = model.stn(data)
+            transformed_input_tensor, theta, affine_params = model.stn(data)
             transformed_input_tensor = transformed_input_tensor.cpu()
 
             print("scale", min(theta[0]).cpu().numpy(), max(theta[0]).cpu().numpy())
@@ -192,7 +192,6 @@ class Writer:
                     plt.imshow(im)
                     plt.show()
                     """
-
 
         self.visualize_stn(model, dataset, device, epoch)
 

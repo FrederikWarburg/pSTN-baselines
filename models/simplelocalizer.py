@@ -39,7 +39,6 @@ class SimpleLocalizer(nn.Module):
                                                          0,1,0]*self.N, dtype=torch.float))
 
 
-
     def forward(self, x):
 
         batch_size, c, w, h = x.shape
