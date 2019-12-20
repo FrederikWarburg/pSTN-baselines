@@ -23,7 +23,7 @@ class Mnist4x4grid(Dataset):
                                       train = opt.is_train,
                                       download = opt.download))
 
-        self.num_images = self.N
+        self.num_images = opt.N
 
     def __len__(self):
         return min([self.datasets[i].__len__() for i in range(self.num_images)])
