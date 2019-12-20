@@ -92,6 +92,13 @@ class Writer:
         for i, value in enumerate(theta):
             self.display.add_scalar('image_{}/theta_{}'.format(image_id, i), value, epoch)
 
+    def plot_theta_sigma(self, image_id, theta, epoch):
+
+        theta = theta.cpu().numpy().reshape(-1)
+
+        for i, value in enumerate(theta):
+            self.display.add_scalar('image_{}/theta_sigma_{}'.format(image_id, i), value, epoch)
+
     def convert_image_np(self, inp):
         """Convert a Tensor to numpy image."""
         inp = inp.numpy().transpose((1, 2, 0))
@@ -106,13 +113,16 @@ class Writer:
         # the corresponding transformed batch using STN.
 
 
-    def visualize_stn(self, model, test_loader, device, epoch):
+    def visualize_stn(self, model, test_loader, device, epoch, opt):
         with torch.no_grad():
             # Get a batch of training data
             data = next(iter(test_loader))[0].to(device)
 
             input_tensor = data.cpu()
-            transformed_input_tensor, theta, affine_params = model.stn(data)
+            if opt.model.lower() == 'stn':
+                transformed_input_tensor, theta, affine_params = model.stn(data)
+            elif opt.model.lower() == 'pstn':
+                transformed_input_tensor, theta, affine_params = model.pstn(data)
             transformed_input_tensor = transformed_input_tensor.cpu()
 
             #print("scale", min(theta[0]).cpu().numpy(), max(theta[0]).cpu().numpy())
@@ -201,7 +211,7 @@ class Writer:
         opt.batch_size = 64
         dataset = DataLoader(opt)
 
-        self.visualize_stn(model, dataset, device, epoch)
+        self.visualize_stn(model, dataset, device, epoch, opt)
 
     def reset_counter(self):
         """
