@@ -46,6 +46,4 @@ class Mnist4x4grid(Dataset):
         transform = transforms.Compose([transforms.Normalize((0.1307,), (0.3081,))])
         im = transform(im)
 
-        target = sorted(target)
-
-        return im, target
+        return im, int(target)
