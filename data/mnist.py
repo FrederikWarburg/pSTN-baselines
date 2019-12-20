@@ -3,6 +3,11 @@ from torchvision import transforms, datasets
 import numpy as np
 import torch
 
+from torch.utils.data import Dataset
+from torchvision import transforms, datasets
+import numpy as np
+import torch
+
 class Mnist4x4grid(Dataset):
 
     def __init__(self, opt):
@@ -16,7 +21,7 @@ class Mnist4x4grid(Dataset):
                                       train = opt.is_train,
                                       download = opt.download))
 
-        self.datasets.append(datasets.MNIST(opt.dataroot,
+        self.datasets.append(datasets.KMNIST(opt.dataroot,
                                       transform = transforms.Compose([
                                            transforms.ToTensor()
                                        ]),
@@ -32,15 +37,15 @@ class Mnist4x4grid(Dataset):
 
         im = torch.zeros((1, 64,64), dtype=torch.float)
         target = ''
+        y = np.random.randint(0,32)
         for i in range(self.num_images):
             im1, target1 = self.datasets[i].__getitem__((idx)*(i+1)%self.datasets[i].__len__())
 
             c, w,h = im1.shape
 
-            x = np.random.randint(0,64-w)
-            y = np.random.randint(0,64-h)
+            x = i*w #np.random.randint(0,32-w)
 
-            im[:,x:x+w, y:y+h] = im1.type(torch.float)
+            im[:,y:y+h,x:x+w] = im1.type(torch.float)
             target += str(target1)
 
         transform = transforms.Compose([transforms.Normalize((0.1307,), (0.3081,))])
