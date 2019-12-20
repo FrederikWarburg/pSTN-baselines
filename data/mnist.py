@@ -32,4 +32,4 @@ class Mnist4x4grid(Dataset):
         transform = transforms.Compose([transforms.Normalize((0.1307,), (0.3081,))])
         im = transform(im)
 
-        return im.unsqueeze(0), target1
+        return im.unsqueeze(1), target1
