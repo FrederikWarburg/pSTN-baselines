@@ -39,13 +39,13 @@ class PSTN(nn.Module):
 
         x = self.classifier(x)
 
-        x = x.view(-1, self.pstn.S, self.num_classes)
+        x = x.view(-1, self.num_classes, self.pstn.S)
 
         if self.training:
             mu, sigma = theta
-            x = (x.mean(dim=1), mu, sigma)
+            x = (x.mean(dim=2), mu, sigma)
         else:
-            x = torch.log(torch.tensor(1/self.pstn.S)) + torch.logsumexp(x, dim=1)
+            x = torch.log(torch.tensor(1/self.pstn.S)) + torch.logsumexp(x, dim=2)
 
         return x
 
