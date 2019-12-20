@@ -11,9 +11,6 @@ class PSTN(nn.Module):
         super().__init__()
 
         self.num_classes = opt.num_classes
-        self.num_samples = opt.test_samples
-        self.train_samples = opt.train_samples
-        self.test_samples = opt.test_samples
         self.num_param = opt.num_param
 
         # Spatial transformer localization-network
@@ -37,11 +34,6 @@ class PSTN(nn.Module):
             self.classifier = SimpleClassifier(opt)
 
     def forward(self, x):
-
-        if self.training:
-            self.pstn.S = self.train_samples
-        else:
-            self.pstn.S = self.test_samples
 
         x, theta, _ = self.pstn(x)
 

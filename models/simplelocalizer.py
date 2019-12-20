@@ -9,6 +9,8 @@ class SimplePSTN(nn.Module):
 
         self.N = opt.N
         self.S = opt.test_samples
+        self.train_samples = opt.train_samples
+        self.test_samples = opt.test_samples
         self.num_param = opt.num_param
 
         # Spatial transformer localization-network
@@ -77,6 +79,8 @@ class SimplePSTN(nn.Module):
                 theta_mu = [tm1_1_1, tm2_1_1, tm1_2_1, tm2_2_1, tm1_1_2, tm2_1_2, tm1_1_2, tm2_1_2]     theta_mu = [B*N*S, N*num_params]
                 theta_sigma = [ts1_1_1, ts2_1_1, ts1_2_1, ts2_2_1, ts1_1_2, ts2_1_2, ts1_1_2, ts2_1_2]     theta_sigma = [B*N*S, N*num_params]
         """
+
+        self.S = self.train_samples if self.training else self.test_samples
 
         batch_size, c, w, h = x.shape
 
