@@ -115,9 +115,9 @@ class Writer:
             transformed_input_tensor, theta, affine_params = model.stn(data)
             transformed_input_tensor = transformed_input_tensor.cpu()
 
-            print("scale", min(theta[0]).cpu().numpy(), max(theta[0]).cpu().numpy())
-            print("tx", min(theta[1]).cpu().numpy(), max(theta[1]).cpu().numpy())
-            print("ty", min(theta[2]).cpu().numpy(), max(theta[2]).cpu().numpy())
+            #print("scale", min(theta[0]).cpu().numpy(), max(theta[0]).cpu().numpy())
+            #print("tx", min(theta[1]).cpu().numpy(), max(theta[1]).cpu().numpy())
+            #print("ty", min(theta[2]).cpu().numpy(), max(theta[2]).cpu().numpy())
 
             in_grid = self.convert_image_np(
                 torchvision.utils.make_grid(input_tensor))
