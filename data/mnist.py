@@ -16,7 +16,7 @@ class Mnist4x4grid(Dataset):
                                       train = opt.is_train,
                                       download = opt.download))
 
-        self.datasets.append(datasets.KMNIST(opt.dataroot,
+        self.datasets.append(datasets.MNIST(opt.dataroot,
                                       transform = transforms.Compose([
                                            transforms.ToTensor()
                                        ]),
