@@ -44,9 +44,6 @@ class SimplePSTN(nn.Module):
         # Initialize the weights/bias with identity transformation
         self.fc_loc_mu[2].weight.data.zero_()
         if self.num_param == 2:
-            # Center initialization
-            #self.fc_loc[2].bias.data.copy_(torch.zeros(self.num_param*self.N, dtype=torch.float))
-
             # Tiling
             bias = torch.tensor([[-1,-1],[1,1],[1,-1],[-1,1]], dtype=torch.float)*0.5
             self.fc_loc_mu[2].bias.data.copy_(bias[:self.N].view(-1))
