@@ -8,6 +8,9 @@ class SimpleClassifier(nn.Module):
         super(SimpleClassifier, self).__init__()
 
         self.N = opt.N
+        self.S = opt.test_samples
+        self.train_samples = opt.train_samples
+        self.test_samples = opt.test_samples
         self.feature_size = 640
 
         self.fc1 = nn.Linear(self.feature_size*self.N, 200*self.N)
@@ -39,14 +42,18 @@ class SimpleClassifier(nn.Module):
 
     def forward(self, x):
 
-        # Perform the usual forward pass
-        batch_size = x.shape[0] // self.N
-        xs = x.split([batch_size]*self.N)
+        self.S = self.train_samples if self.training else self.test_samples
 
-        features = torch.empty(batch_size, self.feature_size*self.N, requires_grad = False, device=x.device)
+        batch_size, C, W, H = x.shape
+        batch_size = batch_size // (self.N*self.S)
+
+        xs = torch.stack(x.split([batch_size*self.N]*self.S))
+        xs = xs.view(self.S*batch_size, self.N, C, W, H)
+
+        features = torch.empty(batch_size*self.S, self.feature_size*self.N, requires_grad = False, device=x.device)
         for branch_ix in range(self.N):
-            x = self.model._modules['branch_{}'.format(branch_ix)].forward(xs[branch_ix])
-            features[:, branch_ix*self.feature_size:(branch_ix+1)*self.feature_size] = x.view(batch_size, self.feature_size)
+            x = self.model._modules['branch_{}'.format(branch_ix)].forward(xs[:, branch_ix, :, :, :])
+            features[:, branch_ix*self.feature_size:(branch_ix+1)*self.feature_size] = x.view(batch_size*self.S, self.feature_size)
 
         x = F.relu(self.fc1(features))
         x = F.dropout(x, training=self.training)
