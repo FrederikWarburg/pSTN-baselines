@@ -12,6 +12,7 @@ class SimplePSTN(nn.Module):
         self.train_samples = opt.train_samples
         self.test_samples = opt.test_samples
         self.num_param = opt.num_param
+        self.sigma_prior = opt.sigma
 
         # Spatial transformer localization-network
         self.localization = nn.Sequential(
@@ -101,7 +102,7 @@ class SimplePSTN(nn.Module):
         theta_sigma_upsample = theta_sigma_upsample.repeat(self.S, 1)
 
         # make affine matrix
-        affine_params = make_affine_parameters(theta_mu_upsample, theta_sigma_upsample)
+        affine_params = make_affine_parameters(theta_mu_upsample, theta_sigma_upsample, self.sigma_prior)
 
         # makes the flow field on a grid
         grid = F.affine_grid(affine_params, x.size())

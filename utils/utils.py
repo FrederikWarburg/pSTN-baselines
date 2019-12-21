@@ -38,10 +38,11 @@ def add_bounding_boxes(image, affine_params, num_branches, num_samples, mode_ = 
     return im
 
 
-def make_affine_parameters(mean_params, sigma_params = None):
+def make_affine_parameters(mean_params, sigma_params = None, sigma_prior = 0.1):
 
     if sigma_params is not None:
         eps = _standard_normal(mean_params.shape, dtype = mean_params.dtype, device=mean_params.device)
+        eps *= sigma_prior
         mean_params = eps * sigma_params + mean_params
 
     if mean_params.shape[1] == 2: # only perform crop - fix scale and rotation.
