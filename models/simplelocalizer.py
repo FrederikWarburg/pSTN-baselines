@@ -90,7 +90,7 @@ class SimplePSTN(nn.Module):
         theta_sigma = self.fc_loc_sigma(xs)
 
         # repeat x in the batch dim so we avoid for loop
-        x = x.repeat(self.N, 1, 1, 1)
+        x = x.unsqueeze(1).repeat(1,self.N,1,1,1).view(self.N*batch_size,c,w,h)
         theta_mu_upsample = theta_mu.view(batch_size * self.N, self.num_param)
         theta_sigma_upsample = theta_sigma.view(batch_size * self.N, self.num_param)
 
