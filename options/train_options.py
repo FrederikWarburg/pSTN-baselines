@@ -17,6 +17,8 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--data_augmentation', type=bool, default=False)
         self.parser.add_argument('--horizontal_flip', type=bool, default=False)
         self.parser.add_argument('--sigma', type=float, default=0.1, help='the amount of data augmentation')
+        self.parser.add_argument('--alpha', type=float, default=0.1, help='the scale of the KL term')
+
 
         self.parser.add_argument('--visualize', type=bool, default=False, help='plots images of transformations to tensorboard')
         self.parser.add_argument('--print_freq', type=int, default=10, help='frequency of showing training results on console')
