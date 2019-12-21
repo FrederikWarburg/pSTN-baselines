@@ -39,16 +39,6 @@ class PSTN(nn.Module):
 
         x, theta, _ = self.pstn(x)
 
-        """"
-        x = torch.stack(x.split([batch_size*self.pstn.N]*self.pstn.S))
-        x = x.view(self.pstn.S, batch_size*self.pstn.N, 1, 64, 64)
-
-        import matplotlib.pyplot as plt
-        for i in range(self.pstn.S):
-            plt.imshow(x[i,0,:,:,:].detach().numpy()[0])
-            plt.show()
-        """
-
         x = self.classifier(x)
 
         x = torch.stack(x.split([batch_size]*self.pstn.S))

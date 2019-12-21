@@ -45,7 +45,7 @@ class SimplePSTN(nn.Module):
         self.fc_loc_mu[2].weight.data.zero_()
         if self.num_param == 2:
             # Tiling
-            bias = torch.tensor([[-1,-1],[1,1],[1,-1],[-1,1]], dtype=torch.float)*0.5
+            bias = torch.tensor([[-1,-1],[1,-1],[1,1],[-1,1]], dtype=torch.float)*0.5
             self.fc_loc_mu[2].bias.data.copy_(bias[:self.N].view(-1))
         if self.num_param == 6:
             self.fc_loc_mu[2].bias.data.copy_(torch.tensor([1,0,0,
@@ -90,18 +90,13 @@ class SimplePSTN(nn.Module):
         theta_sigma = self.fc_loc_sigma(xs)
 
         # repeat x in the batch dim so we avoid for loop
-        x = x.repeat(self.N*self.S, 1, 1, 1)
-
-        # initialized upsampled thetas
-        theta_mu_upsample = torch.empty(batch_size*self.N, self.num_param, requires_grad=False, device=theta_mu.device)
-        theta_sigma_upsample = torch.empty(batch_size*self.N, self.num_param, requires_grad=False, device=theta_sigma.device)
-
-        # split the shared theta into the N branches
-        for i in range(self.N):
-            theta_mu_upsample[i*batch_size:(i+1)*batch_size, :] = theta_mu[:, i*self.num_param: (i+1)*self.num_param]
-            theta_sigma_upsample[i*batch_size:(i+1)*batch_size, :] = theta_sigma[:, i*self.num_param: (i+1)*self.num_param]
+        x = x.repeat(self.N, 1, 1, 1)
+        theta_mu_upsample = theta_mu.view(batch_size * self.N, self.num_param)
+        theta_sigma_upsample = theta_sigma.view(batch_size * self.N, self.num_param)
 
         # repeat for the number of samples
+        x = x.repeat(self.S, 1, 1, 1)
+
         theta_mu_upsample = theta_mu_upsample.repeat(self.S, 1)
         theta_sigma_upsample = theta_sigma_upsample.repeat(self.S, 1)
 
