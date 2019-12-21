@@ -39,37 +39,19 @@ class PSTN(nn.Module):
 
         x, theta, _ = self.pstn(x)
 
-        # [im1_crop1, im1_crop2]
-        # [im2_crop1, im2_crop2],
-        # [im1_crop1, im1_crop2]
-        # [im2_crop1, im2_crop2]
-        print(x.shape)
-        x = torch.stack(x.split(self.pstn.S))
-        print(x.shape)
-        x = torch.stack(x.split(self.pstn.N))
-        print(x.shape)
-
-        import matplotlib.pyplot as plt
-        for i in range(len(x))
-            im = xs[0]
-            print(im.shape)
-            im = im.detach().numpy()[0]
-            print(im.shape)
-            plt.imshow(im)
-            plt.show()
-
-        exit()
-
         x = self.classifier(x)
 
-        x = x.view(-1, self.num_classes,  self.pstn.S)
+        x = torch.stack(x.split([batch_size]*self.pstn.S))
+        x = x.view(self.pstn.S, batch_size*self.num_classes)
 
         if self.training:
             mu, sigma = theta
-            x = (x.sum(dim=0), mu, sigma)
+            x = x.sum(dim=0)
+            x = x.view(batch_size, self.num_classes)
+            return (x, mu, sigma)
         else:
             x = torch.log(torch.tensor(1/self.pstn.S)) + torch.logsumexp(x, dim=0)
-
+            x = x.view(batch_size, self.num_classes)
 
         return x
 
