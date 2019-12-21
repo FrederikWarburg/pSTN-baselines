@@ -47,11 +47,11 @@ class SimpleClassifier(nn.Module):
         batch_size, C, W, H = x.shape
         batch_size = batch_size // (self.N*self.S)
 
-        xs = x.split([self.N]*self.S*batch_size)
+        xs = torch.stack(x.split([self.N]*self.S*batch_size))
 
         features = torch.empty(batch_size*self.S, self.feature_size*self.N, requires_grad = False, device=x.device)
         for branch_ix in range(self.N):
-            x = self.model._modules['branch_{}'.format(branch_ix)].forward(xs[branch_ix])
+            x = self.model._modules['branch_{}'.format(branch_ix)].forward(xs[:,branch_ix,:,:,:])
             features[:, branch_ix*self.feature_size:(branch_ix+1)*self.feature_size] = x.view(batch_size*self.S, self.feature_size)
 
         x = F.relu(self.fc1(features))
