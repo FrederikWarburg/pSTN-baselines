@@ -46,7 +46,7 @@ class PSTN(nn.Module):
 
         if self.training:
             mu, sigma = theta
-            x = x.sum(dim=0)
+            x = x.mean(dim=0)
             x = x.view(batch_size, self.num_classes)
             return (x, mu, sigma)
         else:
