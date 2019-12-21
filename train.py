@@ -58,8 +58,6 @@ if __name__ == '__main__':
                 epoch_iter += opt.batch_size
 
                 optimizer.zero_grad()
-                print("model training", model.training)
-
                 output = model(input)
                 loss = criterion(output, label)
                 loss.backward()
