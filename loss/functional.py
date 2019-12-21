@@ -10,7 +10,7 @@ def kl_div(mu, sigma, sigma_prior, reduction = 'mean'):
     mu_prior = torch.zeros_like(mu, device=mu.device)
     sigma_prior = sigma_prior * torch.eye(params, device=mu.device).unsqueeze(0).repeat(batch_size, 1, 1)
 
-    p = MultivariateNormal(loc=mu, scale_tril=sigma_prior)
+    p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_prior)
     q = MultivariateNormal(loc=mu, scale_tril=sigma)
 
     kl_loss = kl.kl_divergence(q, p)

@@ -17,4 +17,5 @@ class Elbo(nn.Module):
 
         self.nll, self.kl, self.rec = elbo(x, mu, sigma, label, sigma_prior = self.sigma_prior)
 
-        return self.nll + self.kl + self.rec
+        sum_ = self.nll + self.kl + self.rec
+        return self.nll/sum_ + self.kl/sum_ + self.rec/sum_
