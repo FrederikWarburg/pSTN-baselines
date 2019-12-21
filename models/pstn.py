@@ -35,22 +35,41 @@ class PSTN(nn.Module):
 
     def forward(self, x):
 
+        batch_size, c, w, h = x.shape
+
         x, theta, _ = self.pstn(x)
 
+        # [im1_crop1, im1_crop2]
+        # [im2_crop1, im2_crop2],
+        # [im1_crop1, im1_crop2]
+        # [im2_crop1, im2_crop2]
+        print(x.shape)
+        x = torch.stack(x.split(self.pstn.S))
+        print(x.shape)
+        x = torch.stack(x.split(self.pstn.N))
+        print(x.shape)
+
+        import matplotlib.pyplot as plt
+        for i in range(len(x))
+            im = xs[0]
+            print(im.shape)
+            im = im.detach().numpy()[0]
+            print(im.shape)
+            plt.imshow(im)
+            plt.show()
+
+        exit()
+
         x = self.classifier(x)
-        print(x)
-        print(x.shape)
+
         x = x.view(-1, self.num_classes,  self.pstn.S)
-        print(x.shape)
-        print(x)
 
         if self.training:
             mu, sigma = theta
-            print(x.sum(dim=2))
-            x = (x.sum(dim=2), mu, sigma)
+            x = (x.sum(dim=0), mu, sigma)
         else:
-            x = torch.log(torch.tensor(1/self.pstn.S)) + torch.logsumexp(x, dim=2)
-            print(x)
+            x = torch.log(torch.tensor(1/self.pstn.S)) + torch.logsumexp(x, dim=0)
+
 
         return x
 
