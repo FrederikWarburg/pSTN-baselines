@@ -13,7 +13,7 @@ def denormalize(image):
     return im
 
 def add_bounding_boxes(image, affine_params, num_branches, num_samples, mode_ = 'crop'):
-
+    heatmap = True
     color = [(255, 0, 0) ,(0, 255, 0),(0, 0, 255), (255, 255, 0),(255, 0, 255),(0, 255, 255)]
 
     image *= 255
@@ -33,7 +33,15 @@ def add_bounding_boxes(image, affine_params, num_branches, num_samples, mode_ = 
                 x = int(x*w//2 + w//4)
                 y = int(y*h//2 + h//4)
 
-                cv2.rectangle(im, (x,y),(x + w//2, y + h//2), color[i%len(color)], 1)
+                if heatmap:
+                    cv2.rectangle(im, (x,y),(x + w//2, y + h//2), color[i%len(color)], -1)  # A filled rectangle
+
+                    alpha = 0.4  # Transparency factor.
+
+                    # Following line overlays transparent rectangle over the image
+                    im = cv2.addWeighted(im, alpha, image, 1 - alpha, 0)
+                else:
+                    cv2.rectangle(im, (x,y),(x + w//2, y + h//2), color[i%len(color)], 1)
 
     return im
 
