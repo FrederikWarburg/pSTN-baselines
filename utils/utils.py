@@ -34,12 +34,14 @@ def add_bounding_boxes(image, affine_params, num_branches, num_samples, mode_ = 
                 y = int(y*h//2 + h//4)
 
                 if heatmap:
-                    cv2.rectangle(im, (x,y),(x + w//2, y + h//2), color[i%len(color)], -1)  # A filled rectangle
+
+                    overlay = im.copy()
+                    cv2.rectangle(overlay, (x,y),(x + w//2, y + h//2), color[i%len(color)], -1)  # A filled rectangle
 
                     alpha = 0.4  # Transparency factor.
 
                     # Following line overlays transparent rectangle over the image
-                    im = cv2.addWeighted(im, alpha, image, 1 - alpha, 0)
+                    im = cv2.addWeighted(overlay, alpha, im, 1 - alpha, 0)
                 else:
                     cv2.rectangle(im, (x,y),(x + w//2, y + h//2), color[i%len(color)], 1)
 
