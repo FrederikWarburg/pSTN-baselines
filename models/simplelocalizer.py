@@ -143,11 +143,7 @@ class SimpleSTN(nn.Module):
         # Initialize the weights/bias with identity transformation
         self.fc_loc[2].weight.data.zero_()
         if self.num_param == 2:
-            # Center initialization
-            #self.fc_loc[2].bias.data.copy_(torch.zeros(self.num_param*self.N, dtype=torch.float))
-
-            # Tiling
-            bias = torch.tensor([[-1,-1],[1,1],[1,-1],[-1,1]], dtype=torch.float)*0.5
+            bias = torch.tensor([[-1,-1],[1,1],[1,-1],[-1,1]], dtype=torch.float)*0.5 # Tiling
             self.fc_loc[2].bias.data.copy_(bias[:self.N].view(-1))
         if self.num_param == 6:
             self.fc_loc[2].bias.data.copy_(torch.tensor([1,0,0,
@@ -164,10 +160,9 @@ class SimpleSTN(nn.Module):
 
         theta = self.fc_loc(xs)
 
-        x = x.repeat(self.N, 1, 1, 1)
-        theta_upsample = torch.empty(batch_size*self.N, self.num_param, requires_grad=False, device=theta.device)
-        for i in range(self.N):
-            theta_upsample[i*batch_size:(i+1)*batch_size, :] = theta[:, i*self.num_param: (i+1)*self.num_param]
+        # repeat x in the batch dim so we avoid for loop
+        x = x.unsqueeze(1).repeat(1,self.N,1,1,1).view(self.N*batch_size,c,w,h)
+        theta_upsample = theta.view(batch_size * self.N, self.num_param)
 
         affine_params = make_affine_parameters(theta_upsample)
 
