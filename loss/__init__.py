@@ -4,7 +4,7 @@ def create_criterion(opt):
 
     if opt.criterion.lower() == 'crossentropy':
         criterion = torch.nn.CrossEntropyLoss()
-    elif opt.criterion.lower() == 'nllloss':
+    elif opt.criterion.lower() == 'nll':
         criterion = torch.nn.NLLLoss()
     elif opt.criterion.lower() == 'elbo':
         from .loss import Elbo

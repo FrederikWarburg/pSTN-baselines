@@ -3,7 +3,7 @@ from os.path import join
 
 def create_model(opt):
     if opt.model.lower() == 'cnn':
-        if opt.model.basenet == 'inception':
+        if opt.basenet.lower() == 'inception':
             from .inceptionclassifier import InceptionClassifier
             model = InceptionClassifier(opt)
         elif opt.basenet.lower() == 'simple':

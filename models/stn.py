@@ -6,12 +6,12 @@ class STN(nn.Module):
     def __init__(self, opt):
         super().__init__()
 
+        self.num_param = opt.num_param
+        self.N = opt.N
+
         # Spatial transformer localization-network
         self.init_localizer(opt)
         self.init_classifier(opt)
-
-        self.num_param = opt.num_param
-        self.N = opt.N
 
     def init_localizer(self, opt):
         if opt.basenet.lower() == 'inception':
