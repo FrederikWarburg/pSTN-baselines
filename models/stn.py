@@ -1,5 +1,6 @@
 from __future__ import print_function
 import torch.nn as nn
+import torch
 
 class STN(nn.Module):
     def __init__(self, opt):
@@ -8,6 +9,9 @@ class STN(nn.Module):
         # Spatial transformer localization-network
         self.init_localizer(opt)
         self.init_classifier(opt)
+
+        self.num_param = opt.num_param
+        self.N = opt.N
 
     def init_localizer(self, opt):
         if opt.basenet.lower() == 'inception':
@@ -27,9 +31,6 @@ class STN(nn.Module):
         # Initialize the weights/bias with identity transformation
         self.fc_loc[2].weight.data.zero_()
         if self.num_param == 2:
-            # Center initialization
-            #self.fc_loc[2].bias.data.copy_(torch.zeros(self.num_param*self.N, dtype=torch.float))
-
             # Tiling
             bias = torch.tensor([[-1,-1],[1,1],[1,-1],[-1,1]], dtype=torch.float)*0.5
             self.fc_loc[2].bias.data.copy_(bias[:self.N].view(-1))
