@@ -2,9 +2,13 @@ import torch
 from os.path import join
 
 def create_model(opt):
-    if opt.model.lower() == 'inception':
-        from .inception import InceptionClassifier
-        model = InceptionClassifier(opt)
+    if opt.model.lower() == 'cnn':
+        if opt.model.basenet == 'inception':
+            from .inceptionclassifier import InceptionClassifier
+            model = InceptionClassifier(opt)
+        elif opt.basenet.lower() == 'simple':
+            from .simpleclassifier import SimpleClassifier
+            model = SimpleClassifier(opt)
     elif opt.model.lower() == 'stn':
         from .stn import STN
         model = STN(opt)
