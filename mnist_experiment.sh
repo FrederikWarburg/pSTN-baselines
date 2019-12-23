@@ -1,9 +1,9 @@
 #!/bin/sh
 
 DATAPATH="/scratch/s153847/data/"
-MODELS=("inception" "stn" "pstn")
+MODELS=("cnn" "stn" "pstn")
 BRANCHES=(1 2 2)
-PARAMS=(2 2 2)
+PARAMS=(1 2 2)
 TEST_SAMPELS=(0 0 10)
 TRAIN_SAMPELS=(1 1 1)
 CRITERION=("nll" "nll" "elbo")
@@ -36,5 +36,6 @@ do
                     --num_param 2 \
                     --lr_loc -1 \
                     --basenet "simple" \
-                    --alpha 0.1
+                    --alpha 0.1 \
+		    --digits 2
 done
