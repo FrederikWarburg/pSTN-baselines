@@ -12,7 +12,7 @@ for MODEL in 0 1 2
 do
     echo ${MODELS[$MODEL]}
     echo ${TRAIN_SAMPELS[$MODEL]}
-    python train.py --dataroot $DATAPATH \
+    echo python train.py --dataroot $DATAPATH \
                     --dataset "mnist" \
                     --batch_size 64 \
                     --num_classes 100 \
@@ -37,5 +37,5 @@ do
                     --lr_loc -1 \
                     --basenet "simple" \
                     --alpha 0.1 \
-		    --digits 2
+		            --digits 2
 done

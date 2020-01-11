@@ -114,18 +114,19 @@ class CoolSystem(pl.LightningModule):
         acc = accuracy(y_hat, y)
 
         grid_in, grid_out = visualize_stn(self.model, x, self.opt)
-        self.logger.experiment.add_image('grid_in', grid_in, self.global_step)
 
-        if self.opt.model.lower() in ['stn', 'pstn']:
-            self.logger.experiment.add_image('grid_out', grid_out, self.global_step)
-
-        return {'val_loss': loss, 'val_acc': acc}
+        return {'val_loss': loss, 'val_acc': acc, 'grid_in': grid_in, 'grid_out': grid_out}
 
     def validation_end(self, outputs):
 
         avg_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
         avg_acc = torch.stack([x['val_acc'] for x in outputs]).mean()
         tensorboard_logs = {'val_loss': avg_loss, 'val_acc': avg_acc}
+
+        self.logger.experiment.add_image('grid_in', outputs[0]['grid_in'], self.global_step)
+
+        if self.opt.model.lower() in ['stn', 'pstn']:
+            self.logger.experiment.add_image('grid_out', outputs[0]['grid_out'], self.global_step)
 
         return {'avg_val_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar':tensorboard_logs}
 
