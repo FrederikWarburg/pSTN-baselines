@@ -10,22 +10,25 @@ import torch
 
 class Mnist4x4grid(Dataset):
 
-    def __init__(self, opt):
+    def __init__(self, opt, train_div):
 
         self.datasets = []
+
+        # False (test) or True (train,val)
+        trainingset = train_div > 0
 
         self.datasets.append(datasets.MNIST(opt.dataroot,
                                       transform = transforms.Compose([
                                            transforms.ToTensor()
                                        ]),
-                                      train = opt.is_train,
+                                      train = trainingset,
                                       download = opt.download))
 
         self.datasets.append(datasets.KMNIST(opt.dataroot,
                                       transform = transforms.Compose([
                                            transforms.ToTensor()
                                        ]),
-                                      train = opt.is_train,
+                                      train = trainingset,
                                       download = opt.download))
 
         self.num_images = opt.digits

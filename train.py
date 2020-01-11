@@ -22,8 +22,6 @@ if __name__ == '__main__':
     opt = TrainOptions().parse()
     experiment.log_parameters(vars(opt))
     dataset = DataLoader(opt)
-    dataset_size = len(dataset)
-    print('#training network on = %d images' % dataset_size)
 
     model = create_model(opt)
     optimizer, scheduler = create_optimizer(model, opt)

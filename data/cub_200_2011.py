@@ -81,12 +81,12 @@ class Cub2011(Dataset):
     filename = 'CUB_200_2011.tgz'
     tgz_md5 = '97eceeb196236b17998738112f37df78'
 
-    def __init__(self, opt):
+    def __init__(self, opt, data_div):
 
         self.root = os.path.expanduser(opt.dataroot)
         self.transform = transform(opt)
         self.loader = default_loader
-        self.train = opt.is_train
+        self.train = data_div > 0
         self.num_classes = opt.num_classes
 
         if opt.download:
