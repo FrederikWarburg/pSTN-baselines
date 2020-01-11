@@ -20,7 +20,7 @@ if __name__ == '__main__':
     model = CoolSystem(opt)
 
     # most basic trainer, uses good defaults
-    trainer = Trainer(logger, val_check_interval=0.001, val_percent_check=0.01)
+    trainer = Trainer(logger, val_check_interval=opt.val_check_interval, val_percent_check=opt.val_percent_check)
     trainer.fit(model)
 
     trainer.test()
