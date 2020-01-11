@@ -133,9 +133,6 @@ class CoolSystem(pl.LightningModule):
         x, y = batch
         y_hat = self.forward(x)
 
-        if self.opt.model.lower() == 'pstn':
-            y_hat = y_hat[0]
-
         loss = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
 
