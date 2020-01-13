@@ -24,7 +24,7 @@ if __name__ == '__main__':
     print("Let's use {} GPUS!".format(num_gpus))
 
     # most basic trainer, uses good defaults
-    trainer = Trainer(max_epochs=opt.epochs,
+    trainer = Trainer(max_nb_epochs=opt.epochs,
                       gpus=num_gpus,
                       early_stop_callback=None,
                       logger=logger,
