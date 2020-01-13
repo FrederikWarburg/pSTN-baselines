@@ -5,6 +5,7 @@ from options.train_options import TrainOptions
 from pytorch_lightning import Trainer
 from pytorch_lightning.logging import TestTubeLogger
 from models import CoolSystem
+import torch
 
 if __name__ == '__main__':
 
@@ -19,8 +20,11 @@ if __name__ == '__main__':
 
     model = CoolSystem(opt)
 
+    num_gpus = torch.cuda.device_count()
+    print("Let's use {} GPUS!".format(num_gpus))
+
     # most basic trainer, uses good defaults
-    trainer = Trainer(early_stop_callback=None, logger=logger, val_check_interval=opt.val_check_interval, val_percent_check=opt.val_percent_check)
+    trainer = Trainer(gpus=num_gpus, early_stop_callback=None, logger=logger, val_check_interval=opt.val_check_interval, val_percent_check=opt.val_percent_check)
     trainer.fit(model)
 
     trainer.test()
