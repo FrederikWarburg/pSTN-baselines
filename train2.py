@@ -24,14 +24,19 @@ if __name__ == '__main__':
     print("Let's use {} GPUS!".format(num_gpus))
 
     # most basic trainer, uses good defaults
-    trainer = Trainer(gpus=num_gpus, early_stop_callback=None, logger=logger, val_check_interval=opt.val_check_interval, val_percent_check=opt.val_percent_check)
+    trainer = Trainer(max_epochs=opt.epochs,
+                      gpus=num_gpus,
+                      early_stop_callback=None,
+                      logger=logger,
+                      val_check_interval=opt.val_check_interval,
+                      val_percent_check=opt.val_percent_check)
     trainer.fit(model)
 
     trainer.test()
 
 
 ########
-# TRAIN ON MNIST DATASET (N = 1)
+# TRAIN ON MNIST DATASET (N = 1) (all models converge after approx 3 epochs)
 ########
 
 # simple classifier
@@ -44,7 +49,7 @@ if __name__ == '__main__':
 # python train2.py --dataroot /scratch/s153847/ --model pstn --basenet simple --dataset mnist --digits 1 --N 1 --train_samples 1 --test_samples 10 --batch_size 256 --num_classes 10 --step_size 100000 --smallest_size 64 --crop_size 64 --lr_loc 1e-02 --seed 42 --lr 0.1 --criterion elbo
 
 ########
-# TRAIN ON MNIST DATASET (N = 2, )
+# TRAIN ON MNIST DATASET (N = 2)
 ########
 
 # simple classifier
