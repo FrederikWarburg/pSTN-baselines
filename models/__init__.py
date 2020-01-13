@@ -126,7 +126,7 @@ class CoolSystem(pl.LightningModule):
         if self.opt.model.lower() in ['stn', 'pstn']:
             self.logger.experiment.add_image('grid_out', outputs[0]['grid_out'], self.global_step)
 
-        return {'val_loss': avg_loss.item(), 'log': tensorboard_logs, 'progress_bar':tensorboard_logs}
+        return {'val_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar':tensorboard_logs}
 
     def test_step(self, batch, batch_idx):
 
@@ -144,7 +144,7 @@ class CoolSystem(pl.LightningModule):
         avg_acc = torch.stack([x['test_acc'] for x in outputs]).mean()
         tensorboard_logs = {'test_loss': avg_loss, 'test_acc': avg_acc}
 
-        return {'test_loss': avg_loss.item(), 'log': tensorboard_logs, 'progress_bar':tensorboard_logs}
+        return {'test_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar':tensorboard_logs}
 
     def configure_optimizers(self):
 
