@@ -5,11 +5,10 @@ from .functional import elbo
 
 class Elbo(nn.Module):
 
-    def __init__(self, sigma_prior = 0.1, alpha = 0.01):
+    def __init__(self, sigma_prior = 0.1):
         super(Elbo, self).__init__()
 
         self.sigma_prior = sigma_prior
-        self.alpha = alpha
         self.iter = 0.0
 
     def forward(self, x, label):

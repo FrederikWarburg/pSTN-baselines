@@ -8,7 +8,7 @@ def create_criterion(opt):
         criterion = torch.nn.NLLLoss()
     elif opt.criterion.lower() == 'elbo':
         from .loss import Elbo
-        criterion = Elbo(opt.sigma, opt.alpha)
+        criterion = Elbo(opt.sigma)
     else:
         raise ValueError('Unsupported or optimizer: {}!'.format(opt.criterion))
 

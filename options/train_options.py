@@ -17,7 +17,6 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--data_augmentation', type=bool, default=False)
         self.parser.add_argument('--horizontal_flip', type=bool, default=False)
         self.parser.add_argument('--sigma', type=float, default=0.1, help='the amount of data augmentation')
-        self.parser.add_argument('--alpha', type=float, default=0.1, help='the scale of the KL term')
         self.parser.add_argument('--val_percent_check', type=float, default=0.01, help='percentage of validation set to check')
         self.parser.add_argument('--val_check_interval', type=float, default=0.001, help='the rate for checking')
 
