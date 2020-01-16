@@ -67,7 +67,8 @@ def visualize_bbox(data, affine_params, opt):
         images.append(np.transpose(im,(2,0,1)))
 
     images = torch.FloatTensor(images)
-    images = convert_image_np(torchvision.utils.make_grid(images))
+    images = torchvision.utils.make_grid(images)
+    images = convert_image_np(images)
     images = (images*255).astype(np.uint8)
     images = np.transpose(images, (2,0,1))
 
