@@ -46,7 +46,7 @@ def visualize_bbox(data, affine_params, opt):
 
     batch_size = data.shape[0]
     affine_params = torch.stack(affine_params.split([opt.N]*opt.test_samples*batch_size))
-    sorted_params = torch.zeros(batch_size, opt.test_samples, opt.N, 2, 3)
+    sorted_params = torch.zeros(batch_size, opt.test_samples, opt.N, 2, 3, dtype=affine_params.dtype)
     for i in range(len(affine_params)):
         # im, sample, N, 2, 3
         sorted_params[i % batch_size, i // batch_size, :, :, :] = affine_params[i, :, :]
@@ -59,6 +59,8 @@ def visualize_bbox(data, affine_params, opt):
 
         if im.shape[2] == 1:
             im = np.stack((im[:,:,0],)*3, axis=-1)
+
+        if torch.isnan(params).any(): continue
 
         im = add_bounding_boxes(im, params, opt.N, opt.test_samples, mode_= 'crop', heatmap = opt.heatmap)
 
