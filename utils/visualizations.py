@@ -43,7 +43,9 @@ def visualize_stn(model, data, opt):
 
 
 def visualize_bbox(data, affine_params, opt):
-
+    print(affine_params)
+    print(data.shape)
+    print(affine_params.shape)
     images = []
     for j, im in enumerate(data):
 
@@ -99,4 +101,6 @@ def add_bounding_boxes(image, affine_params, num_branches, num_samples, mode_ = 
                     im = cv2.addWeighted(overlay, alpha, im, 1 - alpha, 0)
                 else:
                     cv2.rectangle(im, (x,y),(x + w//2, y + h//2), color[i%len(color)], 1)
+
+    exit()
     return im
