@@ -39,6 +39,7 @@ class BaseOptions:
 
         # visualization params
         self.parser.add_argument('--export_folder', type=str, default='', help='exports intermediate collapses to this folder')
+        self.parser.add_argument('--heatmap', type=bool, default=False, help='visualize bbox as heat map or bbox')
 
         #
         self.initialized = True

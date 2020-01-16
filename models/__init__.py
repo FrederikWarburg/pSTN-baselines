@@ -106,9 +106,9 @@ class CoolSystem(pl.LightningModule):
         loss = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
 
-        grid_in, grid_out, theta = visualize_stn(self.model, x, self.opt)
+        grid_in, grid_out, theta, bbox_images = visualize_stn(self.model, x, self.opt)
 
-        return {'val_loss': loss, 'val_acc': acc, 'grid_in': grid_in, 'grid_out': grid_out, 'theta': theta}
+        return {'val_loss': loss, 'val_acc': acc, 'grid_in': grid_in, 'grid_out': grid_out, 'theta': theta, 'bbox_viz': bbox_images}
 
     def validation_end(self, outputs):
 
@@ -120,6 +120,7 @@ class CoolSystem(pl.LightningModule):
 
         if self.opt.model.lower() in ['stn', 'pstn']:
             self.logger.experiment.add_image('grid_out', outputs[0]['grid_out'], self.global_step)
+            self.logger.experiment.add_image('bbox', outputs[0]['bbox_viz'], self.global_step)
 
             if self.opt.model.lower() == 'stn':
                 mu_mean = torch.stack([x['theta'] for x in outputs]).mean(dim=0).mean(dim=0)
@@ -138,7 +139,7 @@ class CoolSystem(pl.LightningModule):
                 if self.opt.model.lower() == 'pstn':
                     self.logger.experiment.add_scalar("sigma/mean/sigma_mean_" + str(i), sigma_mean[i], self.global_step)
                     self.logger.experiment.add_scalar("sigma/std/sigma_std_" + str(i), sigma_std[i], self.global_step)
-
+        exit()
         return {'val_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar':tensorboard_logs}
 
     def test_step(self, batch, batch_idx):

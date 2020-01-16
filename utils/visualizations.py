@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import torchvision
+import cv2
 
 def convert_image_np(inp):
     """Convert a Tensor to numpy image."""
@@ -23,7 +24,7 @@ def visualize_stn(model, data, opt):
         in_grid = np.transpose(in_grid, (2,0,1))
 
         if opt.model.lower() == 'cnn':
-            return in_grid, None, None
+            return in_grid, None, None, None
         elif opt.model.lower() == 'stn':
             transformed_input_tensor, theta, affine_params = model.stn(data)
         elif opt.model.lower() == 'pstn':
@@ -35,5 +36,65 @@ def visualize_stn(model, data, opt):
         out_grid = (out_grid*255).astype(np.uint8)
         out_grid = np.transpose(out_grid, (2,0,1))
 
+        bbox_images = visualize_bbox(data, affine_params, opt)
+
         # Plot the results side-by-side
-    return in_grid, out_grid, theta
+    return in_grid, out_grid, theta, bbox_images
+
+
+def visualize_bbox(data, affine_params, opt):
+
+    images = []
+    for j, im in enumerate(data):
+
+        im = np.transpose(im.cpu().numpy(),(1,2,0))
+        im = denormalize(im)
+
+        if im.shape[2] == 1:
+            im = np.stack((im[:,:,0],)*3, axis=-1)
+
+        im = add_bounding_boxes(im, affine_params, opt.N, opt.test_samples, mode_= 'crop', heatmap = opt.heatmap)
+
+        images.append(np.transpose(im, (2,0,1)))
+
+    images = torchvision.utils.make_grid(torch.Tensor(images))
+
+    return images
+
+def denormalize(image):
+    im = (image - np.min(image)) / (np.max(image) - np.min(image))
+    return im
+
+def add_bounding_boxes(image, affine_params, num_branches, num_samples, mode_ = 'crop', heatmap = True):
+
+    color = [(255, 0, 0) ,(0, 255, 0),(0, 0, 255), (255, 255, 0),(255, 0, 255),(0, 255, 255)]
+
+    image *= 255
+    im = image.astype(np.uint8).copy()
+
+    if mode_ == 'crop':
+        w = int(im.shape[0])
+        h = int(im.shape[1])
+
+    for j in range(num_samples):
+        for i in range(num_branches):
+            if mode_ == 'crop':
+                x = affine_params[j*num_branches+i, 0, 2]
+                y = affine_params[j*num_branches+i, 1, 2]
+
+                # define bbox by top left corner and define coordinates system with origo in top left corner
+                x = int(x*w//2 + w//4)
+                y = int(y*h//2 + h//4)
+
+                if heatmap:
+
+                    overlay = im.copy()
+                    cv2.rectangle(overlay, (x,y),(x + w//2, y + h//2), color[i%len(color)], -1)  # A filled rectangle
+
+                    alpha = 0.05 # Transparency factor.
+
+                    # Following line overlays transparent rectangle over the image
+                    im = cv2.addWeighted(overlay, alpha, im, 1 - alpha, 0)
+                else:
+                    cv2.rectangle(im, (x,y),(x + w//2, y + h//2), color[i%len(color)], 1)
+    return im
