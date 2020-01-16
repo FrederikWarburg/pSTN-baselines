@@ -23,7 +23,7 @@ def visualize_stn(model, data, opt):
         in_grid = np.transpose(in_grid, (2,0,1))
 
         if opt.model.lower() == 'cnn':
-            return in_grid, None
+            return in_grid, None, None
         elif opt.model.lower() == 'stn':
             transformed_input_tensor, theta, affine_params = model.stn(data)
         elif opt.model.lower() == 'pstn':
@@ -36,4 +36,4 @@ def visualize_stn(model, data, opt):
         out_grid = np.transpose(out_grid, (2,0,1))
 
         # Plot the results side-by-side
-    return in_grid, out_grid
+    return in_grid, out_grid, theta

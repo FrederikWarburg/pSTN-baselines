@@ -44,11 +44,6 @@ def create_optimizer(model, opt):
         else:
             print("=> SGD all parameters chosen")
             optimizer = torch.optim.SGD(model.parameters(), lr=opt.lr)
-            #optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr,
-            #                                    momentum=opt.momentum,
-            #                                    weight_decay=opt.weightDecay)
-
-
 
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=0.1)
 
@@ -111,9 +106,9 @@ class CoolSystem(pl.LightningModule):
         loss = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
 
-        grid_in, grid_out = visualize_stn(self.model, x, self.opt)
+        grid_in, grid_out, theta = visualize_stn(self.model, x, self.opt)
 
-        return {'val_loss': loss, 'val_acc': acc, 'grid_in': grid_in, 'grid_out': grid_out}
+        return {'val_loss': loss, 'val_acc': acc, 'grid_in': grid_in, 'grid_out': grid_out, 'theta': theta}
 
     def validation_end(self, outputs):
 
@@ -125,6 +120,23 @@ class CoolSystem(pl.LightningModule):
 
         if self.opt.model.lower() in ['stn', 'pstn']:
             self.logger.experiment.add_image('grid_out', outputs[0]['grid_out'], self.global_step)
+
+            if self.opt.model.lower() == 'stn':
+                mu_mean = torch.stack([x['theta'] for x in outputs]).mean(dim=0).mean(dim=0)
+                mu_std = torch.stack([x['theta'] for x in outputs]).std(dim=0).std(dim=0)
+            elif self.opt.model.lower() == 'pstn':
+                mu_mean = torch.stack([torch.stack([param for param in x['theta'][0]]) for x in outputs]).mean(dim=0).mean(dim=0)
+                mu_std = torch.stack([torch.stack([param for param in x['theta'][0]]) for x in outputs]).std(dim=0).std(dim=0)
+                sigma_mean = torch.stack([torch.stack([param for param in x['theta'][1]]) for x in outputs]).mean(dim=0).mean(dim=0)
+                sigma_std = torch.stack([torch.stack([param for param in x['theta'][1]]) for x in outputs]).std(dim=0).std(dim=0)
+
+            for i in range(len(mu_mean)):
+                self.logger.experiment.add_scalar('mu_mean_'.format(i), mu_mean[i], self.global_step)
+                self.logger.experiment.add_scalar('mu_std_'.format(i), mu_std[i], self.global_step)
+
+                if self.opt.model.lower() == 'pstn':
+                    self.logger.experiment.add_scalar('sigma_mean_'.format(i), sigma_mean[i], self.global_step)
+                    self.logger.experiment.add_scalar('sigma_std_'.format(i), sigma_std[i], self.global_step)
 
         return {'val_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar':tensorboard_logs}
 
