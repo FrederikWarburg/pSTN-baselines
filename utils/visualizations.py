@@ -112,6 +112,6 @@ def add_bounding_boxes(image, affine_params, num_branches, num_samples, mode_ = 
                     if y + h//2 > h: x = h - 2
                     if y < 0: x = 2
 
-                    cv2.rectangle(im, (x,y),(x + w//2, y + h//2), color[i%len(color)], 2)
+                    cv2.rectangle(im, (x,y),(x + w//2, y + h//2), color[i%len(color)], 1)
 
     return im
