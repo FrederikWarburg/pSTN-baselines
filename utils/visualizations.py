@@ -59,6 +59,13 @@ def visualize_bbox(data, affine_params, opt):
 
     images = torchvision.utils.make_grid(torch.Tensor(images))
 
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    plt.imshow(np.transpose(images,(1,2,0)))
+    plt.show()
+    exit()
+
     return images
 
 def denormalize(image):
