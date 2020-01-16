@@ -10,6 +10,7 @@ class Elbo(nn.Module):
 
         self.sigma_prior = sigma_prior
         self.alpha = alpha
+        self.iter = 0.0
 
     def forward(self, x, label):
 
@@ -18,5 +19,8 @@ class Elbo(nn.Module):
 
         self.nll, self.kl, self.rec = elbo(x, mu, sigma, label, sigma_prior = self.sigma_prior)
 
+        # increment counter for each update
+        self.iter += 1.0
+        alpha = min(1, 1.0/self.iter)
 
-        return self.nll + self.alpha*self.kl + self.rec
+        return self.nll + alpha*self.kl + self.rec
