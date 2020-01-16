@@ -21,24 +21,6 @@ class STN(nn.Module):
             from .simplelocalizer import SimpleSTN
             self.stn = SimpleSTN(opt)
 
-        # Regressor for the 3 * 2 affine matrix
-        self.fc_loc = nn.Sequential(
-            nn.Linear(512, 100),
-            nn.ReLU(True),
-            nn.Linear(100, self.num_param*self.N)
-        )
-
-        # Initialize the weights/bias with identity transformation
-        self.fc_loc[2].weight.data.zero_()
-        if self.num_param == 2:
-            # Tiling
-            bias = torch.tensor([[-1,-1],[1,1],[1,-1],[-1,1]], dtype=torch.float)*0.5
-            self.fc_loc[2].bias.data.copy_(bias[:self.N].view(-1))
-        if self.num_param == 6:
-            self.fc_loc[2].bias.data.copy_(torch.tensor([1,0,0,
-                                                         0,1,0]*self.N, dtype=torch.float))
-
-
     def init_classifier(self, opt):
 
         if opt.basenet.lower() == 'inception':
