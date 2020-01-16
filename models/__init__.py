@@ -132,12 +132,12 @@ class CoolSystem(pl.LightningModule):
 
             for i in range(len(mu_mean)):
 
-                self.logger.experiment.add_scalar("mu/mu_mean/mu_mean_" + str(i), mu_mean[i], self.global_step)
-                self.logger.experiment.add_scalar("std/std_mean/mu_std_" + str(i), mu_std[i], self.global_step)
+                self.logger.experiment.add_scalar("mu/mean/mu_mean_" + str(i), mu_mean[i], self.global_step)
+                self.logger.experiment.add_scalar("mu/std/mu_std_" + str(i), mu_std[i], self.global_step)
 
                 if self.opt.model.lower() == 'pstn':
-                    self.logger.experiment.add_scalar("sigma/sigma_mean/sigma_mean_" + str(i), sigma_mean[i], self.global_step)
-                    self.logger.experiment.add_scalar("sigma/sigma_std/sigma_std_" + str(i), sigma_std[i], self.global_step)
+                    self.logger.experiment.add_scalar("sigma/mean/sigma_mean_" + str(i), sigma_mean[i], self.global_step)
+                    self.logger.experiment.add_scalar("sigma/std/sigma_std_" + str(i), sigma_std[i], self.global_step)
 
         return {'val_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar':tensorboard_logs}
 
