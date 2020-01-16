@@ -37,9 +37,7 @@ def visualize_stn(model, data, opt):
         out_grid = np.transpose(out_grid, (2,0,1))
 
         bbox_images = visualize_bbox(data, affine_params, opt)
-        print("out grid")
-        print("bbox")
-        print(bbox_images)
+
         # Plot the results side-by-side
     return in_grid, out_grid, theta, bbox_images
 
