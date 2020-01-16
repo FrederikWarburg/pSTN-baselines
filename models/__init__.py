@@ -131,12 +131,13 @@ class CoolSystem(pl.LightningModule):
                 sigma_std = torch.stack([torch.stack([param for param in x['theta'][1]]) for x in outputs]).std(dim=0).std(dim=0)
 
             for i in range(len(mu_mean)):
-                self.logger.experiment.add_scalar('mu_mean_'.format(i), mu_mean[i], self.global_step)
-                self.logger.experiment.add_scalar('mu_std_'.format(i), mu_std[i], self.global_step)
+
+                self.logger.experiment.add_scalar("mu_mean_" + str(i), mu_mean[i], self.global_step)
+                self.logger.experiment.add_scalar("mu_std_" + str(i), mu_std[i], self.global_step)
 
                 if self.opt.model.lower() == 'pstn':
-                    self.logger.experiment.add_scalar('sigma_mean_'.format(i), sigma_mean[i], self.global_step)
-                    self.logger.experiment.add_scalar('sigma_std_'.format(i), sigma_std[i], self.global_step)
+                    self.logger.experiment.add_scalar("sigma_mean_" + str(i), sigma_mean[i], self.global_step)
+                    self.logger.experiment.add_scalar("sigma_std_" + str(i), sigma_std[i], self.global_step)
 
         return {'val_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar':tensorboard_logs}
 
