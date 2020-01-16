@@ -107,6 +107,11 @@ def add_bounding_boxes(image, affine_params, num_branches, num_samples, mode_ = 
                     # Following line overlays transparent rectangle over the image
                     im = cv2.addWeighted(overlay, alpha, im, 1 - alpha, 0)
                 else:
+                    if x + w//2 > w: x = w
+                    if x < 0: x = 0
+                    if y + h//2 > h: x = h
+                    if y < 0: x = 0
+
                     cv2.rectangle(im, (x,y),(x + w//2, y + h//2), color[i%len(color)], 1)
 
     return im
