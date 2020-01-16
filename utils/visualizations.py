@@ -71,7 +71,9 @@ def visualize_bbox(data, affine_params, opt):
         images = (images*255).astype(np.uint8)
         images = np.transpose(images, (2,0,1))
 
-    return images
+        return images
+
+    return None
 
 def denormalize(image):
     im = (image - np.min(image)) / (np.max(image) - np.min(image))
