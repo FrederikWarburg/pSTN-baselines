@@ -37,7 +37,9 @@ def visualize_stn(model, data, opt):
         out_grid = np.transpose(out_grid, (2,0,1))
 
         bbox_images = visualize_bbox(data, affine_params, opt)
-
+        print("out grid")
+        print("bbox")
+        print(bbox_images)
         # Plot the results side-by-side
     return in_grid, out_grid, theta, bbox_images
 
@@ -55,9 +57,11 @@ def visualize_bbox(data, affine_params, opt):
 
         im = add_bounding_boxes(im, affine_params, opt.N, opt.test_samples, mode_= 'crop', heatmap = opt.heatmap)
 
-        images.append(np.transpose(im, (2,0,1)))
+        images.append(np.transpose(im,(2,0,1)))
 
-    images = torchvision.utils.make_grid(torch.FloatTensor(images))
+    images = convert_image_np(torchvision.utils.make_grid(torch.FloatTensor(images)))
+    images = (images*255).astype(np.uint8)
+    images = np.transpose(images, (2,0,1))
 
     return images
 
