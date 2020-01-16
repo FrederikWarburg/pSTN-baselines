@@ -32,7 +32,7 @@ class BaseOptions:
         self.parser.add_argument('--basenet', default='inception', type=str, help='base network to use')
 
         # general params
-        self.parser.add_argument('--num_threads', default=0, type=int, help='# threads for loading data')
+        self.parser.add_argument('--num_threads', default=8, type=int, help='# threads for loading data')
         self.parser.add_argument('--seed', type=int, help='if specified, uses seed')
         self.parser.add_argument('--name', type=str, default='debug', help='name of the experiment. It decides where to store samples and models')
         self.parser.add_argument('--checkpoints_dir', type=str, default='checkpoints', help='models are saved here')
