@@ -43,11 +43,16 @@ def visualize_stn(model, data, opt):
 
 
 def visualize_bbox(data, affine_params, opt):
-    print(affine_params)
-    print(data.shape)
-    print(affine_params.shape)
+
+    batch_size = data.shape[0]
+    affine_params = torch.stack(affine_params.split([opt.N]*opt.test_samples*batch_size))
+    sorted_params = torch.zeros(batch_size, opt.test_samples, opt.N, 2, 3)
+    for i in range(len(affine_params)):
+        # im, sample, N, 2, 3
+        sorted_params[i % batch_size, i // batch_size, :, :, :] = affine_params[i, :, :]
+
     images = []
-    for j, im in enumerate(data):
+    for j, (im, params) in enumerate(zip(data, sorted_params)):
 
         im = np.transpose(im.cpu().numpy(),(1,2,0))
         im = denormalize(im)
@@ -55,7 +60,7 @@ def visualize_bbox(data, affine_params, opt):
         if im.shape[2] == 1:
             im = np.stack((im[:,:,0],)*3, axis=-1)
 
-        im = add_bounding_boxes(im, affine_params, opt.N, opt.test_samples, mode_= 'crop', heatmap = opt.heatmap)
+        im = add_bounding_boxes(im, params, opt.N, opt.test_samples, mode_= 'crop', heatmap = opt.heatmap)
 
         images.append(np.transpose(im,(2,0,1)))
 
@@ -83,8 +88,8 @@ def add_bounding_boxes(image, affine_params, num_branches, num_samples, mode_ = 
     for j in range(num_samples):
         for i in range(num_branches):
             if mode_ == 'crop':
-                x = affine_params[j*num_branches+i, 0, 2]
-                y = affine_params[j*num_branches+i, 1, 2]
+                x = affine_params[j, i, 0, 2]
+                y = affine_params[j, i, 1, 2]
 
                 # define bbox by top left corner and define coordinates system with origo in top left corner
                 x = int(x*w//2 + w//4)
