@@ -57,14 +57,7 @@ def visualize_bbox(data, affine_params, opt):
 
         images.append(np.transpose(im, (2,0,1)))
 
-    images = torchvision.utils.make_grid(torch.Tensor(images))
-
-    import numpy as np
-    import matplotlib.pyplot as plt
-
-    plt.imshow(np.transpose(images,(1,2,0)))
-    plt.show()
-    exit()
+    images = torchvision.utils.make_grid(torch.FloatTensor(images))
 
     return images
 
