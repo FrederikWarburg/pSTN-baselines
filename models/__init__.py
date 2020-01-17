@@ -115,7 +115,7 @@ class CoolSystem(pl.LightningModule):
         avg_acc = torch.stack([x['val_acc'] for x in outputs]).mean()
         tensorboard_logs = {'val_loss': avg_loss, 'val_acc': avg_acc}
 
-        """
+
         self.logger.experiment.add_image('grid_in', outputs[0]['grid_in'], self.global_step)
 
         if self.opt.model.lower() in ['stn', 'pstn']:
@@ -125,6 +125,7 @@ class CoolSystem(pl.LightningModule):
             if outputs[0]['bbox_viz'] is not None:
                 self.logger.experiment.add_image('bbox', outputs[0]['bbox_viz'], self.global_step)
 
+            """
             if self.opt.model.lower() == 'stn':
                 mu_mean = torch.stack([x['theta'] for x in outputs]).mean(dim=0).mean(dim=0)
                 mu_std = torch.stack([x['theta'] for x in outputs]).std(dim=0).std(dim=0)
