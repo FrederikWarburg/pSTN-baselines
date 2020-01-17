@@ -87,9 +87,9 @@ class CoolSystem(pl.LightningModule):
 
         x, y = batch
         y_hat = self.forward(x)
-
+        print(y_hat, y)
         loss = self.criterion(y_hat,y)
-
+        print(loss)
         if self.opt.model.lower() == 'pstn':
             y_hat = y_hat[0]
 
