@@ -87,6 +87,7 @@ class Cub2011(Dataset):
         self.transform = transform(opt)
         self.loader = default_loader
         self.train = data_div > 0
+        self.val = data_div == 1
         self.num_classes = opt.num_classes
 
         if opt.download:
@@ -100,17 +101,24 @@ class Cub2011(Dataset):
         images = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'images.txt'), sep=' ', names=['img_id', 'filepath'])
         image_class_labels = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'image_class_labels.txt'), sep=' ', names=['img_id', 'target'])
         train_test_split = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'train_test_split.txt'), sep=' ', names=['img_id', 'is_training_img'])
+        if not os.path.isfile(os.path.join(self.root, 'CUB_200_2011', 'train_val_split.txt')): self._make_validation_set()
+        train_val_split = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'train_val_split.txt'), sep=' ', names=['img_id', 'is_validation_img'])
 
         data = images.merge(image_class_labels, on='img_id')
         self.data = data.merge(train_test_split, on='img_id')
+        self.data = self.data.merge(train_val_split, on='img_id')
 
         if self.train:
             self.data = self.data[self.data.is_training_img == 1]
+
+            if self.val:
+                self.data = self.data[self.data.is_validation_img == 1]
+            else:
+                self.data = self.data[self.data.is_validation_img == 0]
         else:
             self.data = self.data[self.data.is_training_img == 0]
 
         self.data = self.data[self.data.target < self.num_classes + 1]
-
 
     def _check_integrity(self):
         try:
@@ -136,6 +144,15 @@ class Cub2011(Dataset):
 
         with tarfile.open(os.path.join(self.root, self.filename), "r:gz") as tar:
             tar.extractall(path=self.root)
+
+
+    def _make_validation_set(self):
+
+        train_val_split = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'train_test_split.txt'), sep=' ', names=['img_id', 'is_training_img'])
+
+        train_val_split["is_training_img"][train_val_split["is_training_img"] == 1] = np.random.binomial(1, 0.1, sum(train_val_split["is_training_img"] == 1))
+
+        np.savetxt(os.path.join(self.root, 'CUB_200_2011', 'train_val_split.txt'), train_val_split.values, fmt='%u %u')
 
     def __len__(self):
         return len(self.data)
