@@ -10,7 +10,7 @@ class InceptionClassifier(nn.Module):
             raise NotImplementedError
         else:
             self.N = opt.N
-            self.feature_size = 1024
+            self.feature_size = 1024 if opt.basenet.lower() == 'inception' else 2048
             self.model = nn.Module()
 
             for branch_ix in range(self.N):
@@ -25,10 +25,14 @@ class InceptionClassifier(nn.Module):
     def init_classifier_branch(self, opt):
 
         # "Inception architecture with batch normalisation pretrained on ImageNet"
-        inception = models.googlenet(pretrained=True)
+        if opt.basenet.lower() == 'inception':
+            basenet = models.googlenet(pretrained=True)
+            # "remove the last layer (1000-way ILSVRC classifier)"
+            layers = list(basenet.children())[:-2]
 
-        # "remove the last layer (1000-way ILSVRC classifier)"
-        layers = list(inception.children())[:-2]
+        elif opt.basenet.lower() == 'resnet50':
+            basenet = models.resnet50(pretrained = True)
+            layers = list(basenet.children())[:-1]
 
         encoder = nn.Sequential(*layers)
 
@@ -44,7 +48,7 @@ class InceptionClassifier(nn.Module):
         return encoder
 
     def forward(self, x):
-
+        print(x.shape)
         batch_size = x.shape[0] // self.N
         xs = x.split([batch_size]*self.N)
 

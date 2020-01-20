@@ -9,7 +9,7 @@ from loss import create_criterion
 
 def create_model(opt):
     if opt.model.lower() == 'cnn':
-        if opt.basenet.lower() == 'inception':
+        if opt.basenet.lower() in ['inception', 'resnet50']:
             from .inceptionclassifier import InceptionClassifier
             model = InceptionClassifier(opt)
         elif opt.basenet.lower() == 'simple':
