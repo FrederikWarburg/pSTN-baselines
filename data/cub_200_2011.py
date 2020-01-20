@@ -113,7 +113,7 @@ class Cub2011(Dataset):
             self.data = self.data[self.data.is_training_img == 1]
 
             if self.trainval_split:
-                self.data = self.data[self.data.is_validation_img == 1] if self.val else self.data = self.data[self.data.is_validation_img == 0]
+                self.data = self.data[self.data.is_validation_img == 1] if self.val else self.data[self.data.is_validation_img == 0]
             else:
                 if self.val: self.data = self.data[self.data.is_validation_img == 1]
         else:
