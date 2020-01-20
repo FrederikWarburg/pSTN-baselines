@@ -43,7 +43,7 @@ def create_optimizer(model, opt):
             ], momentum=opt.momentum, weight_decay=opt.weightDecay)
         else:
             print("=> SGD all parameters chosen")
-            optimizer = torch.optim.SGD(model.parameters(), lr=opt.lr, momentum=opt.momentum, weight_decay=opt.weightDecay)
+            optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr, momentum=opt.momentum, weight_decay=opt.weightDecay)
 
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=0.1)
 
