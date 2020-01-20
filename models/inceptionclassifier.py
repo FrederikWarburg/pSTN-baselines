@@ -2,6 +2,10 @@ import torchvision.models as models
 import torch.nn as nn
 import torch
 
+FEATURE_SIZES = {'inception' : 1024,
+                 'resnet50'  : 2048,
+                 'resnet34'  : 512}
+
 class InceptionClassifier(nn.Module):
     def __init__(self, opt):
         super().__init__()
@@ -10,7 +14,7 @@ class InceptionClassifier(nn.Module):
             raise NotImplementedError
         else:
             self.N = opt.N
-            self.feature_size = 1024 if opt.basenet.lower() == 'inception' else 2048
+            self.feature_size = FEATURE_SIZES[opt.basenet.lower()]
             self.model = nn.Module()
 
             for branch_ix in range(self.N):
@@ -32,6 +36,10 @@ class InceptionClassifier(nn.Module):
 
         elif opt.basenet.lower() == 'resnet50':
             basenet = models.resnet50(pretrained = True)
+            layers = list(basenet.children())[:-1]
+
+        elif opt.basenet.lower() == 'resnet34':
+            basenet = models.resnet34(pretrained = True)
             layers = list(basenet.children())[:-1]
 
         encoder = nn.Sequential(*layers)
