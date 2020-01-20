@@ -48,7 +48,7 @@ class InceptionClassifier(nn.Module):
         return encoder
 
     def forward(self, x):
-        print(x.shape)
+
         batch_size = x.shape[0] // self.N
         xs = x.split([batch_size]*self.N)
 

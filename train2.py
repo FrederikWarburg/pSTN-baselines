@@ -29,7 +29,8 @@ if __name__ == '__main__':
                       early_stop_callback=None,
                       logger=logger,
                       val_check_interval=opt.val_check_interval,
-                      val_percent_check=opt.val_percent_check)
+                      val_percent_check=opt.val_percent_check,
+                      distributed_backend='dp')
     trainer.fit(model)
 
     trainer.test()

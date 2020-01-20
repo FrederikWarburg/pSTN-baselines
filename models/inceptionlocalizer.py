@@ -4,47 +4,6 @@ from utils.utils import make_affine_parameters
 import torchvision.models as models
 import torch
 
-
-def init_localizer(self, opt):
-
-    # "Inception architecture with batch normalisation pretrained on ImageNet"
-    inception = models.googlenet(pretrained = True)
-
-    # "remove the last pooling layer to preserve the spatial information"
-    layers = list(inception.children())[:-3]
-    self.cnn = nn.Sequential(*layers)
-
-    if opt.is_train:
-        count = 0
-        for i, child in enumerate(self.cnn.children()):
-            for param in child.parameters():
-                if count < opt.freeze_layers:
-                    param.requires_grad = False
-
-                count += 1
-
-    # add three weight layers
-    self.conv = nn.Conv2d(1024, 128, 1)
-
-    # mean regressor
-    self.mu_fc1 = nn.Linear(128*(opt.crop_size//32)**2, 128)
-    self.mu_fc2 = nn.Linear(128, self.num_param*self.N)
-
-    # variance regressor
-    self.sigma_fc1 = nn.Linear(128*(opt.crop_size//32)**2, 128)
-    self.sigma_fc2 = nn.Linear(128, self.num_param*self.N)
-
-    # Initialize the weights/bias with identity transformation
-    self.mu_fc2.weight.data.zero_()
-
-    if self.num_param == 2:
-        bias = torch.tensor([[-1,-1],[-1,1],[1,-1],[1,1]], dtype=torch.float)*0.5
-        self.mu_fc2.bias.data.copy_(bias[:self.N].view(-1))
-
-    elif self.num_param == 4:
-        self.mu_fc2.bias.data.copy_(torch.tensor([0, 1, 0, 0], dtype=torch.float).repeat(self.N))
-
-
 class InceptionSTN(nn.Module):
     def __init__(self, opt):
         super().__init__()
