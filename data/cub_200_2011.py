@@ -89,6 +89,7 @@ class Cub2011(Dataset):
         self.train = data_div > 0
         self.val = data_div == 1
         self.num_classes = opt.num_classes
+        self.trainval_split = opt.trainval_split
 
         if opt.download:
             self._download()
@@ -111,10 +112,10 @@ class Cub2011(Dataset):
         if self.train:
             self.data = self.data[self.data.is_training_img == 1]
 
-            if self.val:
-                self.data = self.data[self.data.is_validation_img == 1]
+            if self.trainval_split:
+                self.data = self.data[self.data.is_validation_img == 1] if self.val else self.data = self.data[self.data.is_validation_img == 0]
             else:
-                self.data = self.data[self.data.is_validation_img == 0]
+                if self.val: self.data = self.data[self.data.is_validation_img == 1]
         else:
             self.data = self.data[self.data.is_training_img == 0]
 
