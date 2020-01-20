@@ -21,6 +21,8 @@ class InceptionClassifier(nn.Module):
                 encoder = self.init_classifier_branch(opt)
                 self.model.add_module('branch_{}'.format(branch_ix), encoder)
 
+
+            self.bn = nn.BatchNorm1d(self.feature_size, eps=1e-05, momentum=0.1, affine=True)
             self.dropout = nn.Dropout(opt.dropout_rate)
             self.fc1 = nn.Linear(self.N * self.feature_size, opt.num_classes)
 
@@ -46,7 +48,7 @@ class InceptionClassifier(nn.Module):
 
         if opt.is_train:
             count = 0
-            for i, child in enumerate(encoder.children()):
+            for i, child in enumerate(encoder.children()): #TODO: use .named_children() instead
                 for param in child.parameters():
                     if count < opt.freeze_layers:
                         param.requires_grad = False
@@ -65,7 +67,8 @@ class InceptionClassifier(nn.Module):
             x = self.model._modules['branch_{}'.format(branch_ix)].forward(xs[branch_ix])
             features[:, branch_ix*self.feature_size:(branch_ix+1)*self.feature_size] = x.view(batch_size, self.feature_size)
 
-        x = self.dropout(features)
+        x = self.bn(features)
+        x = self.dropout(x)
         x = self.fc1(x)
 
         x = self.logsoftmax(x)
