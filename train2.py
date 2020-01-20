@@ -69,7 +69,7 @@ if __name__ == '__main__':
 ########
 
 # simple classifier
-# python train2.py --dataroot ../data/ --model cnn --basenet inception --dataset cub --digits 1 --N 1 --train_samples 1 --test_samples 1 --batch_size 256 --num_classes 200 --step_size 3 --smallest_size 256 --crop_size 224 --val_check_interval 0.004 --epochs 50
+# python train2.py --dataroot ../data/ --model cnn --basenet inception --dataset cub --digits 1 --N 1 --train_samples 1 --test_samples 1 --batch_size 256 --num_classes 200 --step_size 30 --smallest_size 256 --crop_size 224 --val_check_interval 0.004 --epochs 50 --freeze_layers 30 --data_augmentation True --horizontal_flipping True --dropout_rate 0.7
 
 # simple stn
 # python train2.py --dataroot /scratch/s153847/ --model stn --basenet inception --dataset cub --digits 1 --N 1 --train_samples 1 --test_samples 1 --batch_size 256 --num_classes 200 --step_size 3 --smallest_size 256 --crop_size 224 --lr_loc 1e-02 --seed 42 --lr 0.1 --val_check_interval 0.004
