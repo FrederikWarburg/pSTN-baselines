@@ -22,7 +22,7 @@ class InceptionClassifier(nn.Module):
                 encoder = self.init_classifier_branch(opt)
                 self.model.add_module('branch_{}'.format(branch_ix), encoder)
 
-            self.bn = nn.BatchNorm1d(self.feature_size, eps=1e-05, momentum=0.1, affine=True)
+            self.bn = nn.BatchNorm1d(self.N * self.feature_size, eps=1e-05, momentum=0.1, affine=True)
             self.dropout = nn.Dropout(opt.dropout_rate)
             self.fc1 = nn.Linear(self.N * self.feature_size, opt.num_classes)
 
