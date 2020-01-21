@@ -54,29 +54,6 @@ class SimplePSTN(nn.Module):
 
 
     def forward(self, x):
-        """
-            :param x: input tensor [B, C, W, H]
-            :return:
-                x: N*S affine transformation of input tensor [B*N*S, C, W', H']
-                theta_mu: the mean estimate of theta [B, N*num_params]
-                theta_sigma: the variance estimate of theta [B, N*num_params]
-
-            A quick comment on the upsampling of x, theta_mu, theta_sigma which is used to avoid for loops
-
-            We will use the following notation
-                tm_i_j_k = theta_mu for input image i, parameters j, and sample k
-                ts_i_j_k = theta_sigma for input image i, parameters j, and sample k
-
-            Example and dimensions before upsample (assuming B = 2, S = 2, N = 2):
-                x = [im1, im2]                              x = [B, C, W, H]
-                theta_mu = [tm1, tm2]                       theta_mu = [B, N*num_params]
-                theta_sigma = [ts1, ts2]                    theta_sigma = [B, N*num_params]
-
-            Example and dimensions after upsample (assuming B = 2, S = 2, N = 2):
-                x = [im1, im2, im1, im2, im1, im2, im1, im2]                                            x = [B*N*S, C, W, H]
-                theta_mu = [tm1_1_1, tm2_1_1, tm1_2_1, tm2_2_1, tm1_1_2, tm2_1_2, tm1_1_2, tm2_1_2]     theta_mu = [B*N*S, N*num_params]
-                theta_sigma = [ts1_1_1, ts2_1_1, ts1_2_1, ts2_2_1, ts1_1_2, ts2_1_2, ts1_1_2, ts2_1_2]     theta_sigma = [B*N*S, N*num_params]
-        """
 
         self.S = self.train_samples if self.training else self.test_samples
 
