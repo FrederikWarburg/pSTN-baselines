@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import torchvision
+from torchvision import transforms
 import cv2
 
 def convert_image_np(inp):
@@ -11,6 +12,14 @@ def convert_image_np(inp):
     inp = std * inp + mean
     inp = np.clip(inp, 0, 1)
     return inp
+
+
+def normalize(images):
+
+    transform_normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                                std=[0.229, 0.224, 0.225])
+
+    return transform_normalize(images)
 
 def visualize_stn(model, data, opt):
 
@@ -67,7 +76,9 @@ def visualize_bbox(data, affine_params, opt):
         images.append(np.transpose(im,(2,0,1)))
 
     if len(images) > 0:
-        images = convert_image_np(torchvision.utils.make_grid(torch.FloatTensor(images)))
+        images = torch.FloatTensor(images)
+        images = normalize(images)
+        images = convert_image_np(torchvision.utils.make_grid(images))
         images = (images*255).astype(np.uint8)
         images = np.transpose(images, (2,0,1))
 
