@@ -16,10 +16,8 @@ def convert_image_np(inp):
 
 def normalize(images):
 
-    transform_normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                                std=[0.229, 0.224, 0.225])
 
-    return transform_normalize(images)
+    return images / torch.max(images)
 
 def visualize_stn(model, data, opt):
 
@@ -45,7 +43,7 @@ def visualize_stn(model, data, opt):
         out_grid = (out_grid*255).astype(np.uint8)
         out_grid = np.transpose(out_grid, (2,0,1))
 
-        bbox_images = visualize_bbox(data, affine_params, opt)
+        bbox_images = visualize_bbox(input_tensor, affine_params, opt)
 
         # Plot the results side-by-side
     return in_grid, out_grid, theta, bbox_images
@@ -63,24 +61,30 @@ def visualize_bbox(data, affine_params, opt):
     images = []
     for j, (im, params) in enumerate(zip(data, sorted_params)):
 
-        im = np.transpose(im.cpu().numpy(),(1,2,0))
+        im = np.transpose(im.numpy(),(1,2,0))
         im = denormalize(im)
 
         if im.shape[2] == 1:
             im = np.stack((im[:,:,0],)*3, axis=-1)
 
         if torch.isnan(params).any(): continue
-        print(im)
+
         im = add_bounding_boxes(im, params, opt.N, opt.test_samples, mode_= 'crop', heatmap = opt.heatmap)
 
         images.append(np.transpose(im,(2,0,1)))
 
     if len(images) > 0:
+
         images = torch.FloatTensor(images)
-        #images = normalize(images)
-        images = convert_image_np(torchvision.utils.make_grid(images))
-        #images = (images*255).astype(np.uint8)
-        images = np.transpose(images, (2,0,1))
+        print(images.shape)
+        if opt.dataset.lower() == 'mnist':
+
+            images = convert_image_np(torchvision.utils.make_grid(images-0.3))
+            images = (images*255).astype(np.uint8)
+            images = np.transpose(images, (2,0,1))
+
+        elif opt.dataset.lower() == 'cub':
+            images = torchvision.utils.make_grid(images, normalize = True)
 
         return images
 
