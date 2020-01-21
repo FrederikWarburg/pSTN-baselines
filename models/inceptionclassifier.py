@@ -2,9 +2,10 @@ import torchvision.models as models
 import torch.nn as nn
 import torch
 
-FEATURE_SIZES = {'inception' : 1024,
-                 'resnet50'  : 2048,
-                 'resnet34'  : 512}
+FEATURE_SIZES = {'inception'    : 1024,
+                 'inception_v3' : 2048,
+                 'resnet50'     : 2048,
+                 'resnet34'     : 512}
 
 class InceptionClassifier(nn.Module):
     def __init__(self, opt):
@@ -35,6 +36,10 @@ class InceptionClassifier(nn.Module):
             basenet = models.googlenet(pretrained=True)
             # "remove the last layer (1000-way ILSVRC classifier)"
             layers = list(basenet.children())[:-2]
+
+        elif opt.basenet.lower() == 'inception_v3':
+            basenet = models.inception_v3(pretrained=True)
+            layers = list(basenet.children())[:-1]
 
         elif opt.basenet.lower() == 'resnet50':
             basenet = models.resnet50(pretrained = True)

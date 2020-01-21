@@ -9,7 +9,7 @@ from loss import create_criterion
 
 def create_model(opt):
     if opt.model.lower() == 'cnn':
-        if opt.basenet.lower() in ['inception', 'resnet50', 'resnet34']:
+        if opt.basenet.lower() in ['inception', 'resnet50', 'resnet34', 'inception_v3']:
             from .inceptionclassifier import InceptionClassifier
             model = InceptionClassifier(opt)
         elif opt.basenet.lower() == 'simple':
@@ -32,14 +32,14 @@ def create_optimizer(model, opt):
         if opt.model.lower() == 'stn' and opt.lr_loc > 0:
             # the learning rate of the parameters that are part of the localizer are multiplied 1e-4
             optimizer = torch.optim.SGD([
-                {'params': model.stn.parameters(),        'lr': opt.lr_loc*opt.lr},
-                {'params': model.classifier.parameters(), 'lr': opt.lr},
+                {'params': filter(lambda p: p.requires_grad, model.stn.parameters()),        'lr': opt.lr_loc*opt.lr},
+                {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
             ], momentum=opt.momentum, weight_decay=opt.weightDecay)
         elif opt.model.lower() == 'pstn' and opt.lr_loc > 0:
             # the learning rate of the parameters that are part of the localizer are multiplied 1e-4
             optimizer = torch.optim.SGD([
-                {'params': model.pstn.parameters(),       'lr': opt.lr_loc*opt.lr},
-                {'params': model.classifier.parameters(), 'lr': opt.lr},
+                {'params': filter(lambda p: p.requires_grad, model.pstn.parameters()),       'lr': opt.lr_loc*opt.lr},
+                {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
             ], momentum=opt.momentum, weight_decay=opt.weightDecay)
         else:
             print("=> SGD all parameters chosen")
