@@ -18,7 +18,7 @@ class PSTN(nn.Module):
         self.init_classifier(opt)
 
     def init_localizer(self, opt):
-        if opt.basenet.lower() in ['inception', 'resnet50']:
+        if opt.basenet.lower() in ['inception', 'resnet50', 'resnet34', 'inception_v3']:
             from .inceptionlocalizer import InceptionPSTN
             self.pstn = InceptionPSTN(opt)
         elif opt.basenet.lower() == 'simple':
@@ -26,7 +26,7 @@ class PSTN(nn.Module):
             self.pstn = SimplePSTN(opt)
 
     def init_classifier(self, opt):
-        if opt.basenet.lower() in ['inception', 'resnet50']:
+        if opt.basenet.lower() in ['inception', 'resnet50', 'resnet34', 'inception_v3']:
             from .inceptionclassifier import InceptionClassifier
             self.classifier = InceptionClassifier(opt)
         elif opt.basenet.lower() == 'simple':
