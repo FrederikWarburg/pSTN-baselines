@@ -142,7 +142,9 @@ class CoolSystem(pl.LightningModule):
                     self.logger.experiment.add_scalar("sigma/mean/sigma_mean_" + str(i), sigma_mean[i], self.global_step)
                     self.logger.experiment.add_scalar("sigma/std/sigma_std_" + str(i), sigma_std[i], self.global_step)
 
-        return {'val_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar':tensorboard_logs}
+        self.logger.experiment.add_scalar("acc_val", avg_acc, self.global_step)
+
+        return {'val_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar': tensorboard_logs}
 
     def test_step(self, batch, batch_idx):
 
