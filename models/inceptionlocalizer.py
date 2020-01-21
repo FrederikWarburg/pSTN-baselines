@@ -4,6 +4,11 @@ from utils.utils import make_affine_parameters
 import torchvision.models as models
 import torch
 
+FEATURE_SIZES = {'inception'    : 1024,
+                 'inception_v3' : 2048,
+                 'resnet50'     : 2048,
+                 'resnet34'     : 512}
+
 class InceptionSTN(nn.Module):
     def __init__(self, opt):
         super().__init__()

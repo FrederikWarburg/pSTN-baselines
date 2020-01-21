@@ -20,6 +20,6 @@ class Elbo(nn.Module):
 
         # increment counter for each update
         self.iter += 1.0
-        alpha = min(1, 1.0/self.iter)
+        alpha = 1.0/self.iter
 
         return self.nll + alpha*self.kl + self.rec
