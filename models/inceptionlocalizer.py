@@ -61,7 +61,7 @@ class InceptionPSTN(nn.Module):
 
         if opt.is_train:
             count = 0
-            for i, child in enumerate(self.cnn.children()):
+            for i, child in enumerate(self.localization.children()):
                 for param in child.parameters():
                     if count < opt.freeze_layers:
                         param.requires_grad = False
@@ -168,7 +168,7 @@ class InceptionSTN(nn.Module):
 
         if opt.is_train:
             count = 0
-            for i, child in enumerate(self.cnn.children()):
+            for i, child in enumerate(self.localization.children()):
                 for param in child.parameters():
                     if count < opt.freeze_layers:
                         param.requires_grad = False
