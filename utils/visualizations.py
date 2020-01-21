@@ -70,7 +70,7 @@ def visualize_bbox(data, affine_params, opt):
             im = np.stack((im[:,:,0],)*3, axis=-1)
 
         if torch.isnan(params).any(): continue
-
+        print(im)
         im = add_bounding_boxes(im, params, opt.N, opt.test_samples, mode_= 'crop', heatmap = opt.heatmap)
 
         images.append(np.transpose(im,(2,0,1)))
