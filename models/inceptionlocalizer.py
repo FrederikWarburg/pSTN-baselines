@@ -70,7 +70,7 @@ class InceptionPSTN(nn.Module):
 
     def init_mean_regressor(self, opt):
 
-        self.fc_loc = nn.Sequential(
+        self.fc_loc_mu = nn.Sequential(
             nn.Linear(128*(opt.crop_size//32)**2, 128),
             nn.ReLU(True),
             nn.Linear(128, self.num_param*self.N)
@@ -78,7 +78,7 @@ class InceptionPSTN(nn.Module):
 
     def init_std_regressor(self, opt):
 
-        self.fc_loc = nn.Sequential(
+        self.fc_loc_sigma = nn.Sequential(
             nn.Linear(128*(opt.crop_size//32)**2, 128),
             nn.ReLU(True),
             nn.Linear(128, self.num_param*self.N),
