@@ -95,7 +95,7 @@ class GTSRB(torch.utils.data.Dataset):
 
     def __init__(self, opt, data_div):
 
-        self.data_dir = os.path.join(opt.data_dir, 'gtsrb')
+        self.data_dir = os.path.join(opt.dataroot, 'gtsrb')
 
         if not os.path.isdir(self.data_dir):
             initialize_data(self.data_dir)
