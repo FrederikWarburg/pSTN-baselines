@@ -63,6 +63,7 @@ class MnistRandomPlacement(Dataset):
     def __init__(self, opt, train_div):
 
         self.datasets = []
+        self.cropsize = opt.crop_size
 
         # False (test) or True (train,val)
         trainingset = train_div > 0
@@ -109,7 +110,7 @@ class MnistRandomPlacement(Dataset):
             im[:,y:y+h,x:x+w] = im1.type(torch.float)
             target += str(target1)
 
-        transform = transforms.Compose([transforms.Normalize((0.1307,), (0.3081,))])
+        transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize(self.cropsize),transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
         im = transform(im)
 
         return im, int(target)
