@@ -1,6 +1,6 @@
 import torch.utils.data
 from data.cub_200_2011 import Cub2011
-from data.mnist import Mnist4x4grid
+from data.mnist import MnistSideBySide, MnistRandomPlacement
 from data.gtsrb import GTSRB
 
 def CreateDataset(opt, train, val, test):
@@ -16,8 +16,10 @@ def CreateDataset(opt, train, val, test):
 
     if opt.dataset.lower() == 'cub':
         dataset = Cub2011(opt, data_div)
-    elif opt.dataset.lower() == 'mnist':
-        dataset = Mnist4x4grid(opt, data_div)
+    elif opt.dataset.lower() == 'mnist_easy':
+        dataset = MnistSideBySide(opt, data_div)
+    elif opt.dataset.lower() == 'mnist_hard':
+        dataset = MnistRandomPlacement(opt, data_div)
     elif opt.dataset.lower() == 'gtsrb':
         dataset = GTSRB(opt, data_div)
 
