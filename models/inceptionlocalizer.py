@@ -203,3 +203,4 @@ class InceptionSTN(nn.Module):
         x = F.grid_sample(x, grid)
 
         return x, theta, affine_params
+

@@ -1,6 +1,7 @@
 import torch.utils.data
 from data.cub_200_2011 import Cub2011
 from data.mnist import Mnist4x4grid
+from data.gtsrb import GTSRB
 
 def CreateDataset(opt, train, val, test):
     """loads dataset class"""
@@ -17,6 +18,8 @@ def CreateDataset(opt, train, val, test):
         dataset = Cub2011(opt, data_div)
     elif opt.dataset.lower() == 'mnist':
         dataset = Mnist4x4grid(opt, data_div)
+    elif opt.dataset.lower() == 'gtsrb':
+        dataset = GTSRB(opt, data_div)
 
     return dataset
 

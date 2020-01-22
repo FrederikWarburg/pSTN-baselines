@@ -57,7 +57,7 @@ def transform(opt):
     if opt.is_train:
         if opt.data_augmentation:
             if opt.horizontal_flip:
-                transform_list.append(transforms.RandomHorizontalFlip(p=0.5))
+                transform_list.append(transforms.RandomHorizontalFlip(p=0.7))
                 transform_list.append(transforms.RandomCrop((opt.crop_size, opt.crop_size)))
             else:
                 transform_list.append(transforms.CenterCrop((opt.crop_size, opt.crop_size)))
