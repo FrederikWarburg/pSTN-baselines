@@ -40,8 +40,8 @@ class Mnist4x4grid(Dataset):
 
         im = torch.zeros((1, 64,64), dtype=torch.float)
         target = ''
-        y = np.random.randint(0,32)
         for i in range(self.num_images):
+            y = np.random.randint(0,32)
             im1, target1 = self.datasets[i].__getitem__((idx)*(i+1)%self.datasets[i].__len__())
 
             c, w,h = im1.shape
