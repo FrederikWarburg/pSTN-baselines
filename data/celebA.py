@@ -20,7 +20,7 @@ class CelebA(Dataset):
             split = 'valid'
         elif data_div == 2:
             split ='test'
-
+        print(split)
         self.datasets = datasets.CelebA(opt.dataroot,
                               transform = transforms.Compose([
                                    transforms.ToTensor()
@@ -97,7 +97,9 @@ class CelebA(VisionDataset):
             "test": 2,
             "all": None,
         }
-        split = split_map[split.lower()]
+
+        print("split" , self.split, split)
+        split = split_map[self.split.lower()]
 
         fn = partial(os.path.join, self.root, self.base_folder)
         splits = pandas.read_csv(fn("list_eval_partition.txt"), delim_whitespace=False, header=0)
