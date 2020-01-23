@@ -6,7 +6,7 @@ import cv2
 
 def convert_image_np(inp):
     """Convert a Tensor to numpy image."""
-    inp = inp.numpy().transpose((1, 2, 0))
+    inp = inp.cpu().numpy().transpose((1, 2, 0))
     mean = np.array([0.485, 0.456, 0.406])
     std = np.array([0.229, 0.224, 0.225])
     inp = std * inp + mean
@@ -36,13 +36,11 @@ def visualize_stn(model, data, opt):
         elif opt.model.lower() == 'pstn':
             transformed_input_tensor, theta, affine_params = model.pstn(data)
 
-        transformed_input_tensor = transformed_input_tensor.cpu()
-
         out_grid = convert_image_np(torchvision.utils.make_grid(transformed_input_tensor))
         out_grid = (out_grid*255).astype(np.uint8)
         out_grid = np.transpose(out_grid, (2,0,1))
 
-        bbox_images = visualize_bbox(data.cpu(), affine_params, opt)
+        bbox_images = visualize_bbox(data, affine_params, opt)
 
         # Plot the results side-by-side
     return in_grid, out_grid, theta, bbox_images
