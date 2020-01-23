@@ -21,10 +21,13 @@ class MyCelebA(Dataset):
         elif data_div == 2:
             split = 'test'
 
+        if data_div == 0:
+            transform = transforms.Compose([transforms.Resize((64,73)), transforms.RandomCrop((64,64)), transforms.ToTensor()])
+        else:
+            transform = transforms.Compose([transforms.Resize((64,73)), transforms.CenterCrop((64,64)), transforms.ToTensor()])
+
         self.datasets = CelebA(opt.dataroot,
-                              transform = transforms.Compose([
-                                   transforms.ToTensor()
-                               ]),
+                              transform = transform,
                               split = split,
                               download = opt.download)
 
