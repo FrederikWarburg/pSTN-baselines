@@ -38,6 +38,7 @@ do
                         --basenet "simple" \
                         --digits 1 \
                         --target_attr ATTR \
-                        --trainval_split True
+                        --trainval_split True \
+                        --save_results True
     done
 done
