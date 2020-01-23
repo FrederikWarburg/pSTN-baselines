@@ -85,13 +85,14 @@ class MnistRandomPlacement(Dataset):
         self.num_images = opt.digits
 
     def __len__(self):
+
         return min([self.datasets[i].__len__() for i in range(self.num_images)])
 
     def __getitem__(self, idx):
 
         im = torch.zeros((1, 96, 96), dtype=torch.float)
 
-        used_positions, target = [],[]
+        used_positions, target = [], []
         for i in range(self.num_images):
             while True:
                 x = np.random.randint(0, 96 - 32)
@@ -113,8 +114,9 @@ class MnistRandomPlacement(Dataset):
         im = transform(im)
 
         target_string = ''
+
         for number in sorted(target):
             target_string += str(number)
-        print(int(target_string))
+
         return im, int(target_string)
 
