@@ -12,6 +12,7 @@ class SimpleClassifier(nn.Module):
         self.train_samples = opt.train_samples
         self.test_samples = opt.test_samples
         self.feature_size = 640
+        self.channels = 1 if 'mnist' in opt.dataset.lower() else 3
 
         self.fc1 = nn.Linear(self.feature_size*self.N, 200*self.N)
         self.fc2 = nn.Linear(200*self.N, opt.num_classes)
@@ -24,8 +25,9 @@ class SimpleClassifier(nn.Module):
 
     def init_classifier_branch(self, opt):
 
+
         encoder = nn.Sequential(
-            nn.Conv2d(1, 10, kernel_size=5),
+            nn.Conv2d(self.channels, 10, kernel_size=5),
             nn.MaxPool2d(2),
             nn.ReLU(),
             nn.Conv2d(10, 20, kernel_size=5),
