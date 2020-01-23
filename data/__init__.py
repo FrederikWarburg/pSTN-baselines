@@ -2,7 +2,7 @@ import torch.utils.data
 from data.cub_200_2011 import Cub2011
 from data.mnist import MnistSideBySide, MnistRandomPlacement
 from data.gtsrb import GTSRB
-from data.celebA import MyCelebA
+from data.celebA import CelebA
 
 def CreateDataset(opt, train, val, test):
     """loads dataset class"""
@@ -24,7 +24,7 @@ def CreateDataset(opt, train, val, test):
     elif opt.dataset.lower() == 'gtsrb':
         dataset = GTSRB(opt, data_div)
     elif opt.dataset.lower() == 'celeba':
-        dataset = MyCelebA(opt, data_div)
+        dataset = CelebA(opt, data_div)
 
     return dataset
 

@@ -35,7 +35,6 @@ class celebA(torch.utils.data.Dataset):
         self.root = opt.dataroot
         self.base_folder = 'celeba'
 
-
         self.fn = partial(os.path.join, self.root, self.base_folder)
         csv_file = pd.read_csv(self.fn("list_attr_celeba.txt"))
         splits = pd.read_csv(self.fn("list_eval_partition.txt"))
