@@ -15,7 +15,7 @@ do
         python train2.py --dataroot /scratch/s153847/ \
                         --model pstn \
                         --basenet simple \
-                        --dataset mnist \
+                        --dataset mnist_easy \
                         --digits 2 \
                         --N 2 \
                         --train_samples 2 \
