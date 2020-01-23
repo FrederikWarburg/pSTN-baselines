@@ -58,7 +58,7 @@ def visualize_bbox(data, affine_params, opt):
     images = []
     for j, (im, params) in enumerate(zip(data, sorted_params)):
 
-        im = np.transpose(im.numpy(),(1,2,0))
+        im = np.transpose(im.cpu().numpy(),(1,2,0))
         im = denormalize(im)
 
         if im.shape[2] == 1:
