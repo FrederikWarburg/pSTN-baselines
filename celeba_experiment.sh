@@ -41,7 +41,7 @@ do
                         --num_param ${PARAMS[$MODEL]} \
                         --basenet "simple" \
                         --digits 1 \
-                        --target_attr ATTR \
+                        --target_attr $ATTR \
                         --trainval_split True \
                         --save_results True
     done
