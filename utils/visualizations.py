@@ -24,9 +24,8 @@ def visualize_stn(model, data, opt):
     with torch.no_grad():
 
         data = data[:16] # just visualize the first 16
-        input_tensor = data.cpu()
 
-        in_grid = convert_image_np(torchvision.utils.make_grid(input_tensor))
+        in_grid = convert_image_np(torchvision.utils.make_grid(data))
         in_grid = (in_grid*255).astype(np.uint8)
         in_grid = np.transpose(in_grid, (2,0,1))
 
@@ -43,7 +42,7 @@ def visualize_stn(model, data, opt):
         out_grid = (out_grid*255).astype(np.uint8)
         out_grid = np.transpose(out_grid, (2,0,1))
 
-        bbox_images = visualize_bbox(input_tensor, affine_params, opt)
+        bbox_images = visualize_bbox(data, affine_params, opt)
 
         # Plot the results side-by-side
     return in_grid, out_grid, theta, bbox_images
