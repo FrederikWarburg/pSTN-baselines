@@ -12,8 +12,12 @@ do
     for MODEL in 0 1 2
     do
         echo ${MODELS[$MODEL]}
+        echo $ATTR
+        echo ${PARAMS[$MODEL]}
+        echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
-        echo python train2.py --dataroot $DATAPATH \
+        echo ${CRITERION[$MODEL]}
+        python train2.py --dataroot $DATAPATH \
                         --dataset "celeba" \
                         --batch_size 256 \
                         --num_classes 2 \
