@@ -13,10 +13,11 @@ class SimplePSTN(nn.Module):
         self.test_samples = opt.test_samples
         self.num_param = opt.num_param
         self.sigma_prior = opt.sigma
+        self.channels = 1 if 'mnist' in opt.dataset.lower() else 3
 
         # Spatial transformer localization-network
         self.localization = nn.Sequential(
-            nn.Conv2d(1, 8, kernel_size=7),
+            nn.Conv2d(self.channels, 8, kernel_size=7),
             nn.MaxPool2d(2, stride=2),
             nn.ReLU(True),
             nn.Conv2d(8, 16, kernel_size=5),

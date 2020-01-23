@@ -20,17 +20,17 @@ attribute_map = ['5_o_Clock_Shadow','Arched_Eyebrows','Attractive','Bags_Under_E
 class CelebA(torch.utils.data.Dataset):
     def __init__(self, opt, data_div):
 
-        if data_div == 0:
+        if data_div == 2:
             split = 'train'
         elif data_div == 1:
             split = 'valid'
-        elif data_div == 2:
+        elif data_div == 0:
             split = 'test'
 
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                      std=[0.229, 0.224, 0.225])
+                                        std=[0.229, 0.224, 0.225])
 
-        if data_div == 0:
+        if data_div == 2:
             self.transform = transforms.Compose([transforms.Resize((64,73)), transforms.RandomCrop((64,64)), transforms.ToTensor(), normalize])
         else:
             self.transform = transforms.Compose([transforms.Resize((64,73)), transforms.CenterCrop((64,64)), transforms.ToTensor(), normalize])

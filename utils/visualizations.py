@@ -4,13 +4,15 @@ import torchvision
 from torchvision import transforms
 import cv2
 
-def convert_image_np(inp):
+def convert_image_np(inp, dataset):
     """Convert a Tensor to numpy image."""
     inp = inp.numpy().transpose((1, 2, 0))
     mean = np.array([0.485, 0.456, 0.406])
     std = np.array([0.229, 0.224, 0.225])
-    inp = std * inp + mean
-    inp = np.clip(inp, 0, 1)
+    if dataset == 'mnist':
+        inp = std * inp + mean
+        inp = np.clip(inp, 0, 1)
+
     return inp
 
 
@@ -25,7 +27,7 @@ def visualize_stn(model, data, opt):
 
         data = data[:16] # just visualize the first 16
 
-        in_grid = convert_image_np(torchvision.utils.make_grid(data.cpu()))
+        in_grid = convert_image_np(torchvision.utils.make_grid(data.cpu()), opt.dataset.lower())
         in_grid = (in_grid*255).astype(np.uint8)
         in_grid = np.transpose(in_grid, (2,0,1))
 
@@ -36,7 +38,7 @@ def visualize_stn(model, data, opt):
         elif opt.model.lower() == 'pstn':
             transformed_input_tensor, theta, affine_params = model.pstn(data)
 
-        out_grid = convert_image_np(torchvision.utils.make_grid(transformed_input_tensor.cpu()))
+        out_grid = convert_image_np(torchvision.utils.make_grid(transformed_input_tensor.cpu()),opt.dataset.lower())
         out_grid = (out_grid*255).astype(np.uint8)
         out_grid = np.transpose(out_grid, (2,0,1))
 
