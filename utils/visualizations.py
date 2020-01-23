@@ -4,12 +4,12 @@ import torchvision
 from torchvision import transforms
 import cv2
 
-def convert_image_np(inp, dataset):
+def convert_image_np(inp, dataset = 'mnist'):
     """Convert a Tensor to numpy image."""
     inp = inp.numpy().transpose((1, 2, 0))
     mean = np.array([0.485, 0.456, 0.406])
     std = np.array([0.229, 0.224, 0.225])
-    if dataset == 'mnist':
+    if 'mnist' in dataset:
         inp = std * inp + mean
         inp = np.clip(inp, 0, 1)
 
@@ -76,7 +76,7 @@ def visualize_bbox(data, affine_params, opt):
 
         images = torch.FloatTensor(images)
         if 'mnist' in opt.dataset.lower():
-            images = convert_image_np(torchvision.utils.make_grid(images-0.3))
+            images = convert_image_np(torchvision.utils.make_grid(images-0.3), opt.dataset.lower())
             images = (images*255).astype(np.uint8)
             images = np.transpose(images, (2,0,1))
         else:

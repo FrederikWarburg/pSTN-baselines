@@ -99,7 +99,7 @@ class Writer:
         for i, value in enumerate(theta):
             self.display.add_scalar('image_{}/theta_sigma_{}'.format(image_id, i), value, epoch)
 
-    def convert_image_np(self, inp):
+    def convert_image_np(self, inp, dataset = 'train'):
         """Convert a Tensor to numpy image."""
         inp = inp.numpy().transpose((1, 2, 0))
         mean = np.array([0.485, 0.456, 0.406])
@@ -126,7 +126,7 @@ class Writer:
             transformed_input_tensor = transformed_input_tensor.cpu()
 
             in_grid = self.convert_image_np(
-                torchvision.utils.make_grid(input_tensor))
+                torchvision.utils.make_grid(input_tensor),opt.dataset.lower())
 
             out_grid = self.convert_image_np(torchvision.utils.make_grid(transformed_input_tensor))
 
