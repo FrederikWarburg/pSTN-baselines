@@ -10,7 +10,7 @@ import PIL
 import pandas
 from torchvision.datasets.vision import VisionDataset
 
-class CelebA(Dataset):
+class MyCelebA(Dataset):
 
     def __init__(self, opt, data_div):
 
@@ -19,9 +19,9 @@ class CelebA(Dataset):
         elif data_div == 1:
             split = 'valid'
         elif data_div == 2:
-            split ='test'
-        print(split)
-        self.datasets = datasets.CelebA(opt.dataroot,
+            split = 'test'
+
+        self.datasets = CelebA(opt.dataroot,
                               transform = transforms.Compose([
                                    transforms.ToTensor()
                                ]),
@@ -98,7 +98,6 @@ class CelebA(VisionDataset):
             "all": None,
         }
 
-        print("split" , self.split, split)
         split = split_map[self.split.lower()]
 
         fn = partial(os.path.join, self.root, self.base_folder)
