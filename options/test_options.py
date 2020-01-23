@@ -5,7 +5,6 @@ class TestOptions(BaseOptions):
         BaseOptions.initialize(self)
         self.parser.add_argument('--results_dir', type=str, default='./results/', help='saves results here.')
         self.parser.add_argument('--num_visualizations', type=int, default=10, help='number of samples')
-        self.parser.add_argument('--save_results', type=bool, default=False, help='should we save the results?')
 
         self.is_train = False
         self.data_augmentation = False
