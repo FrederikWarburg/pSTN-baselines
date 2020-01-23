@@ -32,7 +32,7 @@ class InceptionPSTN(nn.Module):
             bias = torch.tensor([[-1,-1],[1,-1],[1,1],[-1,1]], dtype=torch.float)*0.5
             self.fc_loc_mu[2].bias.data.copy_(bias[:self.N].view(-1))
         elif self.num_param == 4:
-            raise NotImplemented
+            self.fc_loc[2].bias.data.copy_(torch.tensor([0,1,0,0]*self.N, dtype=torch.float))
         elif self.num_param == 6:
             self.fc_loc_mu[2].bias.data.copy_(torch.tensor([1,0,0,
                                                             0,1,0]*self.N, dtype=torch.float))
@@ -141,7 +141,7 @@ class InceptionSTN(nn.Module):
             bias = torch.tensor([[-1,-1],[1,-1],[1,1],[-1,1]], dtype=torch.float)*0.5
             self.fc_loc[2].bias.data.copy_(bias[:self.N].view(-1))
         elif self.num_param == 4:
-            raise NotImplemented
+            self.fc_loc[2].bias.data.copy_(torch.tensor([0,1,0,0]*self.N, dtype=torch.float))
         elif self.num_param == 6:
             self.fc_loc[2].bias.data.copy_(torch.tensor([1,0,0,
                                                             0,1,0]*self.N, dtype=torch.float))
