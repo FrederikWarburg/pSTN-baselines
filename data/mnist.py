@@ -92,7 +92,7 @@ class MnistRandomPlacement(Dataset):
 
         im = torch.zeros((1, 96, 96), dtype=torch.float)
 
-        used_positions, target = [], []
+        used_positions, target = [], ''
         for i in range(self.num_images):
             while True:
                 x = np.random.randint(0, 96 - 32)
@@ -108,16 +108,10 @@ class MnistRandomPlacement(Dataset):
             c, w,h = im1.shape
 
             im[:,y:y+h,x:x+w] = im1.type(torch.float)
-            target.append(target1)
+            target += str(target1)
 
         transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize(self.cropsize),transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
         im = transform(im)
 
-        target_string = ''
-
-        for number in sorted(target):
-            target_string += str(number)
-
-        print("image", im, "label", int(target_string))
-        return im, int(target_string)
+        return im, int(target)
 
