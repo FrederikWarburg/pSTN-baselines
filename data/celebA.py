@@ -27,10 +27,13 @@ class CelebA(torch.utils.data.Dataset):
         elif data_div == 2:
             split = 'test'
 
+        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                      std=[0.229, 0.224, 0.225])
+
         if data_div == 0:
-            self.transform = transforms.Compose([transforms.Resize((64,73)), transforms.RandomCrop((64,64)), transforms.ToTensor()])
+            self.transform = transforms.Compose([transforms.Resize((64,73)), transforms.RandomCrop((64,64)), transforms.ToTensor(), normalize])
         else:
-            self.transform = transforms.Compose([transforms.Resize((64,73)), transforms.CenterCrop((64,64)), transforms.ToTensor()])
+            self.transform = transforms.Compose([transforms.Resize((64,73)), transforms.CenterCrop((64,64)), transforms.ToTensor(), normalize])
 
         self.root = opt.dataroot
         self.base_folder = 'celeba'

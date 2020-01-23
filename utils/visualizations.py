@@ -77,8 +77,7 @@ def visualize_bbox(data, affine_params, opt):
             images = convert_image_np(torchvision.utils.make_grid(images-0.3))
             images = (images*255).astype(np.uint8)
             images = np.transpose(images, (2,0,1))
-
-        elif opt.dataset.lower() == 'cub':
+        else:
             images = torchvision.utils.make_grid(images, normalize = True)
 
         return images
