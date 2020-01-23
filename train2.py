@@ -11,9 +11,14 @@ if __name__ == '__main__':
 
     opt = TrainOptions().parse()
 
+    modelname = "d={}_m={}_b={}_n={}_p={}".format(opt.dataset, opt.model, opt.basenet, opt.N, opt.num_param)
+
+    if opt.dataset.lower() == 'celeba':
+        modelname += '_' + str(opt.target_attr)
+
     logger = TestTubeLogger(
             save_dir=os.getcwd() + "/lightning_logs",
-            name="{}_{}_{}_{}".format(opt.dataset, opt.model, opt.basenet, opt.N),
+            name=modelname,
             debug=False,
             create_git_tag=False
     )

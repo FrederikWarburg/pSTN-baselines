@@ -6,6 +6,8 @@ from utils.evaluate import accuracy
 import pytorch_lightning as pl
 from utils.visualizations import visualize_stn
 from loss import create_criterion
+import json
+import os
 
 def create_model(opt):
     if opt.model.lower() == 'cnn':
@@ -115,7 +117,6 @@ class CoolSystem(pl.LightningModule):
         avg_acc = torch.stack([x['val_acc'] for x in outputs]).mean()
         tensorboard_logs = {'val_loss': avg_loss, 'val_acc': avg_acc}
 
-
         self.logger.experiment.add_image('grid_in', outputs[0]['grid_in'], self.global_step)
 
         if self.opt.model.lower() in ['stn', 'pstn']:
@@ -161,6 +162,21 @@ class CoolSystem(pl.LightningModule):
         avg_loss = torch.stack([x['test_loss'] for x in outputs]).mean()
         avg_acc = torch.stack([x['test_acc'] for x in outputs]).mean()
         tensorboard_logs = {'test_loss': avg_loss, 'test_acc': avg_acc}
+
+        if self.opt.save_results:
+
+            modelname = "d={}_m={}_b={}_n={}_p={}".format(self.opt.dataset, self.opt.model, self.opt.basenet, self.opt.N, self.opt.num_param)
+
+            if self.opt.dataset.lower() == 'celeba':
+                modelname += '_' + str(self.opt.target_attr)
+
+            if not os.path.isdir(os.path.join(os.getcwd(), 'results')):
+                os.mkdir(os.path.join(os.getcwd(), 'results'))
+
+            with open(os.path.join(os.getcwd(),
+                                   'results',
+                                   modelname + '.json'), 'w') as fp:
+                json.dump(tensorboard_logs, fp)
 
         return {'test_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar':tensorboard_logs}
 
