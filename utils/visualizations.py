@@ -25,7 +25,7 @@ def visualize_stn(model, data, opt):
 
         data = data[:16] # just visualize the first 16
 
-        in_grid = convert_image_np(torchvision.utils.make_grid(data))
+        in_grid = convert_image_np(torchvision.utils.make_grid(data.cpu()))
         in_grid = (in_grid*255).astype(np.uint8)
         in_grid = np.transpose(in_grid, (2,0,1))
 
