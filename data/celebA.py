@@ -17,7 +17,7 @@ attribute_map = ['5_o_Clock_Shadow','Arched_Eyebrows','Attractive','Bags_Under_E
                  'Wavy_Hair','Wearing_Earrings','Wearing_Hat','Wearing_Lipstick','Wearing_Necklace',
                  'Wearing_Necktie','Young']
 
-class celebA(torch.utils.data.Dataset):
+class CelebA(torch.utils.data.Dataset):
     def __init__(self, opt, data_div):
 
         if data_div == 0:
