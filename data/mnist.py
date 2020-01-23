@@ -115,6 +115,6 @@ class MnistRandomPlacement(Dataset):
         target_string = ''
         for number in sorted(target):
             target_string += str(number)
-
+        print(int(target_string))
         return im, int(target_string)
 
