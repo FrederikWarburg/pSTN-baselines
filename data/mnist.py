@@ -118,6 +118,6 @@ class MnistRandomPlacement(Dataset):
         for number in sorted(target):
             target_string += str(number)
 
-        print(im)
+        print("image", im, "label", target_string)
         return im, int(target_string)
 
