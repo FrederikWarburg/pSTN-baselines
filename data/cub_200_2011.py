@@ -40,6 +40,9 @@ def transform_image_manual(x, opt):
 
     random_params = epsilon * opt.sigma
     if num_param == 4: random_params[1] += 1 # scale is centered around 1
+    if num_param == 6:
+        random_params[1] += 1 # scale is centered around 1
+        random_params[4] += 1 # scale is centered around 1
     theta = make_affine_parameters(random_params.unsqueeze(0))
 
     x = x.unsqueeze(0)
