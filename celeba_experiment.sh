@@ -7,7 +7,7 @@ TEST_SAMPELS=(1 1 1 1 10 10 10)
 TRAIN_SAMPELS=(1 1 1 1 2 2 2)
 CRITERION=("nll" "nll" "nll" "nll" "elbo" "elbo" "elbo")
 
-for ATTR in {0..40}
+for ATTR in {0..10}
 do
     for MODEL in {0..7}
     do

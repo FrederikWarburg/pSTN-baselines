@@ -31,6 +31,6 @@ do
                         --criterion elbo \
                         --trainval_split True \
                         --annealing ${ANNEALING[$MODEL]} \
-                        --sigma ${SIGMAS[SIGMA]}
+                        --sigma ${SIGMAS[$SIGMA]}
     done
 done
