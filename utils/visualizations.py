@@ -27,16 +27,17 @@ def visualize_stn(model, data, opt):
 
         data = data[:16] # just visualize the first 16
 
+        if opt.model.lower() == 'stn':
+            transformed_input_tensor, theta, affine_params = model.stn(data)
+        elif opt.model.lower() == 'pstn':
+            transformed_input_tensor, theta, affine_params = model.pstn(data)
+
         in_grid = convert_image_np(torchvision.utils.make_grid(data.cpu()), opt.dataset.lower())
         in_grid = (in_grid*255).astype(np.uint8)
         in_grid = np.transpose(in_grid, (2,0,1))
 
         if opt.model.lower() == 'cnn':
             return in_grid, None, None, None
-        elif opt.model.lower() == 'stn':
-            transformed_input_tensor, theta, affine_params = model.stn(data)
-        elif opt.model.lower() == 'pstn':
-            transformed_input_tensor, theta, affine_params = model.pstn(data)
 
         out_grid = convert_image_np(torchvision.utils.make_grid(transformed_input_tensor.cpu()),opt.dataset.lower())
         out_grid = (out_grid*255).astype(np.uint8)
