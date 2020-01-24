@@ -17,11 +17,11 @@ do
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        python train2.py --dataroot $DATAPATH \
+        CUDA_VISIBLE_DEVICES=1 OMP_NUM_THREADS=1 python train2.py --dataroot $DATAPATH \
                         --dataset "celeba" \
                         --batch_size 256 \
                         --num_classes 2 \
-                        --num_threads 8 \
+                        --num_threads 1 \
                         --epochs 4 \
                         --step_size 1 \
                         --seed 42 \
