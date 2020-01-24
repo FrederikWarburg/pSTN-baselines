@@ -176,7 +176,7 @@ class CoolSystem(pl.LightningModule):
             with open(os.path.join(os.getcwd(),
                                    'results',
                                    modelname + '.json'), 'w') as fp:
-                json.dump(tensorboard_logs, fp)
+                json.dump({'test_loss': float(avg_loss), 'test_acc': float(avg_acc)}, fp)
 
         return {'test_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar':tensorboard_logs}
 
