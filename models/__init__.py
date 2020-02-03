@@ -205,10 +205,10 @@ class CoolSystem(pl.LightningModule):
             modelname += '_kl=' + self.opt.annealing
 
         modelname += '_s=' + str(self.opt.sigma)
-        modelname += '_lr' + str(self.opt.lr)
+        modelname += '_lr=' + str(self.opt.lr)
 
         if self.opt.model.lower() in ['stn','pstn']:
-            modelname += '_lrloc' + str(self.opt.lr)
+            modelname += '_lrloc=' + str(self.opt.lr)
 
         basepath = self.opt.savepath if not None else os.getcwd()
         if not os.path.isdir(os.path.join(basepath, 'results')): os.makedirs(os.path.join(basepath, 'results'))
