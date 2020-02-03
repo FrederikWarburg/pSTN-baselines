@@ -201,14 +201,13 @@ class CoolSystem(pl.LightningModule):
 
         if self.opt.dataset.lower() == 'celeba':
             modelname += '_' + str(self.opt.target_attr)
+        if self.opt.model.lower() == 'pstn':
+            modelname += '_kl=' + self.opt.annealing
 
         basepath = self.opt.savepath if not None else os.getcwd()
         if not os.path.isdir(os.path.join(basepath, 'results')): os.makedirs(os.path.join(basepath, 'results'))
 
-        if not os.path.isdir(os.path.join(basepath, 'results')):
-            os.mkdir(os.path.join(basepath, 'results'))
-
-        with open(os.path.join(os.getcwd(),
+        with open(os.path.join(basepath,
                                'results',
                                modelname + '.json'), 'w') as fp:
             json.dump({'test_loss': float(avg_loss), 'test_acc': float(avg_acc)}, fp)

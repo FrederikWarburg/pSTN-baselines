@@ -19,7 +19,7 @@ do
                         --digits 2 \
                         --N 2 \
                         --train_samples 2 \
-                        --num_threads 1 \
+                        --num_threads 8 \
                         --test_samples 10 \
                         --batch_size 256 \
                         --num_classes 100 \
