@@ -88,6 +88,9 @@ class CoolSystem(pl.LightningModule):
     def training_step(self, batch, batch_idx, hidden = 0):
 
         x, y = batch
+
+        print("training step", x.get_device(), y.get_device())
+
         y_hat = self.forward(x)
         loss = self.criterion(y_hat,y)
 
@@ -102,6 +105,9 @@ class CoolSystem(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
 
         x, y = batch
+
+        print("validation step", x.get_device(), y.get_device())
+
         y_hat = self.forward(x)
 
         loss = F.nll_loss(y_hat, y, reduction='mean')
@@ -124,6 +130,8 @@ class CoolSystem(pl.LightningModule):
     def test_step(self, batch, batch_idx):
 
         x, y = batch
+
+        print("test step", x.get_device(), y.get_device())
         y_hat = self.forward(x)
 
         loss = F.nll_loss(y_hat, y, reduction='mean')
