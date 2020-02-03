@@ -33,6 +33,7 @@ do
                         --trainval_split True \
                         --annealing "${ANNEALING[$MODEL]}" \
                         --sigma "${SIGMAS[$SIGMA]}" \
-                        --save_results True
+                        --save_results True \
+                        --savepath 'kl_annealing_experiment'
     done
 done
