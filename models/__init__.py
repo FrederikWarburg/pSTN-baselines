@@ -204,6 +204,7 @@ class CoolSystem(pl.LightningModule):
         if self.opt.model.lower() == 'pstn':
             modelname += '_kl=' + self.opt.annealing
 
+        modelname += '_seed=' + str(self.opt.seed)
         modelname += '_s=' + str(self.opt.sigma)
         modelname += '_lr=' + str(self.opt.lr)
 
