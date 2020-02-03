@@ -7,7 +7,7 @@ TEST_SAMPELS=(1 1 10)
 TRAIN_SAMPELS=(1 1 2)
 CRITERION=("nll" "nll" "elbo")
 
-for ATTR in {0..10}
+for ATTR in {0..40}
 do
     for MODEL in {0..2}
     do
@@ -43,6 +43,7 @@ do
                         --digits 1 \
                         --target_attr $ATTR \
                         --trainval_split True \
-                        --save_results True
+                        --save_results True \
+                        --savepath celeba_experiment
     done
 done
