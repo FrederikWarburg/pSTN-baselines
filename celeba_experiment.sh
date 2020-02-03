@@ -1,15 +1,15 @@
 #!/bin/sh
 
 DATAPATH="/scratch/s153847/"
-MODELS=("cnn" "stn" "stn" "stn" "pstn" "pstn" "pstn")
-PARAMS=(1 2 4 6 2 4 6)
-TEST_SAMPELS=(1 1 1 1 10 10 10)
-TRAIN_SAMPELS=(1 1 1 1 2 2 2)
-CRITERION=("nll" "nll" "nll" "nll" "elbo" "elbo" "elbo")
+MODELS=("cnn" "stn" "pstn")
+PARAMS=(1 6 6)
+TEST_SAMPELS=(1 1 10)
+TRAIN_SAMPELS=(1 1 2)
+CRITERION=("nll" "nll" "elbo")
 
 for ATTR in {0..10}
 do
-    for MODEL in {0..7}
+    for MODEL in {0..2}
     do
         echo ${MODELS[$MODEL]}
         echo $ATTR

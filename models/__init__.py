@@ -117,6 +117,54 @@ class CoolSystem(pl.LightningModule):
         avg_acc = torch.stack([x['val_acc'] for x in outputs]).mean()
         tensorboard_logs = {'val_loss': avg_loss, 'val_acc': avg_acc}
 
+        self.add_images(outputs)
+
+        return {'val_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar': tensorboard_logs}
+
+    def test_step(self, batch, batch_idx):
+
+        x, y = batch
+        y_hat = self.forward(x)
+
+        loss = F.nll_loss(y_hat, y, reduction='mean')
+        acc = accuracy(y_hat, y)
+
+        return {'test_loss': loss, 'test_acc': acc}
+
+    def test_end(self, outputs):
+
+        avg_loss = torch.stack([x['test_loss'] for x in outputs]).mean()
+        avg_acc = torch.stack([x['test_acc'] for x in outputs]).mean()
+        tensorboard_logs = {'test_loss': avg_loss, 'test_acc': avg_acc}
+
+        if self.opt.save_results:
+            self.save_results(avg_loss, avg_acc)
+
+        return {'test_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar':tensorboard_logs}
+
+    def configure_optimizers(self):
+
+        optimizer, scheduler = create_optimizer(self.model, self.opt)
+        return [optimizer], [scheduler]
+
+    @pl.data_loader
+    def train_dataloader(self):
+        # REQUIRED
+        return DataLoader(self.opt, train=True)
+
+    @pl.data_loader
+    def val_dataloader(self):
+        # OPTIONAL
+        return DataLoader(self.opt, val=True)
+
+    @pl.data_loader
+    def test_dataloader(self):
+        # OPTIONAL
+        return DataLoader(self.opt, test=True)
+
+
+    def add_images(self, outputs):
+
         self.logger.experiment.add_image('grid_in', outputs[0]['grid_in'], self.global_step)
 
         if self.opt.model.lower() in ['stn', 'pstn']:
@@ -143,59 +191,18 @@ class CoolSystem(pl.LightningModule):
                     self.logger.experiment.add_scalar("sigma/mean/sigma_mean_" + str(i), sigma_mean[i], self.global_step)
                     self.logger.experiment.add_scalar("sigma/std/sigma_std_" + str(i), sigma_std[i], self.global_step)
 
-        self.logger.experiment.add_scalar("acc_val", avg_acc, self.global_step)
 
-        return {'val_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar': tensorboard_logs}
+    def save_results(self, avg_loss, avg_acc):
 
-    def test_step(self, batch, batch_idx):
+        modelname = "d={}_m={}_b={}_n={}_p={}".format(self.opt.dataset, self.opt.model, self.opt.basenet, self.opt.N, self.opt.num_param)
 
-        x, y = batch
-        y_hat = self.forward(x)
+        if self.opt.dataset.lower() == 'celeba':
+            modelname += '_' + str(self.opt.target_attr)
 
-        loss = F.nll_loss(y_hat, y, reduction='mean')
-        acc = accuracy(y_hat, y)
+        if not os.path.isdir(os.path.join(os.getcwd(), 'results')):
+            os.mkdir(os.path.join(os.getcwd(), 'results'))
 
-        return {'test_loss': loss, 'test_acc': acc}
-
-    def test_end(self, outputs):
-
-        avg_loss = torch.stack([x['test_loss'] for x in outputs]).mean()
-        avg_acc = torch.stack([x['test_acc'] for x in outputs]).mean()
-        tensorboard_logs = {'test_loss': avg_loss, 'test_acc': avg_acc}
-
-        if self.opt.save_results:
-
-            modelname = "d={}_m={}_b={}_n={}_p={}".format(self.opt.dataset, self.opt.model, self.opt.basenet, self.opt.N, self.opt.num_param)
-
-            if self.opt.dataset.lower() == 'celeba':
-                modelname += '_' + str(self.opt.target_attr)
-
-            if not os.path.isdir(os.path.join(os.getcwd(), 'results')):
-                os.mkdir(os.path.join(os.getcwd(), 'results'))
-
-            with open(os.path.join(os.getcwd(),
-                                   'results',
-                                   modelname + '.json'), 'w') as fp:
-                json.dump({'test_loss': float(avg_loss), 'test_acc': float(avg_acc)}, fp)
-
-        return {'test_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar':tensorboard_logs}
-
-    def configure_optimizers(self):
-
-        optimizer, scheduler = create_optimizer(self.model, self.opt)
-        return [optimizer], [scheduler]
-
-    @pl.data_loader
-    def train_dataloader(self):
-        # REQUIRED
-        return DataLoader(self.opt, train=True)
-
-    @pl.data_loader
-    def val_dataloader(self):
-        # OPTIONAL
-        return DataLoader(self.opt, val=True)
-
-    @pl.data_loader
-    def test_dataloader(self):
-        # OPTIONAL
-        return DataLoader(self.opt, test=True)
+        with open(os.path.join(os.getcwd(),
+                               'results',
+                               modelname + '.json'), 'w') as fp:
+            json.dump({'test_loss': float(avg_loss), 'test_acc': float(avg_acc)}, fp)
