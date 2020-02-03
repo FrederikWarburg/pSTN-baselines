@@ -3,7 +3,7 @@
 DATAPATH="/scratch/s153847/"
 MODELS=("pstn" "pstn" "pstn" "pstn")
 ANNEALING=("no_annealing" "no_kl" "reduce_kl" "increase_kl")
-SIGMAS=(0.1 0.3 0.3 1.2)
+SIGMAS=(0.1 0.3 0.6 0.9)
 
 for SIGMA in {0..3}
 do

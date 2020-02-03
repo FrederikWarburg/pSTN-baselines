@@ -200,9 +200,11 @@ class CoolSystem(pl.LightningModule):
         modelname = "d={}_m={}_b={}_n={}_p={}".format(self.opt.dataset, self.opt.model, self.opt.basenet, self.opt.N, self.opt.num_param)
 
         if self.opt.dataset.lower() == 'celeba':
-            modelname += '_' + str(self.opt.target_attr)
+            modelname += '_a=' + str(self.opt.target_attr)
         if self.opt.model.lower() == 'pstn':
             modelname += '_kl=' + self.opt.annealing
+
+        modelname += '_s=' + self.opt.sigma
 
         basepath = self.opt.savepath if not None else os.getcwd()
         if not os.path.isdir(os.path.join(basepath, 'results')): os.makedirs(os.path.join(basepath, 'results'))
