@@ -12,7 +12,7 @@ do
         echo "model ${MODELS[$MODEL]}"
         echo "sigma ${SIGMAS[$SIGMA]}"
         echo "annealing ${ANNEALING[$MODEL]}"
-        CUDA_VISIBLE_DEVICES=1 OMP_NUM_THREADS=1 python train2.py --dataroot /scratch/s153847/ \
+        CUDA_VISIBLE_DEVICES=1 python train2.py --dataroot /scratch/s153847/ \
                         --model pstn \
                         --basenet simple \
                         --dataset mnist_easy \
@@ -32,6 +32,7 @@ do
                         --criterion elbo \
                         --trainval_split True \
                         --annealing "${ANNEALING[$MODEL]}" \
-                        --sigma "${SIGMAS[$SIGMA]}"
+                        --sigma "${SIGMAS[$SIGMA]}" \
+                        --save_results True
     done
 done
