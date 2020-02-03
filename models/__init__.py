@@ -113,9 +113,9 @@ class CoolSystem(pl.LightningModule):
         loss = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
 
-        grid_in, grid_out, theta, bbox_images = visualize_stn(self.model, x, self.opt)
+        #grid_in, grid_out, theta, bbox_images = visualize_stn(self.model, x, self.opt)
 
-        return {'val_loss': loss, 'val_acc': acc, 'grid_in': grid_in, 'grid_out': grid_out, 'theta': theta, 'bbox_viz': bbox_images}
+        return {'val_loss': loss, 'val_acc': acc}#, 'grid_in': grid_in, 'grid_out': grid_out, 'theta': theta, 'bbox_viz': bbox_images}
 
     def validation_end(self, outputs):
 
