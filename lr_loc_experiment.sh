@@ -5,9 +5,9 @@ MODELS=("stn" "pstn")
 TEST_SAMPELS=(1 10)
 TRAIN_SAMPELS=(1 1)
 CRITERION=("nll" "elbo")
-LEARNING_RATES=(1e-1 1e-2 1e-3 1e-4 1e-5)
+LEARNING_RATES=(1e0 1e-1 1e-2 1e-3 1e-4 1e-5)
 
-for LR in {0..4}
+for LR in {0..5}
 do
     for MODEL in {0..1}
     do
@@ -31,17 +31,18 @@ do
                         --test_samples ${TEST_SAMPELS[$MODEL]} \
                         --train_samples ${TRAIN_SAMPELS[$MODEL]} \
                         --criterion ${CRITERION[$MODEL]} \
-                        --lr ${LEARNING_RATES[$LR]} \
-                        --lr_loc 0.1 \
+                        --lr 0.1 \
+                        --lr_loc ${LEARNING_RATES[$LR]} \
                         --sigma 0.1 \
                         --smallest_size 64 \
                         --crop_size 64 \
                         --run_test_freq 1 \
+                        --annealing no_annealing \
                         --basenet "simple" \
                         --digits 1 \
                         --trainval_split True \
                         --save_results True \
-                        --savepath 'lr_experiment'
+                        --savepath 'lr_loc_experiment'
     done
 done
 
