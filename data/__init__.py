@@ -41,7 +41,7 @@ class DataLoader:
             batch_size=opt.batch_size,
             shuffle=not opt.no_shuffle,
             num_workers=int(opt.num_threads),
-            pin_memory=False)
+            pin_memory=True)
 
         dataset_size = len(self.dataset)
         if train: print('#training network on = %d images' % dataset_size)
