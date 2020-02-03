@@ -123,7 +123,7 @@ class CoolSystem(pl.LightningModule):
         avg_acc = torch.stack([x['val_acc'] for x in outputs]).mean()
         tensorboard_logs = {'val_loss': avg_loss, 'val_acc': avg_acc}
 
-        self.add_images(outputs)
+        #self.add_images(outputs)
 
         return {'val_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar': tensorboard_logs}
 
