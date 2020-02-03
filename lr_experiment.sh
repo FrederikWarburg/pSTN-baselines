@@ -18,7 +18,7 @@ do
         echo ${CRITERION[$MODEL]}
         CUDA_VISIBLE_DEVICES=2 python train2.py --dataroot $DATAPATH \
                         --dataset "celeba" \
-                        --attr 15
+                        --attr 15 \
                         --batch_size 256 \
                         --num_classes 2 \
                         --num_threads 1 \
