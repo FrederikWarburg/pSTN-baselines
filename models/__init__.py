@@ -109,17 +109,17 @@ class CoolSystem(pl.LightningModule):
         loss = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
 
-        #grid_in, grid_out, theta, bbox_images = visualize_stn(self.model, x, self.opt)
+        if batch_idx == 0:
+            grid_in, grid_out, theta, bbox_images = visualize_stn(self.model, x, self.opt)
+            self.add_images(grid_in, grid_out, bbox_images)
 
-        return {'val_loss': loss, 'val_acc': acc}#, 'grid_in': grid_in, 'grid_out': grid_out, 'theta': theta, 'bbox_viz': bbox_images}
+        return {'val_loss': loss, 'val_acc': acc}
 
     def validation_end(self, outputs):
 
         avg_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
         avg_acc = torch.stack([x['val_acc'] for x in outputs]).mean()
         tensorboard_logs = {'val_loss': avg_loss, 'val_acc': avg_acc}
-
-        #self.add_images(outputs)
 
         return {'val_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar': tensorboard_logs}
 
@@ -166,34 +166,15 @@ class CoolSystem(pl.LightningModule):
         return DataLoader(self.opt, test=True)
 
 
-    def add_images(self, outputs):
+    def add_images(self, grid_in, grid_out, bbox_images):
 
-        self.logger.experiment.add_image('grid_in', outputs[0]['grid_in'], self.global_step)
+        self.logger.experiment.add_image('grid_in', grid_in, self.global_step)
 
         if self.opt.model.lower() in ['stn', 'pstn']:
-            self.logger.experiment.add_image('grid_out', outputs[0]['grid_out'], self.global_step)
+            self.logger.experiment.add_image('grid_out', grid_out, self.global_step)
 
-            if outputs[0]['bbox_viz'] is not None:
-                self.logger.experiment.add_image('bbox', outputs[0]['bbox_viz'], self.global_step)
-
-            if self.opt.model.lower() == 'stn':
-                mu_mean = torch.stack([x['theta'] for x in outputs]).mean(dim=0).mean(dim=0)
-                mu_std = torch.stack([x['theta'] for x in outputs]).std(dim=0).std(dim=0)
-            elif self.opt.model.lower() == 'pstn':
-                mu_mean = torch.stack([torch.stack([param for param in x['theta'][0]]) for x in outputs]).mean(dim=0).mean(dim=0)
-                mu_std = torch.stack([torch.stack([param for param in x['theta'][0]]) for x in outputs]).std(dim=0).std(dim=0)
-                sigma_mean = torch.stack([torch.stack([param for param in x['theta'][1]]) for x in outputs]).mean(dim=0).mean(dim=0)
-                sigma_std = torch.stack([torch.stack([param for param in x['theta'][1]]) for x in outputs]).std(dim=0).std(dim=0)
-
-            for i in range(len(mu_mean)):
-
-                self.logger.experiment.add_scalar("mu/mean/mu_mean_" + str(i), mu_mean[i], self.global_step)
-                self.logger.experiment.add_scalar("mu/std/mu_std_" + str(i), mu_std[i], self.global_step)
-
-                if self.opt.model.lower() == 'pstn':
-                    self.logger.experiment.add_scalar("sigma/mean/sigma_mean_" + str(i), sigma_mean[i], self.global_step)
-                    self.logger.experiment.add_scalar("sigma/std/sigma_std_" + str(i), sigma_std[i], self.global_step)
-
+            if bbox_images is not None:
+                self.logger.experiment.add_image('bbox', bbox_images, self.global_step)
 
     def save_results(self, avg_loss, avg_acc):
 
@@ -201,8 +182,11 @@ class CoolSystem(pl.LightningModule):
 
         if self.opt.dataset.lower() == 'celeba':
             modelname += '_a=' + str(self.opt.target_attr)
+
         if self.opt.model.lower() == 'pstn':
             modelname += '_kl=' + self.opt.annealing
+        else:
+            modelname += '_kl=None'
 
         modelname += '_seed=' + str(self.opt.seed)
         modelname += '_s=' + str(self.opt.sigma)
@@ -210,6 +194,8 @@ class CoolSystem(pl.LightningModule):
 
         if self.opt.model.lower() in ['stn','pstn']:
             modelname += '_lrloc=' + str(self.opt.lr_loc)
+        else:
+            modelname += '_lrloc=None'
 
         basepath = self.opt.savepath if not None else os.getcwd()
         if not os.path.isdir(os.path.join(basepath, 'results')): os.makedirs(os.path.join(basepath, 'results'))
