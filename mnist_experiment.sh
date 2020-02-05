@@ -5,14 +5,14 @@ MODELS=("cnn" "stn" "pstn")
 BRANCHES=(1 2 2)
 PARAMS=(1 2 2)
 TEST_SAMPELS=(0 0 10)
-TRAIN_SAMPELS=(1 1 1)
+TRAIN_SAMPELS=(1 1 2)
 CRITERION=("nll" "nll" "elbo")
 
 for MODEL in 0 1 2
 do
     echo ${MODELS[$MODEL]}
     echo ${TRAIN_SAMPELS[$MODEL]}
-    echo python train.py --dataroot $DATAPATH \
+    CUDA_VISIBLE_DEVICES=4 python train.py --dataroot $DATAPATH \
                     --dataset "mnist_easy" \
                     --batch_size 256 \
                     --num_classes 100 \
