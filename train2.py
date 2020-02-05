@@ -6,15 +6,13 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.logging import TestTubeLogger
 from models import CoolSystem
 import torch
+from utils.utils import get_exp_name
 
 if __name__ == '__main__':
 
     opt = TrainOptions().parse()
 
-    modelname = "d={}_m={}_b={}_n={}_p={}".format(opt.dataset, opt.model, opt.basenet, opt.N, opt.num_param)
-
-    if opt.dataset.lower() == 'celeba':
-        modelname += '_' + str(opt.target_attr)
+    modelname = get_exp_name(opt)
 
     logger = TestTubeLogger(
             save_dir=os.getcwd() + "/lightning_logs",

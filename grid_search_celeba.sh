@@ -8,7 +8,7 @@ TRAIN_SAMPELS=(2)
 CRITERION=("elbo")
 ANNEALING=("no_annealing" "no_kl" "reduce_kl" "increase_kl")
 
-for ANNEAL in {0..4}
+for ANNEAL in {0..3}
 do
     for ATTR in {6}
     do

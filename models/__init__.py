@@ -8,6 +8,7 @@ from utils.visualizations import visualize_stn
 from loss import create_criterion
 import json
 import os
+from utils.utils import get_exp_name
 
 def create_model(opt):
     if opt.model.lower() == 'cnn':
@@ -178,24 +179,7 @@ class CoolSystem(pl.LightningModule):
 
     def save_results(self, avg_loss, avg_acc):
 
-        modelname = "d={}_m={}_b={}_n={}_p={}".format(self.opt.dataset, self.opt.model, self.opt.basenet, self.opt.N, self.opt.num_param)
-
-        if self.opt.dataset.lower() == 'celeba':
-            modelname += '_a=' + str(self.opt.target_attr)
-
-        if self.opt.model.lower() == 'pstn':
-            modelname += '_kl=' + self.opt.annealing
-        else:
-            modelname += '_kl=None'
-
-        modelname += '_seed=' + str(self.opt.seed)
-        modelname += '_s=' + str(self.opt.sigma)
-        modelname += '_lr=' + str(self.opt.lr)
-
-        if self.opt.model.lower() in ['stn','pstn']:
-            modelname += '_lrloc=' + str(self.opt.lr_loc)
-        else:
-            modelname += '_lrloc=None'
+        modelname = get_exp_name(self.opt)
 
         basepath = self.opt.savepath if not None else os.getcwd()
         if not os.path.isdir(os.path.join(basepath, 'results')): os.makedirs(os.path.join(basepath, 'results'))
