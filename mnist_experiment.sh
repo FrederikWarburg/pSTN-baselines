@@ -13,13 +13,12 @@ do
     echo ${MODELS[$MODEL]}
     echo ${TRAIN_SAMPELS[$MODEL]}
     echo python train.py --dataroot $DATAPATH \
-                    --dataset "mnist" \
-                    --batch_size 64 \
+                    --dataset "mnist_easy" \
+                    --batch_size 256 \
                     --num_classes 100 \
-                    --max_dataset_size 3 \
                     --num_threads 8 \
-                    --epochs 1 \
-                    --step_size 5 \
+                    --epochs 10 \
+                    --step_size 3 \
                     --seed 42 \
                     --model ${MODELS[$MODEL]} \
                     --num_param ${PARAMS[$MODEL]} \
@@ -28,13 +27,13 @@ do
                     --train_samples ${TRAIN_SAMPELS[$MODEL]} \
                     --criterion ${CRITERION[$MODEL]} \
                     --visualize True \
-                    --lr 0.01 \
+                    --lr 0.1 \
                     --sigma 0.1 \
                     --smallest_size 64 \
                     --crop_size 64 \
                     --run_test_freq 1 \
                     --num_param 2 \
-                    --lr_loc -1 \
+                    --lr_loc 0.01 \
                     --basenet "simple" \
                     --alpha 0.1 \
 		            --digits 2
