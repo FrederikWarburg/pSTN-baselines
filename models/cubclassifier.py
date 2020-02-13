@@ -7,6 +7,7 @@ FEATURE_SIZES = {'inception'    : 1024,
                  'resnet50'     : 2048,
                  'resnet34'     : 512}
 
+
 class InceptionClassifier(nn.Module):
     def __init__(self, opt):
         super().__init__()

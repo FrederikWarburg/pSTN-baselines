@@ -3,6 +3,11 @@ import os
 from utils import utils as util
 import torch
 
+TIMESERIESDATASETS = [
+ 'FaceAll', 'wafer', 'uWaveGestureLibrary_X', 'FaceAll', 'Two_Patterns',
+ 'StarLightCurves', 'PhalangesOutlinesCorrect', 'FordA']
+
+
 class BaseOptions:
     def __init__(self):
         self.parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -24,9 +29,8 @@ class BaseOptions:
         self.parser.add_argument('--save_results', type=bool, default=False, help='should we save the results?')
         self.parser.add_argument('--savepath', type=str, default=None, help='where should we save the results?')
 
-
         # network params
-        self.parser.add_argument('--model', type=str, default='inception', help='model name')
+        self.parser.add_argument('--model', type=str, default='cnn', help='model name')
         self.parser.add_argument('--batch_size', type=int, default=16, help='input batch size')
         self.parser.add_argument('--resume_ckpt', type=str, default=None, help='path to pretrained model')
         self.parser.add_argument('--dropout_rate', type=float, default=0.5)
@@ -57,6 +61,8 @@ class BaseOptions:
             self.opt.data_augmentation = self.data_augmentation   # train or test
             self.opt.horizontal_flip = self.horizontal_flip   # train or test
         self.opt.no_shuffle = self.no_shuffle   # train or test
+
+        self.opt.xdim = 1 if self.opt.dataset.lower() in TIMESERIESDATASETS else 2
 
         args = vars(self.opt)
 

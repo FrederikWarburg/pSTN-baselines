@@ -2,6 +2,7 @@ from __future__ import print_function
 import torch.nn as nn
 import torch
 
+
 class STN(nn.Module):
     def __init__(self, opt):
         super().__init__()
@@ -14,27 +15,26 @@ class STN(nn.Module):
         self.init_classifier(opt)
 
     def init_localizer(self, opt):
-        if opt.basenet.lower() in ['inception', 'resnet50', 'resnet34', 'inception_v3']:
-            from .inceptionlocalizer import InceptionSTN
-            self.stn = InceptionSTN(opt)
-        elif opt.basenet.lower() == 'simple':
-            from .simplelocalizer import SimpleSTN
-            self.stn = SimpleSTN(opt)
-        elif opt.basenet.lower() == 'pola':
-            from .polalocalizer import PolaSTN
-            self.stn = PolaSTN(opt)
+        if opt.dataset.lower() == 'cub':
+            from .cublocalizer import CubSTN
+            self.stn = CubSTN(opt)
+        elif opt.dataset.lower() == 'celeba':
+            from .celebalocalizer import CelebaSTN
+            self.stn = CelebaSTN(opt)
+        elif opt.dataset.lower().startswith('mnist'):  # multiple different subsets
+            from .mnistlocalizer import MnistSTN
+            self.stn = MnistSTN(opt)
 
     def init_classifier(self, opt):
-
-        if opt.basenet.lower() in ['inception', 'resnet50', 'resnet34', 'inception_v3']:
-            from .inceptionclassifier import InceptionClassifier
-            self.classifier = InceptionClassifier(opt)
-        elif opt.basenet.lower() == 'simple':
-            from .simpleclassifier import SimpleClassifier
-            self.classifier = SimpleClassifier(opt)
-        elif opt.basenet.lower() == 'simple':
-            from .simpleclassifier import SimpleClassifier
-            self.classifier = SimpleClassifier(opt)
+        if opt.dataset.lower() == 'cub':
+            from .cubclassifier import CubClassifier
+            self.classifier = CubClassifier(opt)
+        elif opt.dataset.lower() == 'celeba':
+            from .celebaclassifier import CelebaClassifier
+            self.classifier = CelebaClassifier(opt)
+        elif opt.dataset.lower().startswith('mnist'):  # multiple different subsets
+            from .mnistclassifier import MnistClassifier
+            self.classifier = MnistClassifier(opt)
 
     def forward(self, x):
 
@@ -43,6 +43,3 @@ class STN(nn.Module):
         x = self.classifier(x)
 
         return x
-
-
-
