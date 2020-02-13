@@ -20,12 +20,18 @@ class STN(nn.Module):
         elif opt.basenet.lower() == 'simple':
             from .simplelocalizer import SimpleSTN
             self.stn = SimpleSTN(opt)
+        elif opt.basenet.lower() == 'pola':
+            from .polalocalizer import PolaSTN
+            self.stn = PolaSTN(opt)
 
     def init_classifier(self, opt):
 
         if opt.basenet.lower() in ['inception', 'resnet50', 'resnet34', 'inception_v3']:
             from .inceptionclassifier import InceptionClassifier
             self.classifier = InceptionClassifier(opt)
+        elif opt.basenet.lower() == 'simple':
+            from .simpleclassifier import SimpleClassifier
+            self.classifier = SimpleClassifier(opt)
         elif opt.basenet.lower() == 'simple':
             from .simpleclassifier import SimpleClassifier
             self.classifier = SimpleClassifier(opt)

@@ -12,12 +12,8 @@ from utils.utils import get_exp_name
 
 def create_model(opt):
     if opt.model.lower() == 'cnn':
-        if opt.basenet.lower() in ['inception', 'resnet50', 'resnet34', 'inception_v3']:
-            from .inceptionclassifier import InceptionClassifier
-            model = InceptionClassifier(opt)
-        elif opt.basenet.lower() == 'simple':
-            from .simpleclassifier import SimpleClassifier
-            model = SimpleClassifier(opt)
+        from .cnn import CNN
+        model = CNN(opt)
     elif opt.model.lower() == 'stn':
         from .stn import STN
         model = STN(opt)
@@ -49,6 +45,7 @@ def create_optimizer(model, opt):
             optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr, momentum=opt.momentum, weight_decay=opt.weightDecay)
 
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=0.1)
+    elif opt.optimizer.lower() == 'adam':
 
     else:
         raise ValueError('Unsupported or optimizer: {}!'.format(opt.optimizer))

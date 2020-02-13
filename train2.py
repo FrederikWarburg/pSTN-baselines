@@ -60,10 +60,10 @@ if __name__ == '__main__':
 ########
 
 # simple classifier
-# python train2.py --dataroot ../data/ --model cnn --basenet simple --dataset mnist --digits 2 --N 1 --train_samples 1 --test_samples 1 --batch_size 256 --num_classes 100 --epochs 50 --trainval_split True
+# python train2.py --dataroot /scratch/s153847/ --model cnn --basenet simple --dataset mnist_easy --digits 2 --N 1 --train_samples 1 --test_samples 1 --batch_size 256 --num_classes 100 --epochs 50 --trainval_split True
 
 # simple stn
-# python train2.py --dataroot /scratch/s153847/ --model stn --basenet simple --dataset mnist --digits 2 --N 2 --train_samples 1 --test_samples 1 --batch_size 256 --num_classes 100 --step_size 3 --smallest_size 64 --crop_size 64 --lr_loc 1e-02 --seed 42 --lr 0.1 --trainval_split True
+# python train2.py --dataroot /scratch/s153847/ --model stn --basenet simple --dataset mnist_easy --digits 2 --N 2 --train_samples 1 --test_samples 1 --batch_size 256 --num_classes 100 --step_size 3 --smallest_size 64 --crop_size 64 --lr_loc 1e-02 --seed 42 --lr 0.1 --trainval_split True
 
 # simple pstn
 # python train2.py --dataroot /scratch/s153847/ --model pstn --basenet simple --dataset mnist --digits 2 --N 2 --train_samples 2 --test_samples 10 --batch_size 256 --num_classes 100 --step_size 3 --smallest_size 64 --crop_size 64 --lr_loc 1e-02 --seed 42 --lr 0.1 --criterion elbo --trainval_split True
