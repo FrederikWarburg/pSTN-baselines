@@ -129,71 +129,71 @@ def add_bounding_boxes(image, affine_params, num_branches, num_samples, mode_ = 
 
     return im
 
+# TODO: make these compatible with teh rest -> tensorboard
 
+# def visualize_timeseries_stn(device, model, data, epoch, DA, path):
+#     DA_flag = 'DA' if DA else 'noDA'
+#     print('visualizing STN!')
+#     plt.rcParams.update({'font.size': 12})
 
-def visualize_timeseries_stn(device, model, data, epoch, DA, path):
-    DA_flag = 'DA' if DA else 'noDA'
-    print('visualizing STN!')
-    plt.rcParams.update({'font.size': 12})
+#     with torch.no_grad():
+#         input_array = data.cpu().numpy()
 
-    with torch.no_grad():
-        input_array = data.cpu().numpy()
+#         # Get a batch of training data
+#         transformed_input, theta = model.stn(data)
+#         transformed_input = transformed_input.cpu().numpy()
+#         theta = theta.cpu().numpy()
+#         print('Theta shape:', theta.shape)
+#         #batch_size = transformed_input.shape[0]
+#         batch_size = 3 # NOT PLOT ALL FOR NOW
+#         colors = ['darkgoldenrod', 'sienna', 'darkred']
 
-        # Get a batch of training data
-        transformed_input, theta = model.stn(data)
-        transformed_input = transformed_input.cpu().numpy()
-        theta = theta.cpu().numpy()
-        print('Theta shape:', theta.shape)
-        #batch_size = transformed_input.shape[0]
-        batch_size = 3 # NOT PLOT ALL FOR NOW
-        colors = ['darkgoldenrod', 'sienna', 'darkred']
+#         # Plot the results side-by-side
+#         f, axarr = plt.subplots(batch_size, 2, figsize=(20, 20))
+#         #plt.subplots_adjust(hspace=0.3)
+#         for ix in range(batch_size):
+#             axarr[ix, 0].plot(input_array[ix, 0, :], c='darkblue')
+#             #axarr[ix, 0].set_title('Original Timeseries, Epoch %s' % epoch)
 
-        # Plot the results side-by-side
-        f, axarr = plt.subplots(batch_size, 2, figsize=(20, 20))
-        #plt.subplots_adjust(hspace=0.3)
-        for ix in range(batch_size):
-            axarr[ix, 0].plot(input_array[ix, 0, :], c='darkblue')
-            #axarr[ix, 0].set_title('Original Timeseries, Epoch %s' % epoch)
+#             axarr[ix, 1].plot(transformed_input[ix, 0, :], c=colors[ix])
+#             #axarr[ix, 1].set_title('Trafo: %s' % theta[ix, :])
+#             # plt.ioff()
+#             # plt.show()
+#         plt.savefig(path + '_' + str(epoch) + '.png')
+#         #plt.savefig('TIMESERIES_DEBUG/visualizations/STN_%s_epoch_%s_%s.png'% (model.dataset, epoch, DA_flag))
+#         #plt.savefig('TIMESERIES_TEST/visualizations/STN_%s_epoch_%s_%s.png'% (model.dataset, epoch, DA_flag))
+#     return ...
 
-            axarr[ix, 1].plot(transformed_input[ix, 0, :], c=colors[ix])
-            #axarr[ix, 1].set_title('Trafo: %s' % theta[ix, :])
-            # plt.ioff()
-            # plt.show()
-        plt.savefig(path + '_' + str(epoch) + '.png')
-        #plt.savefig('TIMESERIES_DEBUG/visualizations/STN_%s_epoch_%s_%s.png'% (model.dataset, epoch, DA_flag))
-        #plt.savefig('TIMESERIES_TEST/visualizations/STN_%s_epoch_%s_%s.png'% (model.dataset, epoch, DA_flag))
-    return ...
+# def visualize_timeseries_p_stn(device, model, data, epoch, DA, path):
+#     DA_flag = 'DA' if DA else 'noDA'
+#     print('visualizing P_STN!')
+#     with torch.no_grad():
+#         input_array = data.cpu().numpy()
+#         model.eval()
 
-def visualize_timeseries_p_stn(device, model, data, epoch, DA, path):
-    DA_flag = 'DA' if DA else 'noDA'
-    print('visualizing P_STN!')
-    with torch.no_grad():
-        input_array = data.cpu().numpy()
-        model.eval()
+#         # Get a batch of training data
+#         transformed_input = model.probabilistic_stn(data)[0].cpu().numpy()
+#         print('S is', model.S)
+#         print(transformed_input.shape)
+#         batch_size = transformed_input.shape[0]
 
-        # Get a batch of training data
-        transformed_input = model.probabilistic_stn(data)[0].cpu().numpy()
-        print('S is', model.S)
-        print(transformed_input.shape)
-        batch_size = transformed_input.shape[0]
+#         # Plot the results side-by-side
+#         f, axarr = plt.subplots(2)
+#         axarr[0].plot(input_array[0, 0, :], c='darkblue')
+#         #axarr[0].get_xaxis().set_visible(False)
+#         #axarr[0].axes.get_yaxis().set_visible(False)
+#         plt.subplots_adjust(hspace=0.3)
+#         #axarr[0].set_title('Original 1st Timeseries from batch')
+#         colors = ['darkgreen', 'darkgoldenrod', 'darkred']
+#         alphas = [0.5, 0.75, 1]
 
-        # Plot the results side-by-side
-        f, axarr = plt.subplots(2)
-        axarr[0].plot(input_array[0, 0, :], c='darkblue')
-        #axarr[0].get_xaxis().set_visible(False)
-        #axarr[0].axes.get_yaxis().set_visible(False)
-        plt.subplots_adjust(hspace=0.3)
-        #axarr[0].set_title('Original 1st Timeseries from batch')
-        colors = ['darkgreen', 'darkgoldenrod', 'darkred']
-        alphas = [0.5, 0.75, 1]
-
-        for ix in range(3):
-            axarr[1].plot(transformed_input[ix, 0, :], alpha=alphas[ix], c= 'sienna')#colors[ix])
-            #axarr[1].set_title('Transformed 1st Timeseries, Epoch %s' % epoch)
-            # plt.ioff()
-            # plt.show()
-            #axarr[1].get_xaxis().set_visible(False)
-            #axarr[1].axes.get_yaxis().set_visible(False)
-        plt.savefig(path + '_' + str(epoch) + '.pdf', bbox_inches='tight')
-        #print('save image at', 'TIMESERIES_TEST/visualizations/P_STN_%s_epoch_%s_%s.png'% (model.dataset, epoch, DA_flag))
-        #plt.savefig('TIMESERIES_TEST/visualizations/P_STN_%s_epoch_%s_%s.png'% (model.dataset, epoch, DA_flag))
+#         for ix in range(3):
+#             axarr[1].plot(transformed_input[ix, 0, :], alpha=alphas[ix], c= 'sienna')#colors[ix])
+#             #axarr[1].set_title('Transformed 1st Timeseries, Epoch %s' % epoch)
+#             # plt.ioff()
+#             # plt.show()
+#             #axarr[1].get_xaxis().set_visible(False)
+#             #axarr[1].axes.get_yaxis().set_visible(False)
+#         plt.savefig(path + '_' + str(epoch) + '.pdf', bbox_inches='tight')
+#         #print('save image at', 'TIMESERIES_TEST/visualizations/P_STN_%s_epoch_%s_%s.png'% (model.dataset, epoch, DA_flag))
+#         #plt.savefig('TIMESERIES_TEST/visualizations/P_STN_%s_epoch_%s_%s.png'% (model.dataset, epoch, DA_flag))
