@@ -1,7 +1,8 @@
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
-from utils.utils import make_affine_parameters, diffeomorphic_transformation, affine_transformation
+from transformers import diffeomorphic_transformation, affine_transformation
+from torch import distributions
 
 
 class SimplePSTN(nn.Module):
@@ -14,6 +15,7 @@ class SimplePSTN(nn.Module):
         self.test_samples = opt.test_samples
         self.num_param = opt.num_param
         self.sigma_prior = opt.sigma
+        self.sigma_N = opt.sigma_N
         self.channels = 1 if 'mnist' in opt.dataset.lower() else 3
 
         # Spatial transformer localization-network
@@ -37,12 +39,16 @@ class SimplePSTN(nn.Module):
         )
 
         # Regressor for the 3 * 2 affine matrix
-        self.fc_loc_sigma = nn.Sequential(
+        self.fc_loc_std = nn.Sequential(
             nn.Linear(512, 100),
             nn.ReLU(True),
             nn.Linear(100, self.num_param*self.N),
             nn.Softplus()
         )
+
+        self.fc_loc_std[2].weight.data.zero_()
+        self.fc_loc_std[2].bias.data.copy_(
+            torch.tensor([-2], dtype=torch.float).repeat(self.num_param*self.N))
 
         # Initialize the weights/bias with identity transformation
         self.fc_loc_mu[2].weight.data.zero_()
@@ -51,7 +57,7 @@ class SimplePSTN(nn.Module):
             bias = torch.tensor([[-1,-1],[1,-1],[1,1],[-1,1]], dtype=torch.float)*0.5
             self.fc_loc_mu[2].bias.data.copy_(bias[:self.N].view(-1))
         elif self.num_param == 4:
-            self.fc_loc[2].bias.data.copy_(torch.tensor([0,1,0,0]*self.N, dtype=torch.float))
+            self.fc_loc_mu[2].bias.data.copy_(torch.tensor([0,1,0,0]*self.N, dtype=torch.float))
         elif self.num_param == 6:
             self.fc_loc_mu[2].bias.data.copy_(torch.tensor([1,0,0,
                                                             0,1,0]*self.N, dtype=torch.float))
@@ -79,6 +85,11 @@ class SimplePSTN(nn.Module):
         theta_mu_upsample = theta_mu_upsample.repeat(self.S, 1)
         theta_sigma_upsample = theta_sigma_upsample.repeat(self.S, 1)
         x, params = self.transformer(theta_mu_upsample, theta_sigma_upsample, self.sigma_prior)
+
+        # add color space noise
+        gaussian = distributions.normal.Normal(0, 1)
+        epsilon = gaussian.sample(sample_shape=x.shape).to(self.device)
+        x = x + self.sigma_N*epsilon
 
         return x, (theta_mu, theta_sigma), params
 

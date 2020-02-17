@@ -17,7 +17,6 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--step_size', type=float, default=50, help='Scheduler update every n (default 50) epochs')
         self.parser.add_argument('--data_augmentation', type=bool, default=False)
         self.parser.add_argument('--horizontal_flip', type=bool, default=False)
-        self.parser.add_argument('--sigma', type=float, default=0.1, help='the amount of data augmentation')
         self.parser.add_argument('--val_percent_check', type=float, default=0.01, help='percentage of validation set to check')
         self.parser.add_argument('--val_check_interval', type=float, default=0.001, help='the rate for checking')
         self.parser.add_argument('--trainval_split', type=bool, default=False)

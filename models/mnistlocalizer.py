@@ -2,6 +2,8 @@ import torch.nn as nn
 import torch
 import torch.nn.functional as F
 from utils.transformers import make_affine_parameters, diffeomorphic_transformation, affine_transformation
+from torch import distributions
+
 
 parameter_dict_P_STN = {
     'loc_kernel_size': 5,
@@ -111,7 +113,10 @@ class MnistPSTN(nn.Module):
         x = x.repeat(self.S, 1, 1, 1)
         theta_mu_upsample = theta_mu_upsample.repeat(self.S, 1)
         theta_sigma_upsample = theta_sigma_upsample.repeat(self.S, 1)
-        x, params = self.transformer(theta_mu_upsample, theta_sigma_upsample, self.sigma_prior)
+        x, params = self.transformer(x, theta_mu_upsample, theta_sigma_upsample, self.sigma_prior)
+        gaussian = distributions.normal.Normal(0, 1)
+        epsilon = gaussian.sample(sample_shape=x.shape).to(self.device)
+        x = x + self.sigma_n*epsilon
         return x, (theta_mu, theta_sigma), params
 
 
@@ -171,8 +176,6 @@ class SimpleSTN(nn.Module):
         # repeat x in the batch dim so we avoid for loop
         x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N*batch_size,c,w,h)
         theta_upsample = theta.view(batch_size * self.N, self.num_param)
-        affine_params = make_affine_parameters(theta_upsample)
-        grid = F.affine_grid(affine_params, x.size())
-        x = F.grid_sample(x, grid)
+        x, params = self.transformer(x, theta_upsample)
 
-        return x, theta, affine_params
+        return x, theta_upsample, params

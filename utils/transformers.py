@@ -39,11 +39,11 @@ class affine_transformation(nn.Module):
         x = F.grid_sample(x, grid)
         return x
 
-    def make_affine_parameters(self, mean_params, sigma_params=None, sigma_prior=0.1):
+    def make_affine_parameters(self, mean_params, sigma_params=None):
 
         if sigma_params is not None:
-            eps = _standard_normal(mean_params.shape, dtype=mean_params.dtype, device=mean_params.device)
-            eps *= sigma_prior
+            eps = _standard_normal(
+                mean_params.shape, dtype=mean_params.dtype, device=mean_params.device)
             mean_params = eps * sigma_params + mean_params
 
         if mean_params.shape[1] == 2:  # only perform crop - fix scale and rotation.

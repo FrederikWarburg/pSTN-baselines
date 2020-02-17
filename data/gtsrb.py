@@ -91,6 +91,7 @@ def initialize_data(folder):
                         # move file to validation folder
                         os.rename(train_folder + '/' + dirs + '/' + f, val_folder + '/' + dirs + '/' + f)
 
+
 class GTSRB(torch.utils.data.Dataset):
 
     def __init__(self, opt, data_div):
@@ -99,13 +100,6 @@ class GTSRB(torch.utils.data.Dataset):
 
         if not os.path.isdir(self.data_dir):
             initialize_data(self.data_dir)
-
-        if data_div == 0:
-            self.split = 'train'
-        elif data_div == 1:
-            self.split = 'val'
-        elif data_div == 2:
-            self.split ='test'
 
         self.crop_size = 32 if opt.crop_size is None else opt.crop_size
         self.idx2label = idx2label
@@ -117,6 +111,7 @@ class GTSRB(torch.utils.data.Dataset):
         self.image_list, self.label_list = None, None
         self.read_lists()
         self.transforms = self.get_transforms(opt)
+
 
 
     def __getitem__(self, index):

@@ -1,40 +1,35 @@
 import torch.utils.data
 from data.cub_200_2011 import Cub2011
-from data.mnist import MnistSideBySide, MnistRandomPlacement
+from data.mnist import MnistSideBySide, MnistRandomPlacement, make_mnist_subset
 from data.gtsrb import GTSRB
 from data.celebA import CelebA
 
-def CreateDataset(opt, train, val, test):
+
+def CreateDataset(opt, mode): # mode in ['train', 'val', 'test']
     """loads dataset class"""
-
-    # data_div = 0 if test, 1 if val and 2 if train.
-    if test:
-        data_div = 0
-    elif val:
-        data_div = 1
-    else:
-        data_div = 2
-
     if opt.dataset.lower() == 'cub':
-        dataset = Cub2011(opt, data_div)
-    elif opt.dataset.lower() == 'mnist_easy':
-        dataset = MnistSideBySide(opt, data_div)
-    elif opt.dataset.lower() == 'mnist_hard':
-        dataset = MnistRandomPlacement(opt, data_div)
+        dataset = Cub2011(opt, mode)
     elif opt.dataset.lower() == 'gtsrb':
-        dataset = GTSRB(opt, data_div)
+        dataset = GTSRB(opt, mode)
     elif opt.dataset.lower() == 'celeba':
-        dataset = CelebA(opt, data_div)
+        dataset = CelebA(opt, mode)
+    elif opt.dataset.lower() == 'mnist_easy':
+        dataset = MnistSideBySide(opt, mode)
+    elif opt.dataset.lower() == 'mnist_hard':
+        dataset = MnistRandomPlacement(opt, mode)
+    elif opt.dataset.lower().startswith('mnist'):
+        dataset = make_mnist_subset(opt, mode)
 
     return dataset
+
 
 class DataLoader:
     """multi-threaded data loading"""
 
-    def __init__(self, opt, train=False, val=False, test=False):
+    def __init__(self, opt, mode):
         self.opt = opt
 
-        self.dataset = CreateDataset(opt, train, val, test)
+        self.dataset = CreateDataset(opt, mode)
 
         self.dataloader = torch.utils.data.DataLoader(
             self.dataset,

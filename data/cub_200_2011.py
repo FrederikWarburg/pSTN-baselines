@@ -78,6 +78,7 @@ def transform(opt):
 
     return transforms.Compose(transform_list)
 
+
 class Cub2011(Dataset):
     base_folder = 'CUB_200_2011/images'
     url = 'http://www.vision.caltech.edu/visipedia-data/CUB-200-2011/CUB_200_2011.tgz'
@@ -89,8 +90,8 @@ class Cub2011(Dataset):
         self.root = os.path.expanduser(opt.dataroot)
         self.transform = transform(opt)
         self.loader = default_loader
-        self.train = data_div > 0
-        self.val = data_div == 1
+        self.train = (data_div in ['train', 'val'])
+        self.val = (data_div == 'val')
         self.num_classes = opt.num_classes
         self.trainval_split = opt.trainval_split
 
