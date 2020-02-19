@@ -21,9 +21,13 @@ class STN(nn.Module):
         elif opt.dataset.lower() == 'celeba':
             from .celebalocalizer import CelebaSTN
             self.stn = CelebaSTN(opt)
-        elif opt.dataset.lower().startswith('mnist'):  # multiple different subsets
+
+        elif opt.basenet.lower() == 'mnist':
             from .mnistlocalizer import MnistSTN
-            self.stn = MnistSTN(opt)
+            self.model = MnistSTN(opt)
+        elif opt.basenet.lower() == 'timeseries':
+            from .timeseriesclassifier import TimeseriesSTN
+            self.model = TimeseriesSTN(opt)
 
     def init_classifier(self, opt):
         if opt.dataset.lower() == 'cub':
@@ -32,9 +36,13 @@ class STN(nn.Module):
         elif opt.dataset.lower() == 'celeba':
             from .celebaclassifier import CelebaClassifier
             self.classifier = CelebaClassifier(opt)
-        elif opt.dataset.lower().startswith('mnist'):  # multiple different subsets
+
+        elif opt.basenet.lower() == 'mnist':
             from .mnistclassifier import MnistClassifier
-            self.classifier = MnistClassifier(opt)
+            self.model = MnistClassifier(opt)
+        elif opt.basenet.lower() == 'timeseries':
+            from .timeseriesclassifier import TimeseriesClassifier
+            self.model = TimeseriesClassifier(opt)
 
     def forward(self, x):
 

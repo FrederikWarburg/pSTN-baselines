@@ -6,7 +6,7 @@ import cv2
 import matplotlib.pyplot as plt
 
 
-def convert_image_np(inp, dataset = 'mnist'):
+def convert_image_np(inp, dataset='mnist'):
     """Convert a Tensor to numpy image."""
     inp = inp.numpy().transpose((1, 2, 0))
     mean = np.array([0.485, 0.456, 0.406])
@@ -23,28 +23,63 @@ def normalize(images):
 
 
 def visualize_stn(model, data, opt):
-
     with torch.no_grad():
+        if opt.xdim == 2:
+            data = data[:16] # just visualize the first 16
+            if opt.model.lower() == 'stn':
+                transformed_input_tensor, theta, affine_params = model.stn(data)
 
-        data = data[:16] # just visualize the first 16
+            elif opt.model.lower() == 'pstn':
+                transformed_input_tensor, theta, affine_params = model.pstn(data)
 
-        if opt.model.lower() == 'stn':
-            transformed_input_tensor, theta, affine_params = model.stn(data)
-        elif opt.model.lower() == 'pstn':
-            transformed_input_tensor, theta, affine_params = model.pstn(data)
+            in_grid = convert_image_np(torchvision.utils.make_grid(data.cpu()), opt.dataset.lower())
+            in_grid = (in_grid*255).astype(np.uint8)
+            in_grid = np.transpose(in_grid, (2,0,1))
 
-        in_grid = convert_image_np(torchvision.utils.make_grid(data.cpu()), opt.dataset.lower())
-        in_grid = (in_grid*255).astype(np.uint8)
-        in_grid = np.transpose(in_grid, (2,0,1))
+            if opt.model.lower() == 'cnn':
+                return in_grid, None, None, None
 
-        if opt.model.lower() == 'cnn':
-            return in_grid, None, None, None
+            out_grid = convert_image_np(torchvision.utils.make_grid(transformed_input_tensor.cpu()),opt.dataset.lower())
+            out_grid = (out_grid*255).astype(np.uint8)
+            out_grid = np.transpose(out_grid, (2,0,1))
+            bbox_images = visualize_bbox(data.cpu(), affine_params, opt)
 
-        out_grid = convert_image_np(torchvision.utils.make_grid(transformed_input_tensor.cpu()),opt.dataset.lower())
-        out_grid = (out_grid*255).astype(np.uint8)
-        out_grid = np.transpose(out_grid, (2,0,1))
+        if opt.xdim == 1:
+            bbox_images = None
 
-        bbox_images = visualize_bbox(data.cpu(), affine_params, opt)
+            if opt.model.lower() == 'stn':
+                input_array = data.cpu().numpy()
+                transformed_input, mu_sigma, sampled_params = model.stn(data)
+                transformed_input = transformed_input.cpu().numpy()
+                theta = theta.cpu().numpy()
+                print('Theta shape:', theta.shape)
+                nr_plots = 3  # NOT PLOT ALL FOR NOW
+                colors = ['darkgoldenrod', 'sienna', 'darkred']
+
+                in_grid = plt.subplots(nr_plots, figsize=(20, 10))
+                out_grid = plt.subplots(nr_plots, figsize=(20, 10))
+                for ix in range(nr_plots):
+                    in_grid[ix].plot(input_array[ix, 0, :], c='darkblue')
+                    out_grid[ix].plot(transformed_input[ix, 0, :], c=colors[ix])
+
+            if opt.model.lower() == 'pstn':
+                input_array = data.cpu().numpy()
+                model.eval()
+                transformed_input, mu_sigma, sampled_params = model.pstn(data).cpu().numpy()
+                batch_size = data.shape[0]
+                nr_plots = 3
+                nr_samples = 3
+                colors = ['darkgreen', 'darkgoldenrod', 'darkred']
+                alphas = [0.5, 0.75, 1]
+                # Plot the results side-by-side
+                in_grid = plt.subplots(nr_plots, figsize=(20, 20))
+                out_grid = plt.subplots(nr_plots, figsize=(20, 20))
+
+                for data_ix in range(nr_plots):
+                    for sample_ix in range(nr_samples):
+                        in_grid[data_ix].plot(input_array[data_ix, 0, :], c='darkblue')
+                        out_grid[data_ix].plot(transformed_input[data_ix +(sample_ix * batch_size), 0, :], alpha=alphas[ix], c= 'sienna')
+#
 
         # Plot the results side-by-side
     return in_grid, out_grid, theta, bbox_images
@@ -128,72 +163,3 @@ def add_bounding_boxes(image, affine_params, num_branches, num_samples, mode_ = 
                     cv2.rectangle(im, (x,y),(x + w//2, y + h//2), color[i%len(color)], 1)
 
     return im
-
-# TODO: make these compatible with teh rest -> tensorboard
-
-# def visualize_timeseries_stn(device, model, data, epoch, DA, path):
-#     DA_flag = 'DA' if DA else 'noDA'
-#     print('visualizing STN!')
-#     plt.rcParams.update({'font.size': 12})
-
-#     with torch.no_grad():
-#         input_array = data.cpu().numpy()
-
-#         # Get a batch of training data
-#         transformed_input, theta = model.stn(data)
-#         transformed_input = transformed_input.cpu().numpy()
-#         theta = theta.cpu().numpy()
-#         print('Theta shape:', theta.shape)
-#         #batch_size = transformed_input.shape[0]
-#         batch_size = 3 # NOT PLOT ALL FOR NOW
-#         colors = ['darkgoldenrod', 'sienna', 'darkred']
-
-#         # Plot the results side-by-side
-#         f, axarr = plt.subplots(batch_size, 2, figsize=(20, 20))
-#         #plt.subplots_adjust(hspace=0.3)
-#         for ix in range(batch_size):
-#             axarr[ix, 0].plot(input_array[ix, 0, :], c='darkblue')
-#             #axarr[ix, 0].set_title('Original Timeseries, Epoch %s' % epoch)
-
-#             axarr[ix, 1].plot(transformed_input[ix, 0, :], c=colors[ix])
-#             #axarr[ix, 1].set_title('Trafo: %s' % theta[ix, :])
-#             # plt.ioff()
-#             # plt.show()
-#         plt.savefig(path + '_' + str(epoch) + '.png')
-#         #plt.savefig('TIMESERIES_DEBUG/visualizations/STN_%s_epoch_%s_%s.png'% (model.dataset, epoch, DA_flag))
-#         #plt.savefig('TIMESERIES_TEST/visualizations/STN_%s_epoch_%s_%s.png'% (model.dataset, epoch, DA_flag))
-#     return ...
-
-# def visualize_timeseries_p_stn(device, model, data, epoch, DA, path):
-#     DA_flag = 'DA' if DA else 'noDA'
-#     print('visualizing P_STN!')
-#     with torch.no_grad():
-#         input_array = data.cpu().numpy()
-#         model.eval()
-
-#         # Get a batch of training data
-#         transformed_input = model.probabilistic_stn(data)[0].cpu().numpy()
-#         print('S is', model.S)
-#         print(transformed_input.shape)
-#         batch_size = transformed_input.shape[0]
-
-#         # Plot the results side-by-side
-#         f, axarr = plt.subplots(2)
-#         axarr[0].plot(input_array[0, 0, :], c='darkblue')
-#         #axarr[0].get_xaxis().set_visible(False)
-#         #axarr[0].axes.get_yaxis().set_visible(False)
-#         plt.subplots_adjust(hspace=0.3)
-#         #axarr[0].set_title('Original 1st Timeseries from batch')
-#         colors = ['darkgreen', 'darkgoldenrod', 'darkred']
-#         alphas = [0.5, 0.75, 1]
-
-#         for ix in range(3):
-#             axarr[1].plot(transformed_input[ix, 0, :], alpha=alphas[ix], c= 'sienna')#colors[ix])
-#             #axarr[1].set_title('Transformed 1st Timeseries, Epoch %s' % epoch)
-#             # plt.ioff()
-#             # plt.show()
-#             #axarr[1].get_xaxis().set_visible(False)
-#             #axarr[1].axes.get_yaxis().set_visible(False)
-#         plt.savefig(path + '_' + str(epoch) + '.pdf', bbox_inches='tight')
-#         #print('save image at', 'TIMESERIES_TEST/visualizations/P_STN_%s_epoch_%s_%s.png'% (model.dataset, epoch, DA_flag))
-#         #plt.savefig('TIMESERIES_TEST/visualizations/P_STN_%s_epoch_%s_%s.png'% (model.dataset, epoch, DA_flag))

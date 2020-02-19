@@ -10,6 +10,7 @@ import json
 import os
 from utils.utils import get_exp_name
 
+
 def create_model(opt):
     if opt.model.lower() == 'cnn':
         from .cnn import CNN
@@ -25,8 +26,8 @@ def create_model(opt):
 
     return model
 
-def create_optimizer(model, opt):
 
+def create_optimizer(model, opt):
     if opt.optimizer.lower() == 'sgd':
         if opt.model.lower() == 'stn' and opt.lr_loc > 0:
             # the learning rate of the parameters that are part of the localizer are multiplied 1e-4
@@ -42,15 +43,35 @@ def create_optimizer(model, opt):
             ], momentum=opt.momentum, weight_decay=opt.weightDecay)
         else:
             print("=> SGD all parameters chosen")
-            optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr, momentum=opt.momentum, weight_decay=opt.weightDecay)
-
+            optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr,
+                momentum=opt.momentum, weight_decay=opt.weightDecay)
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=0.1)
+
     elif opt.optimizer.lower() == 'adam':
+        if 'MNIST' in opt.dataset.lower():  # straight forward for MNIST, and CNN for all datasets
+            optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr, weight_decay=opt.lr)
+        else:  # different learning rates for timeseries STN/P_STN model parts
+            if opt.model.lower() == 'pstn':
+                optimizer = torch.optim.Adam(
+                    [{'params': model.fc_loc_mean.parameters(), 'lr': opt.lr/10},
+                     {'params': model.localization.parameters(), 'lr': opt.lr/10},
+                     {'params': model.fc_loc_std.parameters(), 'lr': opt.lr},
+                     {'params': model.CNN.parameters(), 'lr': opt.lr},
+                     {'params': model.fully_connected.parameters(), 'lr': opt.lr}],
+                    weight_decay=opt.weightDecay)
+            elif opt.model.lower() == 'stn':
+                optimizer = torch.optim.Adam(
+                    [{'params': model.fc_loc.parameters(), 'lr': opt.lr/10},
+                     {'params': model.localization.parameters(), 'lr': opt.lr/10},
+                     {'params': model.CNN.parameters(), 'lr': opt.lr},
+                     {'params': model.fully_connected.parameters(), 'lr': opt.lr}],
+                    weight_decay=opt.weightDecay)
 
     else:
         raise ValueError('Unsupported or optimizer: {}!'.format(opt.optimizer))
 
     return optimizer, scheduler
+
 
 def save_network(model, opt, which_epoch, is_best = False):
     """save model to disk"""
@@ -69,11 +90,10 @@ def save_network(model, opt, which_epoch, is_best = False):
     model.to(device)
 
 
-
-class CoolSystem(pl.LightningModule):
+class System(pl.LightningModule):
 
     def __init__(self, opt):
-        super(CoolSystem, self).__init__()
+        super(System, self).__init__()
         # not the best model...
         self.model = create_model(opt)
         self.hparams = opt

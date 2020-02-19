@@ -9,10 +9,10 @@ class CNN:
             from .simpleclassifier import SimpleClassifier
             self.model = SimpleClassifier(opt)
         elif opt.basenet.lower() == 'mnist':
-            from .polaclassifier import CCNClassifier
+            from .mnistclassifier import CNNClassifier
             self.model = CNNClassifier(opt)
         elif opt.basenet.lower() == 'timeseries':
-            from .polaclassifier import CCNClassifier
+            from .timeseriesclassifier import CCNClassifier
             self.model = CNNClassifier(opt)
 
     def forward(self, x):

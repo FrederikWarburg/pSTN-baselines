@@ -6,6 +6,7 @@ from utils.utils import make_affine_parameters
 import torchvision.models as models
 import torch
 
+
 class PSTN(nn.Module):
     def __init__(self, opt):
         super().__init__()
@@ -25,6 +26,13 @@ class PSTN(nn.Module):
             from .simplelocalizer import SimplePSTN
             self.pstn = SimplePSTN(opt)
 
+        elif opt.basenet.lower() == 'mnist':
+            from .mnistlocalizer import MnistPSTN
+            self.model = MnistPSTN(opt)
+        elif opt.basenet.lower() == 'timeseries':
+            from .timeseriesclassifier import TimeseriesPSTN
+            self.model = TimeseriesPSTN(opt)
+
     def init_classifier(self, opt):
         if opt.basenet.lower() in ['inception', 'resnet50', 'resnet34', 'inception_v3']:
             from .inceptionclassifier import InceptionClassifier
@@ -32,6 +40,13 @@ class PSTN(nn.Module):
         elif opt.basenet.lower() == 'simple':
             from .simpleclassifier import SimpleClassifier
             self.classifier = SimpleClassifier(opt)
+
+        elif opt.basenet.lower() == 'mnist':
+            from .mnistclassifier import MnistClassifier
+            self.model = MnistClassifier(opt)
+        elif opt.basenet.lower() == 'timeseries':
+            from .timeseriesclassifier import TimeseriesClassifier
+            self.model = TimeseriesClassifier(opt)
 
     def forward(self, x):
 

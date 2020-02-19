@@ -4,7 +4,7 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 from options.train_options import TrainOptions
 from pytorch_lightning import Trainer
 from pytorch_lightning.logging import TestTubeLogger
-from models import CoolSystem
+from models import System
 import torch
 from utils.utils import get_exp_name
 
@@ -21,7 +21,7 @@ if __name__ == '__main__':
             create_git_tag=False
     )
 
-    model = CoolSystem(opt)
+    model = System(opt)
 
     num_gpus = torch.cuda.device_count()
     print("Let's use {} GPUS!".format(num_gpus))
