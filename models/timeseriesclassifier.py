@@ -94,7 +94,7 @@ class TimeseriesClassifier(nn.Module):
             parameter_dict = parameter_dict_timeseries_CNN
         elif opt.model.lower() == 'stn':
             parameter_dict = parameter_dict_timeseries_STN
-        elif opt.model.lower() == 'p_stn':
+        elif opt.model.lower() == 'pstn':
             parameter_dict = parameter_dict_timeseries_P_STN
         else:
             print('Pass valid model!')

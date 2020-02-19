@@ -15,10 +15,10 @@ if __name__ == '__main__':
     modelname = get_exp_name(opt)
 
     logger = TestTubeLogger(
-        save_dir=os.getcwd() + "/lightning_logs",
-        name=modelname,
-        debug=False,
-        create_git_tag=False
+       save_dir=os.getcwd() + "/lightning_logs",
+       name=modelname,
+       debug=False,
+       create_git_tag=False
     )
 
     model = System(opt)
@@ -33,7 +33,7 @@ if __name__ == '__main__':
                       accumulate_grad_batches=num_batches,
                       gpus=num_gpus,
                       early_stop_callback=None,
-                      logger=logger,
+                      #logger=logger,
                       val_check_interval=opt.val_check_interval,
                       val_percent_check=opt.val_percent_check,
                       distributed_backend='dp')

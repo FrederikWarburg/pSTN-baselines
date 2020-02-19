@@ -30,6 +30,7 @@ def create_model(opt):
 
 
 def create_optimizer(model, opt):
+    print('creating optimiuzer', opt.optimizer)
     if opt.optimizer.lower() == 'sgd':
         if opt.model.lower() == 'stn' and opt.lr_loc > 0:
             # the learning rate of the parameters that are part of the localizer are multiplied 1e-4
@@ -50,23 +51,27 @@ def create_optimizer(model, opt):
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=0.1)
 
     elif opt.optimizer.lower() == 'adam':
+        scheduler = None
         if 'MNIST' in opt.dataset.lower():  # straight forward for MNIST, and CNN for all datasets
             optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr, weight_decay=opt.lr)
         else:  # different learning rates for timeseries STN/P_STN model parts
+            if opt.model.lower() == 'cnn':
+                optimizer = torch.optim.Adam(
+                    model.parameters(), lr=opt.lr, weight_decay=opt.weightDecay)
             if opt.model.lower() == 'pstn':
                 optimizer = torch.optim.Adam(
-                    [{'params': model.fc_loc_mean.parameters(), 'lr': opt.lr / 10},
-                     {'params': model.localization.parameters(), 'lr': opt.lr / 10},
-                     {'params': model.fc_loc_std.parameters(), 'lr': opt.lr},
-                     {'params': model.CNN.parameters(), 'lr': opt.lr},
-                     {'params': model.fully_connected.parameters(), 'lr': opt.lr}],
+                    [{'params': model.pstn.fc_loc_mean.parameters(), 'lr': opt.lr / 10},
+                     {'params': model.pstn.localization.parameters(), 'lr': opt.lr / 10},
+                     {'params': model.pstn.fc_loc_std.parameters(), 'lr': opt.lr},
+                     {'params': model.classifier.CNN.parameters(), 'lr': opt.lr},
+                     {'params': model.classifier.fully_connected.parameters(), 'lr': opt.lr}],
                     weight_decay=opt.weightDecay)
             elif opt.model.lower() == 'stn':
                 optimizer = torch.optim.Adam(
-                    [{'params': model.fc_loc.parameters(), 'lr': opt.lr / 10},
-                     {'params': model.localization.parameters(), 'lr': opt.lr / 10},
-                     {'params': model.CNN.parameters(), 'lr': opt.lr},
-                     {'params': model.fully_connected.parameters(), 'lr': opt.lr}],
+                    [{'params': model.stn.fc_loc.parameters(), 'lr': opt.lr / 10},
+                     {'params': model.stn.localization.parameters(), 'lr': opt.lr / 10},
+                     {'params': model.classifier.CNN.parameters(), 'lr': opt.lr},
+                     {'params': model.classifier.fully_connected.parameters(), 'lr': opt.lr}],
                     weight_decay=opt.weightDecay)
 
     else:

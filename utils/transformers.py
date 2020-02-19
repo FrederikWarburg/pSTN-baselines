@@ -1,13 +1,12 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-#from libcpab.cpab import Cpab
+from libcpab.cpab import Cpab
 from torch.distributions.utils import _standard_normal
 
 
 class DiffeomorphicTransformer(nn.Module):
     def __init__(self, opt):
-
         print("Use diffeomorphic transformer")
 
         if opt.xdim == 2:
@@ -36,7 +35,6 @@ class DiffeomorphicTransformer(nn.Module):
 
 class AffineTransformer(nn.Module):
     def __int__(self):
-
         print("Use affine transformer")
 
     def forward(self, x, mean_params, std_params=None):

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch import distributions
 
-from utils.transformers import diffeomorphic_transformation, affine_transformation
+from utils.transformers import DiffeomorphicTransformer, AffineTransformer
 
 parameter_dict_P_STN = {
     'loc_kernel_size': 5,
@@ -71,7 +71,7 @@ class MnistPSTN(nn.Module):
                 # add activation function for positivity
                 nn.Softplus())
             # initialize transformer
-            self.transfomer = affine_transformation()
+            self.transfomer = AffineTransformer()
 
         elif opt.transformer_type == 'diffeomorphic':
             self.fc_loc_std = nn.Sequential(
@@ -82,7 +82,7 @@ class MnistPSTN(nn.Module):
                 # add activation function for positivity
                 nn.Softplus())
             # initialize transformer
-            self.transfomer = diffeomorphic_transformation(opt)
+            self.transfomer = DiffeomorphicTransformer(opt)
 
 
     def forward(self, x):
@@ -116,7 +116,6 @@ class MnistSTN(nn.Module):
         self.S = opt.test_samples
         self.test_samples = opt.test_samples
         self.num_param = opt.num_param
-        self.sigma_p = opt.sigma_p
         self.channels = 1
 
         self.parameter_dict = parameter_dict_STN
@@ -135,7 +134,11 @@ class MnistSTN(nn.Module):
             nn.ReLU(),
         )
 
-        self.transformer = None
+        if opt.transformer_type == 'diffeomorphic':
+            self.transfomer = DiffeomorphicTransformer(opt)
+        else:
+            self.transfomer = AffineTransformer()
+
 
     def forward(self, x):
         batch_size, c, w, h = x.shape

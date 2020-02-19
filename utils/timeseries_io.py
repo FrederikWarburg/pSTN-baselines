@@ -4,7 +4,7 @@ from glob import glob
 
 import numpy as np
 
-DATA_PATH = '../data_augmentation/time_series/DATA_PARSED/'
+DATA_PATH = 'data/TIMESERIES_DATA_PARSED/'
 
 
 # make lists of data sets names

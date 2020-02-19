@@ -4,8 +4,7 @@ import torch
 from torch.utils import data
 from torch.utils.data import TensorDataset
 
-TS_PATH = '~/projects/data_augmentation/time_series/UCR_TS_Archive_2015/'
-DATA_PATH = '~/projects/data_augmentation/time_series/DATA_PARSED/'
+DATA_PATH = 'data/TIEMSERIES_DATA_PARSED/'
 
 
 def make_timeseries_dataset(opt, mode):

@@ -6,7 +6,7 @@ import torch
 from utils import utils as util
 
 TIMESERIESDATASETS = [
-    'FaceAll', 'wafer', 'uWaveGestureLibrary_X', 'FaceAll', 'Two_Patterns',
+    'FaceAll', 'wafer', 'uWaveGestureLibrary_X', 'Two_Patterns',
     'StarLightCurves', 'PhalangesOutlinesCorrect', 'FordA']
 
 
@@ -76,6 +76,7 @@ class BaseOptions:
             self.opt.horizontal_flip = self.horizontal_flip  # train or test
         self.opt.no_shuffle = self.no_shuffle  # train or test
         self.opt.xdim = 1 if self.opt.dataset.lower() in TIMESERIESDATASETS else 2
+        self.opt.TIMESERIESDATASETS = TIMESERIESDATASETS
 
         args = vars(self.opt)
 
