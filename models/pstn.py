@@ -48,11 +48,6 @@ class PSTN(nn.Module):
             self.classifier = TimeseriesClassifier(opt)
 
     def init_model_weights(self):
-
-        self.pstn.fc_loc_std[2].weight.data.zero_()
-        self.pstn.fc_loc_std[2].bias.data.copy_(
-            torch.tensor([-2], dtype=torch.float).repeat(self.num_param * self.N))
-
         # Initialize the weights/bias with identity transformation
         self.pstn.fc_loc_mu[2].weight.data.zero_()
         if self.num_param == 2:
@@ -63,7 +58,14 @@ class PSTN(nn.Module):
             self.pstn.fc_loc_mu[2].bias.data.copy_(torch.tensor([0, 1, 0, 0] * self.N, dtype=torch.float))
         elif self.num_param == 6:
             self.pstn.fc_loc_mu[2].bias.data.copy_(torch.tensor([1, 0, 0,
-                                                            0, 1, 0] * self.N, dtype=torch.float))
+                                                                0, 1, 0] * self.N, dtype=torch.float))
+
+        # initialize variance network
+        self.pstn.fc_loc_std[2].weight.data.zero_()
+        self.pstn.fc_loc_std[2].bias.data.copy_(
+            torch.tensor([-2], dtype=torch.float).repeat(self.num_param * self.N))
+
+
 
         """
         if opt.transformer_type == 'affine':
@@ -82,7 +84,7 @@ class PSTN(nn.Module):
                 torch.tensor([1e-5], dtype=torch.float).repeat(self.theta_dim)).to(self.device)
             # initialize transformer
             self.transfomer = diffeomorphic_transformation(opt)
-            
+
         # Regressor for the affine matrix
         if opt.transformer_type == 'affine':
             self.fc_loc = nn.Sequential(
@@ -105,7 +107,7 @@ class PSTN(nn.Module):
                 torch.tensor([1e-5], dtype=torch.float).repeat(self.theta_dim)).to(self.device)
             # initialize transformer
             self.transfomer = diffeomorphic_transformation(opt)
-            
+
         # initialize param's
         self.fc_loc_mean[0].weight.data.zero_()
         self.fc_loc_mean[0].bias.data.copy_(

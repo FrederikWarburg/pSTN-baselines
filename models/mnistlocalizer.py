@@ -56,7 +56,6 @@ class MnistPSTN(nn.Module):
         if opt.transformer_type == 'affine':
             self.fc_loc_mu = nn.Sequential(
                 nn.Linear(self.parameter_dict['resulting_size_localizer'], self.num_param))
-            # TODO: initialize weights
         # Regressor for the diffeomorphic param's
         elif opt.transformer_type == 'diffeomorphic':
             self.fc_loc_mu = nn.Sequential(
@@ -71,6 +70,9 @@ class MnistPSTN(nn.Module):
                 nn.Linear(self.parameter_dict['resulting_size_localizer'], self.theta_dim),
                 # add activation function for positivity
                 nn.Softplus())
+            # initialize transformer
+            self.transfomer = affine_transformation()
+
         elif opt.transformer_type == 'diffeomorphic':
             self.fc_loc_std = nn.Sequential(
                 nn.Linear(self.parameter_dict['resulting_size_localizer'],
@@ -79,8 +81,9 @@ class MnistPSTN(nn.Module):
                 nn.Linear(self.parameter_dict['hidden_layer_localizer'], self.theta_dim),
                 # add activation function for positivity
                 nn.Softplus())
+            # initialize transformer
+            self.transfomer = diffeomorphic_transformation(opt)
 
-        self.transformer = None
 
     def forward(self, x):
         self.S = self.train_samples if self.training else self.test_samples

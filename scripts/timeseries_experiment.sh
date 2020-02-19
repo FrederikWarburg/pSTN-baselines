@@ -11,7 +11,7 @@ DATASETS=("FaceAll" "wafer" "uWaveGestureLibrary_X" "FaceAll" "Two_Patterns"
  "StarLightCurves" "PhalangesOutlinesCorrect" "FordA")
 NR_CLASSES=(14 2 8 14 4 3 2 2)
 
-for DATASET in {0..}
+for DATASET in {0..2}
 do
     echo ${DATASETS[$DATASET]}
     for MODEL in {0..2}
