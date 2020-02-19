@@ -1,10 +1,10 @@
 import os
-from PIL import Image
+import zipfile
+
 import numpy as np
 import torch
-
 import torchvision.transforms as transforms
-import zipfile
+from PIL import Image
 
 idx2label = {
     0: 'Speed limit (20km/h)',
@@ -52,15 +52,25 @@ idx2label = {
     42: 'End of no passing by vehicles over 3.5 metric tons'
 }
 
-classnames = ['Speed limit (20km/h)', 'Speed limit (30km/h)', 'Speed limit (50km/h)', 'Speed limit (60km/h)', 'Speed limit (70km/h)', 'Speed limit (80km/h)', 'End of speed limit (80km/h)', 'Speed limit (100km/h)', 'Speed limit (120km/h)', 'No passing', 'No passing for vehicles over 3.5 metric tons', 'Right-of-way at the next intersection', 'Priority road', 'Yield', 'Stop', 'No vehicles', 'Vehicles over 3.5 metric tons prohibited', 'No entry', 'General caution', 'Dangerous curve to the left', 'Dangerous curve to the right', 'Double curve', 'Bumpy road', 'Slippery road', 'Road narrows on the right', 'Road work', 'Traffic signals', 'Pedestrians', 'Children crossing', 'Bicycles crossing', 'Beware of ice/snow', 'Wild animals crossing', 'End of all speed and passing limits', 'Turn right ahead', 'Turn left ahead', 'Ahead only', 'Go straight or right', 'Go straight or left', 'Keep right', 'Keep left', 'Roundabout mandatory', 'End of no passing', 'End of no passing by vehicles over 3.5 metric tons']
+classnames = ['Speed limit (20km/h)', 'Speed limit (30km/h)', 'Speed limit (50km/h)', 'Speed limit (60km/h)',
+              'Speed limit (70km/h)', 'Speed limit (80km/h)', 'End of speed limit (80km/h)', 'Speed limit (100km/h)',
+              'Speed limit (120km/h)', 'No passing', 'No passing for vehicles over 3.5 metric tons',
+              'Right-of-way at the next intersection', 'Priority road', 'Yield', 'Stop', 'No vehicles',
+              'Vehicles over 3.5 metric tons prohibited', 'No entry', 'General caution', 'Dangerous curve to the left',
+              'Dangerous curve to the right', 'Double curve', 'Bumpy road', 'Slippery road',
+              'Road narrows on the right', 'Road work', 'Traffic signals', 'Pedestrians', 'Children crossing',
+              'Bicycles crossing', 'Beware of ice/snow', 'Wild animals crossing', 'End of all speed and passing limits',
+              'Turn right ahead', 'Turn left ahead', 'Ahead only', 'Go straight or right', 'Go straight or left',
+              'Keep right', 'Keep left', 'Roundabout mandatory', 'End of no passing',
+              'End of no passing by vehicles over 3.5 metric tons']
 
 
 def initialize_data(folder):
     train_zip = folder + '/train_images.zip'
     test_zip = folder + '/test_images.zip'
     if not os.path.exists(train_zip) or not os.path.exists(test_zip):
-        raise(RuntimeError("Could not find " + train_zip + " and " + test_zip
-              + ', please download them from https://www.kaggle.com/c/nyu-cv-fall-2017/data '))
+        raise (RuntimeError("Could not find " + train_zip + " and " + test_zip
+                            + ', please download them from https://www.kaggle.com/c/nyu-cv-fall-2017/data '))
 
     # extract train_data.zip to train_data
     train_folder = folder + '/train_images'
@@ -112,8 +122,6 @@ class GTSRB(torch.utils.data.Dataset):
         self.read_lists()
         self.transforms = self.get_transforms(opt)
 
-
-
     def __getitem__(self, index):
         im = Image.open(f'{self.data_dir}/{self.image_list[index]}')
         im = self.transforms(im)
@@ -139,14 +147,12 @@ class GTSRB(torch.utils.data.Dataset):
                 transforms.Normalize(mean=self.mean, std=self.std),
             ])
 
-
     def read_lists(self):
         image_path = os.path.join(self.data_dir, self.split + '_images.txt')
         assert os.path.exists(image_path)
         self.image_list = [line.strip().split()[0] for line in open(image_path, 'r')]
         self.label_list = [int(line.strip().split()[1]) for line in open(image_path, 'r')]
         assert len(self.image_list) == len(self.label_list)
-
 
     # get raw image prior to normalization
     # expects input image as torch Tensor
@@ -162,8 +168,8 @@ class GTSRB(torch.utils.data.Dataset):
     # de-center images and bring them back to their raw state
     def unprocess_batch(self, input):
         for i in range(input.size(1)):
-            input[:,i,:,:] = self.std[i] * input[:,i,:,:]
-            input[:,i,:,:] = input[:,i,:,:] + self.mean[i]
-            input[:,i,:,:] = np.clip(input[:,i,:,:], 0, 1)
+            input[:, i, :, :] = self.std[i] * input[:, i, :, :]
+            input[:, i, :, :] = input[:, i, :, :] + self.mean[i]
+            input[:, i, :, :] = np.clip(input[:, i, :, :], 0, 1)
 
         return input

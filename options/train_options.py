@@ -1,5 +1,7 @@
 import numpy as np
+
 from .base_options import BaseOptions
+
 
 class TrainOptions(BaseOptions):
     def initialize(self):
@@ -14,16 +16,21 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--criterion', type=str, default='nll')
         self.parser.add_argument('--annealing', type=str, default='reduce_kl')
         self.parser.add_argument('--freeze_layers', type=int, default=np.inf)
-        self.parser.add_argument('--step_size', type=float, default=50, help='Scheduler update every n (default 50) epochs')
+        self.parser.add_argument('--step_size', type=float, default=50,
+                                 help='Scheduler update every n (default 50) epochs')
         self.parser.add_argument('--data_augmentation', type=bool, default=False)
         self.parser.add_argument('--horizontal_flip', type=bool, default=False)
-        self.parser.add_argument('--val_percent_check', type=float, default=0.01, help='percentage of validation set to check')
+        self.parser.add_argument('--val_percent_check', type=float, default=0.01,
+                                 help='percentage of validation set to check')
         self.parser.add_argument('--val_check_interval', type=float, default=0.001, help='the rate for checking')
         self.parser.add_argument('--trainval_split', type=bool, default=False)
 
-        self.parser.add_argument('--visualize', type=bool, default=False, help='plots images of transformations to tensorboard')
-        self.parser.add_argument('--print_freq', type=int, default=10, help='frequency of showing training results on console')
-        self.parser.add_argument('--run_test_freq', type=int, default=1, help='frequency of running test in training script')
+        self.parser.add_argument('--visualize', type=bool, default=False,
+                                 help='plots images of transformations to tensorboard')
+        self.parser.add_argument('--print_freq', type=int, default=10,
+                                 help='frequency of showing training results on console')
+        self.parser.add_argument('--run_test_freq', type=int, default=1,
+                                 help='frequency of running test in training script')
         self.parser.add_argument('--save_dir', type=str, default='', help='path for saving models')
 
         self.parser.add_argument('--no_vis', action='store_true', help='will not use tensorboard')

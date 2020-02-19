@@ -1,23 +1,22 @@
 # import comet_ml in the top of your file
-from comet_ml import Experiment
-import torch.nn.functional as F
 import time
-from options.train_options import TrainOptions
-from data import DataLoader
-from models import create_model, create_optimizer, save_network
-from loss import create_criterion
-from utils.writer import Writer
-from test import run_test
-import torch
-import torch.optim as optim
 
+import torch
+from comet_ml import Experiment
+
+from data import DataLoader
+from loss import create_criterion
+from models import create_model, create_optimizer
+from options.train_options import TrainOptions
+from test import run_test
 from utils.evaluate import evaluate
+from utils.writer import Writer
 
 if __name__ == '__main__':
 
     # Add the following code anywhere in your machine learning file
     experiment = Experiment(api_key="C36XTCgndYu3554YtBCTV73aV",
-                        project_name="pstn-baselines", workspace="frederikwarburg")
+                            project_name="pstn-baselines", workspace="frederikwarburg")
 
     opt = TrainOptions().parse()
     experiment.log_parameters(vars(opt))
@@ -34,7 +33,7 @@ if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
-    if opt.visualize and opt.model.lower() in ['stn','pstn']:
+    if opt.visualize and opt.model.lower() in ['stn', 'pstn']:
         writer.visualize_transformation(model, 0)
 
     with experiment.train():
@@ -48,7 +47,7 @@ if __name__ == '__main__':
             ncorrect, nexamples = 0, 0
 
             for i, (input, label) in enumerate(dataset):
-                input,label = input.to(device), label.to(device)
+                input, label = input.to(device), label.to(device)
                 iter_start_time = time.time()
                 if total_steps % opt.print_freq == 0:
                     t_data = iter_start_time - iter_data_time
@@ -67,7 +66,8 @@ if __name__ == '__main__':
                     writer.plot_loss(loss, epoch, epoch_iter, dataset_size)
 
                     if opt.criterion.lower() == 'elbo':
-                        writer.plot_loss_components(criterion.nll, criterion.kl, criterion.rec, epoch, epoch_iter, dataset_size)
+                        writer.plot_loss_components(criterion.nll, criterion.kl, criterion.rec, epoch, epoch_iter,
+                                                    dataset_size)
 
                 iter_data_time = time.time()
 
@@ -88,9 +88,9 @@ if __name__ == '__main__':
                 writer.plot_acc(acc, epoch, 'test')
 
                 is_best = acc > best_acc
-                #save_network(model, opt, epoch, is_best)
+                # save_network(model, opt, epoch, is_best)
 
-                if opt.visualize and opt.model.lower() in ['stn','pstn']:
+                if opt.visualize and opt.model.lower() in ['stn', 'pstn']:
                     writer.visualize_transformation(model, epoch)
 
             print('End of epoch %d \t Time Taken: %d sec' %

@@ -1,11 +1,11 @@
-import torchvision.models as models
-import torch.nn as nn
 import torch
+import torch.nn as nn
+import torchvision.models as models
 
-FEATURE_SIZES = {'inception'    : 1024,
-                 'inception_v3' : 2048,
-                 'resnet50'     : 2048,
-                 'resnet34'     : 512}
+FEATURE_SIZES = {'inception': 1024,
+                 'inception_v3': 2048,
+                 'resnet50': 2048,
+                 'resnet34': 512}
 
 
 class InceptionClassifier(nn.Module):
@@ -42,18 +42,18 @@ class InceptionClassifier(nn.Module):
             layers = list(basenet.children())[:-1]
 
         elif opt.basenet.lower() == 'resnet50':
-            basenet = models.resnet50(pretrained = True)
+            basenet = models.resnet50(pretrained=True)
             layers = list(basenet.children())[:-1]
 
         elif opt.basenet.lower() == 'resnet34':
-            basenet = models.resnet34(pretrained = True)
+            basenet = models.resnet34(pretrained=True)
             layers = list(basenet.children())[:-1]
 
         encoder = nn.Sequential(*layers)
 
         if opt.is_train:
             count = 0
-            for i, child in enumerate(encoder.children()): #TODO: use .named_children() instead
+            for i, child in enumerate(encoder.children()):  # TODO: use .named_children() instead
                 for param in child.parameters():
                     if count < opt.freeze_layers:
                         param.requires_grad = False
@@ -65,12 +65,13 @@ class InceptionClassifier(nn.Module):
     def forward(self, x):
 
         batch_size = x.shape[0] // self.N
-        xs = x.split([batch_size]*self.N)
+        xs = x.split([batch_size] * self.N)
 
-        features = torch.empty(batch_size, self.feature_size*self.N, requires_grad = False, device=x.device)
+        features = torch.empty(batch_size, self.feature_size * self.N, requires_grad=False, device=x.device)
         for branch_ix in range(self.N):
             x = self.model._modules['branch_{}'.format(branch_ix)].forward(xs[branch_ix])
-            features[:, branch_ix*self.feature_size:(branch_ix+1)*self.feature_size] = x.view(batch_size, self.feature_size)
+            features[:, branch_ix * self.feature_size:(branch_ix + 1) * self.feature_size] = x.view(batch_size,
+                                                                                                    self.feature_size)
 
         x = self.bn(features)
         x = self.dropout(x)

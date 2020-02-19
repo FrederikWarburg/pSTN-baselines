@@ -1,8 +1,8 @@
+import pickle
+
 import torch
 from torch.utils import data
 from torch.utils.data import TensorDataset
-import pickle
-
 
 TS_PATH = '~/projects/data_augmentation/time_series/UCR_TS_Archive_2015/'
 DATA_PATH = '~/projects/data_augmentation/time_series/DATA_PARSED/'
@@ -22,7 +22,7 @@ def make_timeseries_dataset(opt, mode):
 
     elif mode == 'test':
         dataset = data.TensorDataset(
-           torch.from_numpy(data_dict['X_test']).unsqueeze(1).float(),
-           torch.from_numpy(data_dict['y_test']))
+            torch.from_numpy(data_dict['X_test']).unsqueeze(1).float(),
+            torch.from_numpy(data_dict['y_test']))
 
     return dataset

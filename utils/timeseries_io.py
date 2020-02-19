@@ -1,7 +1,8 @@
-import numpy as np
-import pickle
 import os
+import pickle
 from glob import glob
+
+import numpy as np
 
 DATA_PATH = '../data_augmentation/time_series/DATA_PARSED/'
 
@@ -9,7 +10,7 @@ DATA_PATH = '../data_augmentation/time_series/DATA_PARSED/'
 # make lists of data sets names
 def make_ds_list(PATH):
     ds_list = []
-    for folder_PATH in glob(PATH+'*/'):
+    for folder_PATH in glob(PATH + '*/'):
         ds_list.append(folder_PATH.split("/")[-2])
     ds_list = np.sort(ds_list)
     return ds_list
@@ -58,7 +59,7 @@ def load_thetas_per_class(PATH, ds):
         if file.startswith('transformations'):
             suffix = file.split('transformations')[1]
             label = int(suffix.split('.')[0])
-            label_path = PATH + ds + '/' +  file
+            label_path = PATH + ds + '/' + file
             trafos_here = pickle.load(open(label_path, 'rb'))
             print('Loaded ', trafos_here.shape[0], 'valid trafos.')
             # remove nan's

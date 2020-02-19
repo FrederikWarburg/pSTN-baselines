@@ -1,62 +1,39 @@
 import os
-import pandas as pd
-from torchvision.datasets.folder import default_loader
-from torchvision.datasets.utils import download_url
-from torch.utils.data import Dataset
-from torchvision import transforms
-from PIL import Image
+import warnings
+
 import numpy as np
-from utils.utils import make_affine_parameters
-from torch import distributions
+import pandas as pd
 import torch
 import torch.nn.functional as F
+from PIL import Image
+from torch import distributions
+from torch.utils.data import Dataset
+from torchvision import transforms
+from torchvision.datasets.folder import default_loader
+from torchvision.datasets.utils import download_url
 
-import warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="torch.nn.functional")
+
 
 def scale_keep_ar_min_fixed(img, fixed_min):
     ow, oh = img.size
 
     if ow < oh:
-
         nw = fixed_min
-
         nh = nw * oh // ow
-
     else:
-
         nh = fixed_min
-
         nw = nh * ow // oh
+
     return img.resize((nw, nh), Image.BICUBIC)
 
 
-def transform_image_manual(x, opt):
-    # we always applies the same data augmentation during training
-    num_param = opt.num_param #2 if opt.fix_scale_and_rot else 4
-
-    gaussian = distributions.normal.Normal(0, 1)  # split up the multivariate Gaussian into 1d Gaussians
-    epsilon = gaussian.sample(sample_shape=torch.Size([num_param]))
-
-    random_params = epsilon * opt.sigma
-    if num_param == 4: random_params[1] += 1 # scale is centered around 1
-    if num_param == 6:
-        random_params[0] += 1 # scale is centered around 1
-        random_params[4] += 1 # scale is centered around 1
-    theta = make_affine_parameters(random_params.unsqueeze(0))
-
-    x = x.unsqueeze(0)
-    grid = F.affine_grid(theta, x.size())  # makes the flow field on a grid
-    x_transformed = F.grid_sample(x, grid)  # interpolates x on the grid
-    return x_transformed.squeeze(0)
-
 def transform(opt):
-
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                      std=[0.229, 0.224, 0.225])
+                                     std=[0.229, 0.224, 0.225])
 
     transform_list = []
-    transform_list.append(transforms.Lambda(lambda img:scale_keep_ar_min_fixed(img, opt.smallest_size)))
+    transform_list.append(transforms.Lambda(lambda img: scale_keep_ar_min_fixed(img, opt.smallest_size)))
     if opt.is_train:
         if opt.data_augmentation:
             if opt.horizontal_flip:
@@ -65,13 +42,11 @@ def transform(opt):
             else:
                 transform_list.append(transforms.CenterCrop((opt.crop_size, opt.crop_size)))
             transform_list.append(transforms.ToTensor())
-            #transform_list.append(lambda img: transform_image_manual(img, opt))
         else:
             transform_list.append(transforms.CenterCrop((opt.crop_size, opt.crop_size)))
             transform_list.append(transforms.ToTensor())
     else:
         transform_list.append(transforms.CenterCrop((opt.crop_size, opt.crop_size)))
-        #transform_list.append(transforms.Resize((448, 448)))
         transform_list.append(transforms.ToTensor())
 
     transform_list.append(normalize)
@@ -103,11 +78,16 @@ class Cub2011(Dataset):
                                ' You can use download=True to download it')
 
     def _load_metadata(self):
-        images = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'images.txt'), sep=' ', names=['img_id', 'filepath'])
-        image_class_labels = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'image_class_labels.txt'), sep=' ', names=['img_id', 'target'])
-        train_test_split = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'train_test_split.txt'), sep=' ', names=['img_id', 'is_training_img'])
-        if not os.path.isfile(os.path.join(self.root, 'CUB_200_2011', 'train_val_split.txt')): self._make_validation_set()
-        train_val_split = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'train_val_split.txt'), sep=' ', names=['img_id', 'is_validation_img'])
+        images = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'images.txt'), sep=' ',
+                             names=['img_id', 'filepath'])
+        image_class_labels = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'image_class_labels.txt'), sep=' ',
+                                         names=['img_id', 'target'])
+        train_test_split = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'train_test_split.txt'), sep=' ',
+                                       names=['img_id', 'is_training_img'])
+        if not os.path.isfile(
+            os.path.join(self.root, 'CUB_200_2011', 'train_val_split.txt')): self._make_validation_set()
+        train_val_split = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'train_val_split.txt'), sep=' ',
+                                      names=['img_id', 'is_validation_img'])
 
         data = images.merge(image_class_labels, on='img_id')
         self.data = data.merge(train_test_split, on='img_id')
@@ -117,7 +97,8 @@ class Cub2011(Dataset):
             self.data = self.data[self.data.is_training_img == 1]
 
             if self.trainval_split:
-                self.data = self.data[self.data.is_validation_img == 1] if self.val else self.data[self.data.is_validation_img == 0]
+                self.data = self.data[self.data.is_validation_img == 1] if self.val else self.data[
+                    self.data.is_validation_img == 0]
             else:
                 if self.val: self.data = self.data[self.data.is_validation_img == 1]
         else:
@@ -150,12 +131,13 @@ class Cub2011(Dataset):
         with tarfile.open(os.path.join(self.root, self.filename), "r:gz") as tar:
             tar.extractall(path=self.root)
 
-
     def _make_validation_set(self):
 
-        train_val_split = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'train_test_split.txt'), sep=' ', names=['img_id', 'is_training_img'])
+        train_val_split = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'train_test_split.txt'), sep=' ',
+                                      names=['img_id', 'is_training_img'])
 
-        train_val_split["is_training_img"][train_val_split["is_training_img"] == 1] = np.random.binomial(1, 0.1, sum(train_val_split["is_training_img"] == 1))
+        train_val_split["is_training_img"][train_val_split["is_training_img"] == 1] = np.random.binomial(1, 0.1, sum(
+            train_val_split["is_training_img"] == 1))
 
         np.savetxt(os.path.join(self.root, 'CUB_200_2011', 'train_val_split.txt'), train_val_split.values, fmt='%u %u')
 

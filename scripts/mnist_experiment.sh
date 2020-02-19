@@ -26,7 +26,6 @@ do
                     --test_samples ${TEST_SAMPELS[$MODEL]} \
                     --train_samples ${TRAIN_SAMPELS[$MODEL]} \
                     --criterion ${CRITERION[$MODEL]} \
-                    --visualize True \
                     --lr 0.1 \
                     --sigma 0.1 \
                     --smallest_size 64 \
@@ -35,6 +34,5 @@ do
                     --num_param 2 \
                     --lr_loc 0.01 \
                     --basenet "simple" \
-                    --alpha 0.1 \
 		            --digits 2
 done

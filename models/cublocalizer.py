@@ -1,15 +1,17 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from utils.utils import make_affine_parameters
 import torchvision.models as models
-import torch
 
-FEATURE_SIZES = {'inception'    : 1024,
-                 'inception_v3' : 2048,
-                 'resnet50'     : 2048,
-                 'resnet34'     : 512}
+from tra
 
-class InceptionPSTN(nn.Module):
+FEATURE_SIZES = {'inception': 1024,
+                 'inception_v3': 2048,
+                 'resnet50': 2048,
+                 'resnet34': 512}
+
+
+class CubPSTN(nn.Module):
     def __init__(self, opt):
         super().__init__()
 
@@ -18,24 +20,14 @@ class InceptionPSTN(nn.Module):
         self.train_samples = opt.train_samples
         self.test_samples = opt.test_samples
         self.num_param = opt.num_param
-        self.sigma_prior = opt.sigma
+        self.sigma_p = opt.sigma_p
         self.feature_size = FEATURE_SIZES[opt.basenet.lower()]
 
         self.init_localizer(opt)
         self.init_mean_regressor(opt)
         self.init_std_regressor(opt)
 
-        # Initialize the weights/bias with identity transformation
-        self.fc_loc_mu[2].weight.data.zero_()
-        if self.num_param == 2:
-            # Tiling
-            bias = torch.tensor([[-1,-1],[1,-1],[1,1],[-1,1]], dtype=torch.float)*0.5
-            self.fc_loc_mu[2].bias.data.copy_(bias[:self.N].view(-1))
-        elif self.num_param == 4:
-            self.fc_loc[2].bias.data.copy_(torch.tensor([0,1,0,0]*self.N, dtype=torch.float))
-        elif self.num_param == 6:
-            self.fc_loc_mu[2].bias.data.copy_(torch.tensor([1,0,0,
-                                                            0,1,0]*self.N, dtype=torch.float))
+        self.transformer = None
 
     def init_localizer(self, opt):
 
@@ -50,11 +42,11 @@ class InceptionPSTN(nn.Module):
             layers = list(basenet.children())[:-2]
 
         elif opt.basenet.lower() == 'resnet50':
-            basenet = models.resnet50(pretrained = True)
+            basenet = models.resnet50(pretrained=True)
             layers = list(basenet.children())[:-2]
 
         elif opt.basenet.lower() == 'resnet34':
-            basenet = models.resnet34(pretrained = True)
+            basenet = models.resnet34(pretrained=True)
             layers = list(basenet.children())[:-2]
 
         layers.append(nn.Conv2d(self.feature_size, 128, 1))
@@ -73,17 +65,17 @@ class InceptionPSTN(nn.Module):
     def init_mean_regressor(self, opt):
 
         self.fc_loc_mu = nn.Sequential(
-            nn.Linear(128*(opt.crop_size//32)**2, 128),
+            nn.Linear(128 * (opt.crop_size // 32) ** 2, 128),
             nn.ReLU(True),
-            nn.Linear(128, self.num_param*self.N)
+            nn.Linear(128, self.num_param * self.N)
         )
 
     def init_std_regressor(self, opt):
 
-        self.fc_loc_sigma = nn.Sequential(
-            nn.Linear(128*(opt.crop_size//32)**2, 128),
+        self.fc_loc_std = nn.Sequential(
+            nn.Linear(128 * (opt.crop_size // 32) ** 2, 128),
             nn.ReLU(True),
-            nn.Linear(128, self.num_param*self.N),
+            nn.Linear(128, self.num_param * self.N),
             nn.Softplus()
         )
 
@@ -99,10 +91,10 @@ class InceptionPSTN(nn.Module):
 
         # estimate mean and variance regressor
         theta_mu = self.fc_loc_mu(xs)
-        theta_sigma = self.fc_loc_sigma(xs)
+        theta_sigma = self.fc_loc_std(xs)
 
         # repeat x in the batch dim so we avoid for loop
-        x = x.unsqueeze(1).repeat(1,self.N,1,1,1).view(self.N*batch_size,c,w,h)
+        x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
         theta_mu_upsample = theta_mu.view(batch_size * self.N, self.num_param)
         theta_sigma_upsample = theta_sigma.view(batch_size * self.N, self.num_param)
 
@@ -113,7 +105,7 @@ class InceptionPSTN(nn.Module):
         theta_sigma_upsample = theta_sigma_upsample.repeat(self.S, 1)
 
         # make affine matrix
-        affine_params = make_affine_parameters(theta_mu_upsample, theta_sigma_upsample, self.sigma_prior)
+        affine_params = self.transformation(theta_mu_upsample, theta_sigma_upsample, self.sigma_p)
 
         # makes the flow field on a grid
         grid = F.affine_grid(affine_params, x.size())
@@ -123,7 +115,8 @@ class InceptionPSTN(nn.Module):
 
         return x, (theta_mu, theta_sigma), affine_params
 
-class InceptionSTN(nn.Module):
+
+class CubSTN(nn.Module):
     def __init__(self, opt):
         super().__init__()
 
@@ -134,17 +127,7 @@ class InceptionSTN(nn.Module):
         self.init_localizer(opt)
         self.init_regressor(opt)
 
-        # Initialize the weights/bias with identity transformation
-        self.fc_loc[2].weight.data.zero_()
-        if self.num_param == 2:
-            # Tiling
-            bias = torch.tensor([[-1,-1],[1,-1],[1,1],[-1,1]], dtype=torch.float)*0.5
-            self.fc_loc[2].bias.data.copy_(bias[:self.N].view(-1))
-        elif self.num_param == 4:
-            self.fc_loc[2].bias.data.copy_(torch.tensor([0,1,0,0]*self.N, dtype=torch.float))
-        elif self.num_param == 6:
-            self.fc_loc[2].bias.data.copy_(torch.tensor([1,0,0,
-                                                            0,1,0]*self.N, dtype=torch.float))
+        self.transformer = None
 
     def init_localizer(self, opt):
 
@@ -159,11 +142,11 @@ class InceptionSTN(nn.Module):
             layers = list(basenet.children())[:-2]
 
         elif opt.basenet.lower() == 'resnet50':
-            basenet = models.resnet50(pretrained = True)
+            basenet = models.resnet50(pretrained=True)
             layers = list(basenet.children())[:-2]
 
         elif opt.basenet.lower() == 'resnet34':
-            basenet = models.resnet34(pretrained = True)
+            basenet = models.resnet34(pretrained=True)
             layers = list(basenet.children())[:-2]
 
         layers.append(nn.Conv2d(self.feature_size, 128, 1))
@@ -182,9 +165,9 @@ class InceptionSTN(nn.Module):
     def init_regressor(self, opt):
 
         self.fc_loc = nn.Sequential(
-            nn.Linear(128*(opt.crop_size//32)**2, 128),
+            nn.Linear(128 * (opt.crop_size // 32) ** 2, 128),
             nn.ReLU(True),
-            nn.Linear(128, self.num_param*self.N)
+            nn.Linear(128, self.num_param * self.N)
         )
 
     def forward(self, x):
@@ -198,13 +181,12 @@ class InceptionSTN(nn.Module):
         theta = self.fc_loc(xs)
 
         # repeat x in the batch dim so we avoid for loop
-        x = x.unsqueeze(1).repeat(1,self.N,1,1,1).view(self.N*batch_size,c,w,h)
+        x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
         theta_upsample = theta.view(batch_size * self.N, self.num_param)
 
-        affine_params = make_affine_parameters(theta_upsample)
+        affine_params = self.transformation(theta_upsample)
 
         grid = F.affine_grid(affine_params, x.size())
         x = F.grid_sample(x, grid)
 
         return x, theta, affine_params
-

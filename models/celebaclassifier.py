@@ -1,12 +1,13 @@
 from __future__ import print_function
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 
-class SimpleClassifier(nn.Module):
+class CelebaClassifier(nn.Module):
     def __init__(self, opt):
-        super(SimpleClassifier, self).__init__()
+        super(CelebaClassifier, self).__init__()
 
         self.N = opt.N
         self.S = opt.test_samples
@@ -15,8 +16,8 @@ class SimpleClassifier(nn.Module):
         self.feature_size = 640
         self.channels = 1 if 'mnist' in opt.dataset.lower() else 3
 
-        self.fc1 = nn.Linear(self.feature_size*self.N, 200*self.N)
-        self.fc2 = nn.Linear(200*self.N, opt.num_classes)
+        self.fc1 = nn.Linear(self.feature_size * self.N, 200 * self.N)
+        self.fc2 = nn.Linear(200 * self.N, opt.num_classes)
 
         self.model = nn.Module()
 
@@ -25,7 +26,6 @@ class SimpleClassifier(nn.Module):
             self.model.add_module('branch_{}'.format(branch_ix), encoder)
 
     def init_classifier_branch(self, opt):
-
 
         encoder = nn.Sequential(
             nn.Conv2d(self.channels, 10, kernel_size=5),
@@ -48,14 +48,15 @@ class SimpleClassifier(nn.Module):
         self.S = self.train_samples if self.training else self.test_samples
 
         batch_size, C, W, H = x.shape
-        batch_size = batch_size // (self.N*self.S)
+        batch_size = batch_size // (self.N * self.S)
 
-        xs = torch.stack(x.split([self.N]*self.S*batch_size))
+        xs = torch.stack(x.split([self.N] * self.S * batch_size))
 
-        features = torch.empty(batch_size*self.S, self.feature_size*self.N, requires_grad = False, device=x.device)
+        features = torch.empty(batch_size * self.S, self.feature_size * self.N, requires_grad=False, device=x.device)
         for branch_ix in range(self.N):
-            x = self.model._modules['branch_{}'.format(branch_ix)].forward(xs[:,branch_ix,:,:,:])
-            features[:, branch_ix*self.feature_size:(branch_ix+1)*self.feature_size] = x.view(batch_size*self.S, self.feature_size)
+            x = self.model._modules['branch_{}'.format(branch_ix)].forward(xs[:, branch_ix, :, :, :])
+            features[:, branch_ix * self.feature_size:(branch_ix + 1) * self.feature_size] = x.view(batch_size * self.S,
+                                                                                                    self.feature_size)
 
         x = F.relu(self.fc1(features))
         x = F.dropout(x, training=self.training)

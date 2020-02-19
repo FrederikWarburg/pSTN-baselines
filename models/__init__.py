@@ -1,14 +1,16 @@
-from os.path import join
-import torch
-from torch.nn import functional as F
-from data import DataLoader
-from utils.evaluate import accuracy
-import pytorch_lightning as pl
-from utils.visualizations import visualize_stn
-from loss import create_criterion
 import json
 import os
+from os.path import join
+
+import pytorch_lightning as pl
+import torch
+from torch.nn import functional as F
+
+from data import DataLoader
+from loss import create_criterion
+from utils.evaluate import accuracy
 from utils.utils import get_exp_name
+from utils.visualizations import visualize_stn
 
 
 def create_model(opt):
@@ -32,19 +34,19 @@ def create_optimizer(model, opt):
         if opt.model.lower() == 'stn' and opt.lr_loc > 0:
             # the learning rate of the parameters that are part of the localizer are multiplied 1e-4
             optimizer = torch.optim.SGD([
-                {'params': filter(lambda p: p.requires_grad, model.stn.parameters()),        'lr': opt.lr_loc*opt.lr},
+                {'params': filter(lambda p: p.requires_grad, model.stn.parameters()), 'lr': opt.lr_loc * opt.lr},
                 {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
             ], momentum=opt.momentum, weight_decay=opt.weightDecay)
         elif opt.model.lower() == 'pstn' and opt.lr_loc > 0:
             # the learning rate of the parameters that are part of the localizer are multiplied 1e-4
             optimizer = torch.optim.SGD([
-                {'params': filter(lambda p: p.requires_grad, model.pstn.parameters()),       'lr': opt.lr_loc*opt.lr},
+                {'params': filter(lambda p: p.requires_grad, model.pstn.parameters()), 'lr': opt.lr_loc * opt.lr},
                 {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
             ], momentum=opt.momentum, weight_decay=opt.weightDecay)
         else:
             print("=> SGD all parameters chosen")
             optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr,
-                momentum=opt.momentum, weight_decay=opt.weightDecay)
+                                        momentum=opt.momentum, weight_decay=opt.weightDecay)
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=0.1)
 
     elif opt.optimizer.lower() == 'adam':
@@ -53,16 +55,16 @@ def create_optimizer(model, opt):
         else:  # different learning rates for timeseries STN/P_STN model parts
             if opt.model.lower() == 'pstn':
                 optimizer = torch.optim.Adam(
-                    [{'params': model.fc_loc_mean.parameters(), 'lr': opt.lr/10},
-                     {'params': model.localization.parameters(), 'lr': opt.lr/10},
+                    [{'params': model.fc_loc_mean.parameters(), 'lr': opt.lr / 10},
+                     {'params': model.localization.parameters(), 'lr': opt.lr / 10},
                      {'params': model.fc_loc_std.parameters(), 'lr': opt.lr},
                      {'params': model.CNN.parameters(), 'lr': opt.lr},
                      {'params': model.fully_connected.parameters(), 'lr': opt.lr}],
                     weight_decay=opt.weightDecay)
             elif opt.model.lower() == 'stn':
                 optimizer = torch.optim.Adam(
-                    [{'params': model.fc_loc.parameters(), 'lr': opt.lr/10},
-                     {'params': model.localization.parameters(), 'lr': opt.lr/10},
+                    [{'params': model.fc_loc.parameters(), 'lr': opt.lr / 10},
+                     {'params': model.localization.parameters(), 'lr': opt.lr / 10},
                      {'params': model.CNN.parameters(), 'lr': opt.lr},
                      {'params': model.fully_connected.parameters(), 'lr': opt.lr}],
                     weight_decay=opt.weightDecay)
@@ -73,7 +75,7 @@ def create_optimizer(model, opt):
     return optimizer, scheduler
 
 
-def save_network(model, opt, which_epoch, is_best = False):
+def save_network(model, opt, which_epoch, is_best=False):
     """save model to disk"""
     device = model.device
     save_filename = '%s_net.pth' % (which_epoch)
@@ -103,12 +105,12 @@ class System(pl.LightningModule):
     def forward(self, x):
         return self.model.forward(x)
 
-    def training_step(self, batch, batch_idx, hidden = 0):
+    def training_step(self, batch, batch_idx, hidden=0):
 
         x, y = batch
 
         y_hat = self.forward(x)
-        loss = self.criterion(y_hat,y)
+        loss = self.criterion(y_hat, y)
 
         if self.opt.model.lower() == 'pstn':
             y_hat = y_hat[0]
@@ -161,7 +163,7 @@ class System(pl.LightningModule):
         if self.opt.save_results:
             self.save_results(avg_loss, avg_acc)
 
-        return {'test_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar':tensorboard_logs}
+        return {'test_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar': tensorboard_logs}
 
     def configure_optimizers(self):
 
@@ -171,18 +173,17 @@ class System(pl.LightningModule):
     @pl.data_loader
     def train_dataloader(self):
         # REQUIRED
-        return DataLoader(self.opt, train=True)
+        return DataLoader(self.opt, mode='train')
 
     @pl.data_loader
     def val_dataloader(self):
         # OPTIONAL
-        return DataLoader(self.opt, val=True)
+        return DataLoader(self.opt, mode='val')
 
     @pl.data_loader
     def test_dataloader(self):
         # OPTIONAL
-        return DataLoader(self.opt, test=True)
-
+        return DataLoader(self.opt, mode='test')
 
     def add_images(self, grid_in, grid_out, bbox_images):
 

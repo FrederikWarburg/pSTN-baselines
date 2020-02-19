@@ -1,32 +1,31 @@
-
-from torch.utils.data import Dataset
-from torchvision import transforms, datasets
-import numpy as np
-import torch
-from functools import partial
-import torch
 import os
-from PIL import Image
-import pandas as pd
+from functools import partial
 
-attribute_map = ['5_o_Clock_Shadow','Arched_Eyebrows','Attractive','Bags_Under_Eyes','Bald','Bangs','Big_Lips',
-                 'Big_Nose','Black_Hair','Blond_Hair','Blurry','Brown_Hair','Bushy_Eyebrows','Chubby',
-                 'Double_Chin','Eyeglasses','Goatee','Gray_Hair','Heavy_Makeup','High_Cheekbones','Male',
-                 'Mouth_Slightly_Open','Mustache','Narrow_Eyes','No_Beard','Oval_Face','Pale_Skin',
-                 'Pointy_Nose','Receding_Hairline','Rosy_Cheeks','Sideburns','Smiling','Straight_Hair',
-                 'Wavy_Hair','Wearing_Earrings','Wearing_Hat','Wearing_Lipstick','Wearing_Necklace',
-                 'Wearing_Necktie','Young']
+import pandas as pd
+import torch
+from PIL import Image
+from torchvision import transforms
+
+attribute_map = ['5_o_Clock_Shadow', 'Arched_Eyebrows', 'Attractive', 'Bags_Under_Eyes', 'Bald', 'Bangs', 'Big_Lips',
+                 'Big_Nose', 'Black_Hair', 'Blond_Hair', 'Blurry', 'Brown_Hair', 'Bushy_Eyebrows', 'Chubby',
+                 'Double_Chin', 'Eyeglasses', 'Goatee', 'Gray_Hair', 'Heavy_Makeup', 'High_Cheekbones', 'Male',
+                 'Mouth_Slightly_Open', 'Mustache', 'Narrow_Eyes', 'No_Beard', 'Oval_Face', 'Pale_Skin',
+                 'Pointy_Nose', 'Receding_Hairline', 'Rosy_Cheeks', 'Sideburns', 'Smiling', 'Straight_Hair',
+                 'Wavy_Hair', 'Wearing_Earrings', 'Wearing_Hat', 'Wearing_Lipstick', 'Wearing_Necklace',
+                 'Wearing_Necktie', 'Young']
 
 
 class CelebA(torch.utils.data.Dataset):
-    def __init__(self, opt, data_div):
+    def __init__(self, opt, mode):
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                        std=[0.229, 0.224, 0.225])
+                                         std=[0.229, 0.224, 0.225])
 
-        if data_div == 2:
-            self.transform = transforms.Compose([transforms.Resize((64,73)), transforms.RandomCrop((64,64)), transforms.ToTensor(), normalize])
-        else:
-            self.transform = transforms.Compose([transforms.Resize((64,73)), transforms.CenterCrop((64,64)), transforms.ToTensor(), normalize])
+        if mode in ['train']:
+            self.transform = transforms.Compose(
+                [transforms.Resize((64, 73)), transforms.RandomCrop((64, 64)), transforms.ToTensor(), normalize])
+        elif mode in ['test','val']:
+            self.transform = transforms.Compose(
+                [transforms.Resize((64, 73)), transforms.CenterCrop((64, 64)), transforms.ToTensor(), normalize])
 
         self.root = opt.dataroot
         self.base_folder = 'celeba'
@@ -44,25 +43,25 @@ class CelebA(torch.utils.data.Dataset):
 
         split_map = {
             "train": 0,
-            "valid": 1,
+            "val": 1,
             "test": 2,
             "all": None,
         }
-        split = split_map[split.lower()]
 
-        mask = slice(None) if split is None else (splits['partition'] == split)
+        mask = splits['partition'] == split_map[mode]
 
         self.filename = filename[mask]
         self.target = target[mask]
 
-        self.transform = transforms.Compose([transforms.Resize((64,73)), transforms.RandomCrop((64,64)), transforms.ToTensor()])
+        self.transform = transforms.Compose(
+            [transforms.Resize((64, 73)), transforms.RandomCrop((64, 64)), transforms.ToTensor()])
 
     def __len__(self):
         return len(self.target)
 
     def __getitem__(self, idx):
 
-        image = Image.open(self.fn("img_align_celeba",  self.filename[idx]))
+        image = Image.open(self.fn("img_align_celeba", self.filename[idx]))
         target = self.target[idx]
 
         image = self.transform(image)

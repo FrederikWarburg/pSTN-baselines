@@ -1,5 +1,5 @@
 from __future__ import print_function
-import torch
+
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -19,7 +19,7 @@ parameter_dict_MNIST_STN = {
     'CNN_filters2': 20,
     'CNN_kernel_size': 5,
     'resulting_size_classifier': 320,
-    'hidden_layer_classifier':50,
+    'hidden_layer_classifier': 50,
     'color_channels': 1
 }
 
@@ -54,7 +54,7 @@ class MnistClassifier(nn.Module):
                 kernel_size=self.parameter_dict['CNN_kernel_size']),
             nn.MaxPool2d(2, stride=2),
             nn.ReLU(True)
-            )
+        )
 
         self.fully_connected = nn.Sequential(
             # first fully connected layer

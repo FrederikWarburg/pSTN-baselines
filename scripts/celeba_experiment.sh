@@ -17,7 +17,7 @@ do
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        CUDA_VISIBLE_DEVICES=4 python train2.py --dataroot $DATAPATH \
+        echo CUDA_VISIBLE_DEVICES=4 python train2.py --dataroot $DATAPATH \
                         --dataset "celeba" \
                         --batch_size 256 \
                         --num_classes 2 \
@@ -34,7 +34,6 @@ do
                         --save_results True \
                         --lr 0.1 \
                         --lr_loc 0.1 \
-                        --sigma 0.1 \
                         --smallest_size 64 \
                         --crop_size 64 \
                         --run_test_freq 1 \

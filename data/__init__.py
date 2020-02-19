@@ -1,11 +1,11 @@
 import torch.utils.data
-from data.cub_200_2011 import Cub2011
-from data.mnist import MnistSideBySide, MnistRandomPlacement, make_mnist_subset
-from data.gtsrb import GTSRB
+
 from data.celebA import CelebA
+from data.cub_200_2011 import Cub2011
+from data.gtsrb import GTSRB
+from data.mnist import MnistSideBySide, MnistRandomPlacement, make_MNIST_subset
 
-
-def CreateDataset(opt, mode): # mode in ['train', 'val', 'test']
+def CreateDataset(opt, mode):  # mode in ['train', 'val', 'test']
     """loads dataset class"""
     if opt.dataset.lower() == 'cub':
         dataset = Cub2011(opt, mode)
@@ -39,9 +39,9 @@ class DataLoader:
             pin_memory=True)
 
         dataset_size = len(self.dataset)
-        if train: print('#training network on = %d images' % dataset_size)
-        if val: print('#validationg network on = %d images' % dataset_size)
-        if test: print('#testing network on = %d images' % dataset_size)
+        if mode == 'train': print('#training network on = %d images' % dataset_size)
+        if mode == 'val': print('#validationg network on = %d images' % dataset_size)
+        if mode == 'test': print('#testing network on = %d images' % dataset_size)
 
     def __len__(self):
         return min(len(self.dataset), self.opt.max_dataset_size)

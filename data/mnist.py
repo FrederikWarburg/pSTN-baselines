@@ -1,10 +1,11 @@
-from torch.utils.data import Dataset, Subset
-from torchvision import transforms, datasets
 import numpy as np
 import torch
-from torch import distributions
-from utils import transformers
 import torch.nn.functional as F
+from torch import distributions
+from torch.utils.data import Dataset, Subset
+from torchvision import transforms, datasets
+
+from utils import transformers
 
 
 def transform_image_affine(x, opt):
@@ -37,10 +38,10 @@ def make_MNIST_subset(opt, mode):
             root='data', train=False, transform=test_transformation)
     else:
         train_indices = np.load(
-                'indices/MNIST%s_train_indices_fold_%s.npy' %(opt.subset, opt.fold))
+            'indices/MNIST%s_train_indices_fold_%s.npy' % (opt.subset, opt.fold))
         validation_indices = np.load('indices/MNIST_validation_indices.npy')
         full_training_data = datasets.MNIST(
-                root='data', train=True, download=True, transform=train_transformation)
+            root='data', train=True, download=True, transform=train_transformation)
         if mode == 'train':
             dataset = Subset(full_training_data, train_indices)
         if mode == 'valid':
@@ -51,25 +52,24 @@ def make_MNIST_subset(opt, mode):
 class MnistSideBySide(Dataset):
 
     def __init__(self, opt, train_div):
-
         self.datasets = []
 
         # False (test) or True (train,val)
         trainingset = train_div in ['train', 'val']
 
         self.datasets.append(datasets.MNIST(opt.dataroot,
-                                      transform = transforms.Compose([
-                                           transforms.ToTensor()
-                                       ]),
-                                      train = trainingset,
-                                      download = opt.download))
+                                            transform=transforms.Compose([
+                                                transforms.ToTensor()
+                                            ]),
+                                            train=trainingset,
+                                            download=opt.download))
 
         self.datasets.append(datasets.KMNIST(opt.dataroot,
-                                      transform = transforms.Compose([
-                                           transforms.ToTensor()
-                                       ]),
-                                      train = trainingset,
-                                      download = opt.download))
+                                             transform=transforms.Compose([
+                                                 transforms.ToTensor()
+                                             ]),
+                                             train=trainingset,
+                                             download=opt.download))
 
         self.num_images = opt.digits
 
@@ -77,25 +77,23 @@ class MnistSideBySide(Dataset):
         return min([self.datasets[i].__len__() for i in range(self.num_images)])
 
     def __getitem__(self, idx):
-
-        im = torch.zeros((1, 64,64), dtype=torch.float)
+        im = torch.zeros((1, 64, 64), dtype=torch.float)
         target = ''
         for i in range(self.num_images):
-            y = np.random.randint(0,32)
-            im1, target1 = self.datasets[i].__getitem__((idx)*(i+1)%self.datasets[i].__len__())
+            y = np.random.randint(0, 32)
+            im1, target1 = self.datasets[i].__getitem__((idx) * (i + 1) % self.datasets[i].__len__())
 
-            c, w,h = im1.shape
+            c, w, h = im1.shape
 
-            x = i*w + i*8 #np.random.randint(0,32-w)
+            x = i * w + i * 8  # np.random.randint(0,32-w)
 
-            im[:,y:y+h,x:x+w] = im1.type(torch.float)
+            im[:, y:y + h, x:x + w] = im1.type(torch.float)
             target += str(target1)
 
         transform = transforms.Compose([transforms.Normalize((0.1307,), (0.3081,))])
         im = transform(im)
 
         return im, int(target)
-
 
 
 class MnistRandomPlacement(Dataset):
@@ -109,18 +107,18 @@ class MnistRandomPlacement(Dataset):
         trainingset = train_div in ['train', 'val']
 
         self.datasets.append(datasets.MNIST(opt.dataroot,
-                                      transform = transforms.Compose([
-                                           transforms.ToTensor()
-                                       ]),
-                                      train = trainingset,
-                                      download = opt.download))
+                                            transform=transforms.Compose([
+                                                transforms.ToTensor()
+                                            ]),
+                                            train=trainingset,
+                                            download=opt.download))
 
         self.datasets.append(datasets.KMNIST(opt.dataroot,
-                                      transform = transforms.Compose([
-                                           transforms.ToTensor()
-                                       ]),
-                                      train = trainingset,
-                                      download = opt.download))
+                                             transform=transforms.Compose([
+                                                 transforms.ToTensor()
+                                             ]),
+                                             train=trainingset,
+                                             download=opt.download))
 
         self.num_images = opt.digits
 
@@ -143,15 +141,16 @@ class MnistRandomPlacement(Dataset):
                 if len(used_positions) == 0 or abs(used_positions[0][1] - y) > 32:
                     break
 
-            im1, target1 = self.datasets[i].__getitem__((idx)*(i+1)%self.datasets[i].__len__())
+            im1, target1 = self.datasets[i].__getitem__((idx) * (i + 1) % self.datasets[i].__len__())
 
-            c, w,h = im1.shape
+            c, w, h = im1.shape
 
-            im[:,y:y+h,x:x+w] = im1.type(torch.float)
+            im[:, y:y + h, x:x + w] = im1.type(torch.float)
             target += str(target1)
 
-        transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize(self.cropsize),transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
+        transform = transforms.Compose(
+            [transforms.ToPILImage(), transforms.Resize(self.cropsize), transforms.ToTensor(),
+             transforms.Normalize((0.1307,), (0.3081,))])
         im = transform(im)
 
         return im, int(target)
-

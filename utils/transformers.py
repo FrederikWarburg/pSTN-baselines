@@ -1,12 +1,15 @@
-import torch.nn.functional as F
-import torch.nn as nn
-from libcpab.cpab import Cpab
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
+#from libcpab.cpab import Cpab
 from torch.distributions.utils import _standard_normal
 
 
-class diffeomorphic_transformation(nn.Module):
+class DiffeomorphicTransformer(nn.Module):
     def __init__(self, opt):
+
+        print("Use diffeomorphic transformer")
+
         if opt.xdim == 2:
             self.T = Cpab(tess_size=[3, 3], device='gpu', zero_boundary=True, backend='pytorch')
         elif opt.xdim == 1:
@@ -14,37 +17,43 @@ class diffeomorphic_transformation(nn.Module):
         else:
             raise NotImplementedError
 
-    def forward(self, x, mean_params, sigma_params=None, sigma_prior=None):
-        diffeo_params = self.make_diffeomorphic_parameters(mean_params, sigma_params, sigma_prior)
-        x = self.T.transform_data(x, diffeo_params, outsize=x.shape[2:])
-        return x
+        self.sigma_p = opt.sigma_p
 
-    def make_diffeomorphic_parameters(self, mean_params, sigma_params=None, sigma_prior=0.1):
-        if sigma_params is not None:
+    def forward(self, x, mean_params, std_params=None):
+        diffeo_params = self.make_diffeomorphic_parameters(mean_params, std_params)
+        x = self.T.transform_data(x, diffeo_params, outsize=x.shape[2:])
+        return x, diffeo_params
+
+    def make_diffeomorphic_parameters(self, mean_params, std_params=None):
+        if std_params is not None:
             eps = _standard_normal(mean_params.shape, dtype=mean_params.dtype, device=mean_params.device)
-            eps *= sigma_prior
-            params = eps * sigma_params + mean_params
+            eps *= self.sigma_p
+            params = eps * std_params + mean_params
         else:
             params = mean_params
         return params
 
 
-class affine_transformation(nn.Module):
+class AffineTransformer(nn.Module):
     def __int__(self):
-        pass
 
-    def forward(self, x, mean_params, sigma_params=None, sigma_prior=None):
-        affine_params = self.make_affine_parameters(mean_params, sigma_params, sigma_prior)
+        print("Use affine transformer")
+
+    def forward(self, x, mean_params, std_params=None):
+
+        affine_params = self.make_affine_parameters(mean_params, std_params)
+
         grid = F.affine_grid(affine_params, x.size())
         x = F.grid_sample(x, grid)
-        return x
 
-    def make_affine_parameters(self, mean_params, sigma_params=None):
+        return x, affine_params
 
-        if sigma_params is not None:
+    def make_affine_parameters(self, mean_params, std_params=None):
+
+        if std_params is not None:
             eps = _standard_normal(
                 mean_params.shape, dtype=mean_params.dtype, device=mean_params.device)
-            mean_params = eps * sigma_params + mean_params
+            mean_params = eps * std_params + mean_params
 
         if mean_params.shape[1] == 2:  # only perform crop - fix scale and rotation.
             theta = torch.zeros(mean_params.shape[0], device=mean_params.device)

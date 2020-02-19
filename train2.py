@@ -1,5 +1,6 @@
 import os
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
+
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 from options.train_options import TrainOptions
 from pytorch_lightning import Trainer
@@ -9,16 +10,15 @@ import torch
 from utils.utils import get_exp_name
 
 if __name__ == '__main__':
-
     opt = TrainOptions().parse()
 
     modelname = get_exp_name(opt)
 
     logger = TestTubeLogger(
-            save_dir=os.getcwd() + "/lightning_logs",
-            name=modelname,
-            debug=False,
-            create_git_tag=False
+        save_dir=os.getcwd() + "/lightning_logs",
+        name=modelname,
+        debug=False,
+        create_git_tag=False
     )
 
     model = System(opt)
@@ -40,7 +40,6 @@ if __name__ == '__main__':
     trainer.fit(model)
 
     trainer.test()
-
 
 ########
 # TRAIN ON MNIST DATASET (N = 1) (all models converge after approx 3 epochs)

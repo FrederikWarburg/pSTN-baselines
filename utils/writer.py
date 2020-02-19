@@ -1,18 +1,20 @@
 import os
 import time
+
 import numpy as np
-from .utils import denormalize, add_bounding_boxes
-from options.test_options import TestOptions
-from data import DataLoader
 import torch
 import torchvision
 
+from data import DataLoader
+from options.test_options import TestOptions
+from .visualizations import denormalize, add_bounding_boxes
 
 try:
     from tensorboardX import SummaryWriter
 except ImportError as error:
     print('tensorboard X not installed, visualizing wont be available')
     SummaryWriter = None
+
 
 class Writer:
     def __init__(self, opt):
@@ -55,13 +57,12 @@ class Writer:
             self.display.add_scalar('time/fetching_data', time_to_fetch_data, iters)
             self.display.add_scalar('time/forward_and_backward_pass', time_model, iters)
 
-    def plot_loss_components(self, nll,kl,rec, epoch, i, n):
+    def plot_loss_components(self, nll, kl, rec, epoch, i, n):
         iters = i + (epoch - 1) * n
         if self.display:
             self.display.add_scalar('loss/nll', nll, iters)
             self.display.add_scalar('loss/kl', kl, iters)
             self.display.add_scalar('loss/rec', rec, iters)
-
 
     def plot_loss(self, loss, epoch, i, n):
         iters = i + (epoch - 1) * n
@@ -97,9 +98,9 @@ class Writer:
         theta = theta.cpu().numpy().reshape(-1)
 
         for i, value in enumerate(theta):
-            self.display.add_scalar('image_{}/theta_sigma_{}'.format(image_id, i), value, epoch)
+            self.display.add_scalar('image_{}/theta_sigma{}'.format(image_id, i), value, epoch)
 
-    def convert_image_np(self, inp, dataset = 'train'):
+    def convert_image_np(self, inp, dataset='train'):
         """Convert a Tensor to numpy image."""
         inp = inp.numpy().transpose((1, 2, 0))
         mean = np.array([0.485, 0.456, 0.406])
@@ -111,7 +112,6 @@ class Writer:
         # We want to visualize the output of the spatial transformers layer
         # after the training, we visualize a batch of input images and
         # the corresponding transformed batch using STN.
-
 
     def visualize_stn(self, model, test_loader, device, epoch, opt):
         with torch.no_grad():
@@ -126,15 +126,15 @@ class Writer:
             transformed_input_tensor = transformed_input_tensor.cpu()
 
             in_grid = self.convert_image_np(
-                torchvision.utils.make_grid(input_tensor),opt.dataset.lower())
+                torchvision.utils.make_grid(input_tensor), opt.dataset.lower())
 
             out_grid = self.convert_image_np(torchvision.utils.make_grid(transformed_input_tensor))
 
-            in_grid = (in_grid*255).astype(np.uint8)
-            out_grid = (out_grid*255).astype(np.uint8)
+            in_grid = (in_grid * 255).astype(np.uint8)
+            out_grid = (out_grid * 255).astype(np.uint8)
 
-            in_grid = np.transpose(in_grid, (2,0,1))
-            out_grid = np.transpose(out_grid, (2,0,1))
+            in_grid = np.transpose(in_grid, (2, 0, 1))
+            out_grid = np.transpose(out_grid, (2, 0, 1))
 
             # Plot the results side-by-side
             self.display.add_image("Database_images", in_grid, epoch)
@@ -147,7 +147,7 @@ class Writer:
         print('Running Vizualization')
         opt = TestOptions().parse()
         opt.max_dataset_size = opt.num_visualizations
-        opt.batch_size = 1 # only works for bs = 1
+        opt.batch_size = 1  # only works for bs = 1
 
         dataset = DataLoader(opt)
         model.eval()
@@ -165,26 +165,25 @@ class Writer:
                     theta_mu, theta_sigma = theta
                     num_samples = opt.test_samples
 
-                    self.plot_theta_sigma(i, theta_sigma, epoch)
+                    self.plot_theta_std(i, theta_sigma, epoch)
 
                 num_branches = self.opt.N
                 self.plot_theta(i, theta_mu, epoch)
 
                 for j, im in enumerate(input):
 
-                    im = np.transpose(im.cpu().numpy(),(1,2,0))
+                    im = np.transpose(im.cpu().numpy(), (1, 2, 0))
                     im = denormalize(im)
 
                     if im.shape[2] == 1:
-                        im = np.stack((im[:,:,0],)*3, axis=-1)
+                        im = np.stack((im[:, :, 0],) * 3, axis=-1)
 
-                    im = add_bounding_boxes(im, affine_params, num_branches, num_samples, mode_= 'crop')
+                    im = add_bounding_boxes(im, affine_params, num_branches, num_samples, mode_='crop')
 
-                    im = np.transpose(im, (2,0,1))
+                    im = np.transpose(im, (2, 0, 1))
                     self.display.add_image("input_{}/input".format(count), im, epoch)
 
                     count += 1
-
 
                     """
                     import matplotlib.pyplot as plt

@@ -1,11 +1,13 @@
-from options.test_options import TestOptions
+import torch
+
 from data import DataLoader
 from models import create_model
-from utils.writer import Writer
-import torch
+from options.test_options import TestOptions
 from utils.evaluate import evaluate
+from utils.writer import Writer
 
-def run_test(epoch=-1, model = None, training_data = False):
+
+def run_test(epoch=-1, model=None, training_data=False):
     print('Running Test')
     opt = TestOptions().parse()
 
@@ -27,7 +29,7 @@ def run_test(epoch=-1, model = None, training_data = False):
     model.eval()
     with torch.no_grad():
         for i, (input, label) in enumerate(dataset):
-            input,label = input.to(device), label.to(device)
+            input, label = input.to(device), label.to(device)
             pred = model(input)
 
             ncorrect, nexamples = evaluate(pred, label)
