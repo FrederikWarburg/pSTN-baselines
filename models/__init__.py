@@ -30,7 +30,7 @@ def create_model(opt):
 
 
 def create_optimizer(model, opt):
-    print('creating optimiuzer', opt.optimizer)
+    print('creating optimizer', opt.optimizer)
     if opt.optimizer.lower() == 'sgd':
         if opt.model.lower() == 'stn' and opt.lr_loc > 0:
             # the learning rate of the parameters that are part of the localizer are multiplied 1e-4
@@ -49,7 +49,6 @@ def create_optimizer(model, opt):
             optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr,
                                         momentum=opt.momentum, weight_decay=opt.weightDecay)
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=0.1)
-
     elif opt.optimizer.lower() == 'adam':
         scheduler = None
         if 'MNIST' in opt.dataset.lower():  # straight forward for MNIST, and CNN for all datasets
@@ -73,9 +72,6 @@ def create_optimizer(model, opt):
                      {'params': model.classifier.CNN.parameters(), 'lr': opt.lr},
                      {'params': model.classifier.fully_connected.parameters(), 'lr': opt.lr}],
                     weight_decay=opt.weightDecay)
-
-    else:
-        raise ValueError('Unsupported or optimizer: {}!'.format(opt.optimizer))
 
     return optimizer, scheduler
 
