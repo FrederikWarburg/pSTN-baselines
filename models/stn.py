@@ -20,32 +20,27 @@ class STN(nn.Module):
 
     def init_localizer(self, opt):
         if opt.dataset.lower() == 'cub':
-            from .cublocalizer import CubSTN
-            self.stn = CubSTN(opt)
-        elif opt.dataset.lower() == 'celeba':
-            from .celebalocalizer import CelebaSTN
-            self.stn = CelebaSTN(opt)
+            from .cublocalizer import CubSTN as stn
+        elif opt.dataset.lower() in ['celeba', 'mnistxkmnist']:
+            from .celebalocalizer import CelebaSTN as stn
         elif opt.dataset.lower() == 'mnist':
-            from .mnistlocalizer import MnistSTN
-            self.stn = MnistSTN(opt)
+            from .mnistlocalizer import MnistSTN as stn
         elif opt.dataset.lower() == 'timeseries':
-            from .timeseriesclassifier import TimeseriesSTN
-            self.stn = TimeseriesSTN(opt)
+            from .timeseriesclassifier import TimeseriesSTN as stn
+
+        self.stn = stn(opt)
 
     def init_classifier(self, opt):
         if opt.dataset.lower() == 'cub':
-            from .cubclassifier import CubClassifier
-            self.classifier = CubClassifier(opt)
-        elif opt.dataset.lower() == 'celeba':
-            from .celebaclassifier import CelebaClassifier
-            self.classifier = CelebaClassifier(opt)
-
+            from .cubclassifier import CubClassifier as classifier
+        elif opt.dataset.lower() in ['celeba', 'mnistxkmnist']:
+            from .celebaclassifier import CelebaClassifier as classifier
         elif opt.dataset.lower() == 'mnist':
-            from .mnistclassifier import MnistClassifier
-            self.classifier = MnistClassifier(opt)
+            from .mnistclassifier import MnistClassifier as classifier
         elif opt.dataset.lower() == 'timeseries':
-            from .timeseriesclassifier import TimeseriesClassifier
-            self.classifier = TimeseriesClassifier(opt)
+            from .timeseriesclassifier import TimeseriesClassifier as classifier
+
+        self.classifier = classifier(opt)
 
     def init_model_weights(self):
 

@@ -3,7 +3,7 @@ import torch.utils.data
 from data.celebA import CelebA
 from data.cub_200_2011 import Cub2011
 from data.gtsrb import GTSRB
-from data.mnist import MnistSideBySide, MnistRandomPlacement, make_MNIST_subset
+from data.mnist import MnistXKmnist, MnistRandomPlacement, make_mnist_subset
 
 def CreateDataset(opt, mode):  # mode in ['train', 'val', 'test']
     """loads dataset class"""
@@ -13,10 +13,8 @@ def CreateDataset(opt, mode):  # mode in ['train', 'val', 'test']
         dataset = GTSRB(opt, mode)
     elif opt.dataset.lower() == 'celeba':
         dataset = CelebA(opt, mode)
-    elif opt.dataset.lower() == 'mnist_easy':
-        dataset = MnistSideBySide(opt, mode)
-    elif opt.dataset.lower() == 'mnist_hard':
-        dataset = MnistRandomPlacement(opt, mode)
+    elif opt.dataset.lower() == 'mnistxkmnist':
+        dataset = MnistXKmnist(opt, mode)
     elif opt.dataset.lower().startswith('mnist'):
         dataset = make_mnist_subset(opt, mode)
 

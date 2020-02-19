@@ -21,31 +21,27 @@ class PSTN(nn.Module):
 
     def init_localizer(self, opt):
         if opt.dataset.lower() == 'cub':
-            from .cublocalizer import CubPSTN
-            self.pstn = CubPSTN(opt)
+            from .cublocalizer import CubPSTN as pstn
         elif opt.dataset.lower() in ['celeba', 'mnistxkmnist']:
-            from .celebalocalizer import CelebaPSTN
-            self.pstn = CelebaPSTN(opt)
+            from .celebalocalizer import CelebaPSTN as pstn
         elif opt.dataset.lower() == 'mnist':
-            from .mnistlocalizer import MnistPSTN
-            self.pstn = MnistPSTN(opt)
+            from .mnistlocalizer import MnistPSTN as pstn
         elif opt.dataset.lower() == 'timeseries':
-            from .timeseriesclassifier import TimeseriesPSTN
-            self.pstn = TimeseriesPSTN(opt)
+            from .timeseriesclassifier import TimeseriesPSTN as pstn
+
+        self.pstn = pstn(opt)
 
     def init_classifier(self, opt):
         if opt.dataset.lower() == 'cub':
-            from .cubclassifier import CubClassifier
-            self.classifier = CubClassifier(opt)
+            from .cubclassifier import CubClassifier as classifier
         elif opt.dataset.lower() in ['celeba', 'mnistxkmnist']:
-            from .celebaclassifier import CelebaClassifier
-            self.classifier = CelebaClassifier(opt)
+            from .celebaclassifier import CelebaClassifier as classifier
         elif opt.dataset.lower() == 'mnist':
-            from .mnistclassifier import MnistClassifier
-            self.classifier = MnistClassifier(opt)
+            from .mnistclassifier import MnistClassifier as classifier
         elif opt.dataset.lower() == 'timeseries':
-            from .timeseriesclassifier import TimeseriesClassifier
-            self.classifier = TimeseriesClassifier(opt)
+            from .timeseriesclassifier import TimeseriesClassifier as classifier
+
+        self.classifier = classifier(opt)
 
     def init_model_weights(self):
 
