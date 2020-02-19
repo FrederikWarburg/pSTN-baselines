@@ -21,7 +21,7 @@ def transform_image_affine(x, opt):
     return x_transformed.squeeze(0)
 
 
-def make_MNIST_subset(opt, mode):
+def make_mnist_subset(opt, mode):
     train_trafo_no_DA = transforms.Compose(
         [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
     test_trafo = train_trafo_no_DA
@@ -49,7 +49,7 @@ def make_MNIST_subset(opt, mode):
     return dataset
 
 
-class MnistSideBySide(Dataset):
+class MnistXKmnist(Dataset):
 
     def __init__(self, opt, train_div):
         self.datasets = []
