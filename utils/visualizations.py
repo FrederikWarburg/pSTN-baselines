@@ -22,8 +22,11 @@ def normalize(images):
 
 
 def visualize_stn(model, data, opt):
+    print('VISUALIZING')
     with torch.no_grad():
+        # IMAGE VISUALIZATION
         if opt.xdim == 2:
+            print('IMAGE DIMS')
             data = data[:16]  # just visualize the first 16
             if opt.model.lower() == 'stn':
                 transformed_input_tensor, theta, affine_params = model.stn(data)
@@ -44,43 +47,51 @@ def visualize_stn(model, data, opt):
             out_grid = np.transpose(out_grid, (2, 0, 1))
             bbox_images = visualize_bbox(data.cpu(), affine_params, opt)
 
+        # TIMESERIES VISUALIZATIONS
         if opt.xdim == 1:
             bbox_images = None
+            nr_plots = 3  # just visualize the first 3
+            input_array = data.cpu().numpy()
+            in_fig, in_ax = plt.subplots(nr_plots, figsize=(20, 10))
+            out_fig, out_ax = plt.subplots(nr_plots, figsize=(20, 10))
+            for ix in range(nr_plots):
+                in_ax[ix].plot(input_array[ix, 0, :], c='darkblue')
+            in_fig.canvas.draw()
+            in_grid = np.array(in_fig.canvas.renderer.buffer_rgba())
+            in_grid = (in_grid * 255).astype(np.uint8)[:, :, :3]
+
+            # print(in_grid.dtype)
+            # print('TEST PLOT', in_grid.shape)
+            # plt.imshow(in_grid)
+            # plt.show()
+
+            if opt.model.lower() == 'cnn':
+                print('returning ', in_grid.shape)
+                return np.zeros((1, 131)), None, None, None  #in_grid, None, None, None
 
             if opt.model.lower() == 'stn':
-                input_array = data.cpu().numpy()
-                transformed_input, mu, sampled_params = model.stn(data)
+                transformed_input, _, theta = model.stn(data)
                 transformed_input = transformed_input.cpu().numpy()
                 theta = theta.cpu().numpy()
-                print('Theta shape:', theta.shape)
-                nr_plots = 3  # NOT PLOT ALL FOR NOW
                 colors = ['darkgoldenrod', 'sienna', 'darkred']
-
-                in_grid = plt.subplots(nr_plots, figsize=(20, 10))
-                out_grid = plt.subplots(nr_plots, figsize=(20, 10))
                 for ix in range(nr_plots):
-                    in_grid[ix].plot(input_array[ix, 0, :], c='darkblue')
-                    out_grid[ix].plot(transformed_input[ix, 0, :], c=colors[ix])
+                    out_ax[ix].plot(transformed_input[ix, 0, :], c=colors[ix])
 
             if opt.model.lower() == 'pstn':
-                input_array = data.cpu().numpy()
-                model.eval()
-                transformed_input, mu_and_sigma, sampled_params = model.pstn(data).cpu().numpy()
+                # model.eval()
                 batch_size = data.shape[0]
-                nr_plots = 3
+                transformed_input, _, sampled_theta = model.pstn(data).cpu().numpy()
+                theta = sampled_theta.cpu().numpy()
                 nr_samples = 3
                 colors = ['darkgreen', 'darkgoldenrod', 'darkred']
                 alphas = [0.5, 0.75, 1]
                 # Plot the results side-by-side
-                in_grid = plt.subplots(nr_plots, figsize=(20, 20))
-                out_grid = plt.subplots(nr_plots, figsize=(20, 20))
-
                 for data_ix in range(nr_plots):
                     for sample_ix in range(nr_samples):
-                        in_grid[data_ix].plot(input_array[data_ix, 0, :], c='darkblue')
-                        out_grid[data_ix].plot(transformed_input[data_ix + (sample_ix * batch_size), 0, :],
+                        out_ax[data_ix].plot(transformed_input[data_ix + (sample_ix * batch_size), 0, :],
                                                alpha=alphas[ix], c='sienna')
-    #
+            out_fig.canvas.draw()
+            out_grid = np.array(out_fig.canvas.renderer.buffer_rgba())
 
     # Plot the results side-by-side
     return in_grid, out_grid, theta, bbox_images

@@ -48,7 +48,6 @@ class TimeseriesPSTN(nn.Module):
             nn.Softplus()
         )
 
-
     def forward(self, x):
         self.S = self.train_samples if self.training else self.test_samples
         batch_size, c, w, h = x.shape
@@ -81,20 +80,19 @@ class TimeseriesSTN(TimeseriesPSTN):
             nn.Linear(64, self.theta_dim)  # HARD CODED FOR THE MEDIUM SIZE NETWORK FOR NOW
         )
 
-
     def forward(self, x):
         self.S = self.train_samples if self.training else self.test_samples
-        batch_size, c, w, h = x.shape
+        batch_size, c, l = x.shape
         # shared localizer
         xs = self.localization(x)
         xs = xs.view(batch_size, -1)
         # estimate mean and variance regressor
-        theta_mu = self.fc_loc_mu(xs)
+        theta_mu = self.fc_loc_mean(xs)
         # repeat x in the batch dim so we avoid for loop
-        x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
+        x = x.unsqueeze(1).repeat(1, self.N, 1).view(self.N * batch_size, c, l)
         theta_mu_upsample = theta_mu.view(batch_size * self.N, self.num_param)
         # repeat for the number of samples
-        x = x.repeat(self.S, 1, 1, 1)
+        x = x.repeat(self.S, 1, 1)
         theta_mu_upsample = theta_mu_upsample.repeat(self.S, 1)
         x, params = self.transformer(x, theta_mu_upsample)
         return x, (theta_mu_upsample), params

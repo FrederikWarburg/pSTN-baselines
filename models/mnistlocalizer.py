@@ -84,7 +84,6 @@ class MnistPSTN(nn.Module):
             # initialize transformer
             self.transfomer = DiffeomorphicTransformer(opt)
 
-
     def forward(self, x):
         self.S = self.train_samples if self.training else self.test_samples
         batch_size, c, w, h = x.shape
