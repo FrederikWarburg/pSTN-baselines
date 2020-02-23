@@ -8,15 +8,15 @@ class CNN(nn.Module):
         super().__init__()
 
         if opt.dataset.lower() == 'cub':
-            from .cubclassifier import CubClassifier as classifier
+            from .cubclassifier import CubClassifier as Classifier
         elif opt.dataset.lower() in ['celeba','mnistxkmnist']:
-            from .celebaclassifier import CelebaClassifier as classifier
+            from .celebaclassifier import CelebaClassifier as Classifier
         elif opt.dataset.lower() == 'mnist':
-            from .mnistclassifier import CNNClassifier as classifier
+            from .mnistclassifier import CNNClassifier as Classifier
         elif opt.dataset in opt.TIMESERIESDATASETS:
-            from .timeseriesclassifier import TimeseriesClassifier as classifier
+            from .timeseriesclassifier import TimeseriesClassifier as Classifier
 
-        self.model = classifier(opt)
+        self.model = Classifier(opt)
 
     def forward(self, x):
 

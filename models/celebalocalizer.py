@@ -6,6 +6,7 @@ class CelebaPSTN(nn.Module):
     def __init__(self, opt):
         super().__init__()
 
+        # hyper parameters
         self.N = opt.N
         self.S = opt.test_samples
         self.train_samples = opt.train_samples
@@ -13,6 +14,8 @@ class CelebaPSTN(nn.Module):
         self.num_param = opt.num_param
         self.sigma_p = opt.sigma_p
         self.sigma_n = opt.sigma_n
+
+        # number of channels
         self.channels = 1 if 'mnist' in opt.dataset.lower() else 3
 
         # Spatial transformer localization-network
@@ -43,28 +46,43 @@ class CelebaPSTN(nn.Module):
             nn.Softplus()
         )
 
+        # initialize transformer attribute
         self.transformer = None
 
     def forward(self, x):
-        self.S = self.train_samples if self.training else self.test_samples
+
+        # get input dimensions
         batch_size, c, w, h = x.shape
+
+        # number of samples depends on training or testing setting
+        self.S = self.train_samples if self.training else self.test_samples
+
         # shared localizer
         xs = self.localization(x)
+
+        # reshape [B, c' * w' * h']
         xs = xs.view(batch_size, -1)
+
         # estimate mean and variance regressor
         theta_mu = self.fc_loc_mu(xs)
         theta_sigma = self.fc_loc_std(xs)
+
         # repeat x in the batch dim so we avoid for loop
         x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
+
+        # reshape theta_mu and theta_sigma to match the shape of x
         theta_mu_upsample = theta_mu.view(batch_size * self.N, self.num_param)
         theta_sigma_upsample = theta_sigma.view(batch_size * self.N, self.num_param)
+
         # repeat for the number of samples
         x = x.repeat(self.S, 1, 1, 1)
         theta_mu_upsample = theta_mu_upsample.repeat(self.S, 1)
         theta_sigma_upsample = theta_sigma_upsample.repeat(self.S, 1)
+
+        # transform x for each sample
         x, params = self.transformer(x, theta_mu_upsample, theta_sigma_upsample)
 
-        # add color space noise
+        # add color space noise to all samples
         gaussian = distributions.normal.Normal(0, 1)
         epsilon = gaussian.sample(sample_shape=x.shape).to(x.device)
         x = x + self.sigma_n * epsilon
@@ -76,8 +94,11 @@ class CelebaSTN(nn.Module):
     def __init__(self, opt):
         super().__init__()
 
+        # hyper parameters
         self.N = opt.N
         self.num_param = opt.num_param
+
+        # number of channels
         self.channels = 1 if 'mnist' in opt.dataset.lower() else 3
 
         # Spatial transformer localization-network
@@ -100,22 +121,30 @@ class CelebaSTN(nn.Module):
             nn.Linear(100, self.num_param * self.N)
         )
 
+        # initializer transformer
         self.transformer = None
 
     def forward(self, x):
+
+        # get input dimensions
         batch_size, c, w, h = x.shape
 
+        # shared localizer
         xs = self.localization(x)
 
+        # reshape [B, c' * w' * h']
         xs = xs.view(batch_size, -1)
 
+        # estimate transformation with regressor
         theta = self.fc_loc(xs)
 
         # repeat x in the batch dim so we avoid for loop
         x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
 
+        # reshape theta to match the shape of x
         theta_upsample = theta.view(batch_size * self.N, self.num_param)
 
+        # transform x
         x, params = self.transformer(x, theta_upsample)
 
         return x, theta, params
