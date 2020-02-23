@@ -11,10 +11,10 @@ DATASETS=("FaceAll" "wafer" "uWaveGestureLibrary_X" "FaceAll" "Two_Patterns"
  "StarLightCurves" "PhalangesOutlinesCorrect" "FordA")
 NR_CLASSES=(14 2 8 14 4 3 2 2)
 
-for DATASET in {0..}
+for DATASET in {0..1}
 do
     echo ${DATASETS[$DATASET]}
-    for MODEL in {0..2}
+    for MODEL in {0..1}
     do
         echo ${MODELS[$MODEL]}
         echo ${PARAMS[$MODEL]}
@@ -36,12 +36,14 @@ do
                         --criterion ${CRITERION[$MODEL]} \
                         --save_results True \
                         --lr 0.001 \
-                        --sigma 0.6 \
+                        --sigma_p 0.5 \
                         --run_test_freq 100 \
                         --num_param ${PARAMS[$MODEL]} \
-                        --basenet "timeseries" \
                         --trainval_split True \
                         --save_results True \
-                        --savepath "test"
+                        --savepath "test" \
+                        --optimizer "adam" \
+                        --weightDecay 0 \
+                        --transformer_type "diffeomorphic"
     done
 done

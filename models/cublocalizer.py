@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
 
-from tra
 
 FEATURE_SIZES = {'inception': 1024,
                  'inception_v3': 2048,

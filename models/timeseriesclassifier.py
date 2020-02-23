@@ -46,22 +46,22 @@ class TimeseriesClassifier(nn.Module):
             nn.ReLU(),
             ###
             nn.Conv1d(self.parameter_dict['CNN_filters1'],
-                      self.parameter_dict['CNN_filters2'], kernel_size=self.parameter_dict['CNN_filters2']),
+                      self.parameter_dict['CNN_filters2'], kernel_size=self.parameter_dict['CNN_kernel_size1']),
             nn.BatchNorm1d(self.parameter_dict['CNN_filters2']),
             nn.ReLU(),
             ###
             nn.Conv1d(self.parameter_dict['CNN_filters2'],
-                      self.parameter_dict['CNN_filters3'], kernel_size=self.parameter_dict['CNN_filters3']),
+                      self.parameter_dict['CNN_filters3'], kernel_size=self.parameter_dict['CNN_kernel_size2']),
             nn.BatchNorm1d(self.parameter_dict['CNN_filters3']),
             nn.ReLU(),
             ###
             nn.Conv1d(self.parameter_dict['CNN_filters3'],
-                      self.parameter_dict['CNN_filters4'], kernel_size=self.parameter_dict['CNN_filters4']),
+                      self.parameter_dict['CNN_filters4'], kernel_size=self.parameter_dict['CNN_kernel_size3']),
             nn.BatchNorm1d(self.parameter_dict['CNN_filters4']),
             nn.ReLU(),
             ###
             nn.Conv1d(self.parameter_dict['CNN_filters4'],
-                      self.parameter_dict['CNN_filters5'], kernel_size=self.parameter_dict['CNN_filters5']),
+                      self.parameter_dict['CNN_filters5'], kernel_size=self.parameter_dict['CNN_kernel_size4']),
             nn.BatchNorm1d(self.parameter_dict['CNN_filters5']),
             nn.ReLU(),
             nn.AdaptiveAvgPool1d(1),
@@ -75,14 +75,13 @@ class TimeseriesClassifier(nn.Module):
 
     # classifier network forward function
     def classifier(self, x):
-        x = self.large_CNN(x)
+        x = self.CNN(x)
         x_flat = x.view(-1, self.parameter_dict['CNN_filters5'])
-        pred = self.large_fully_connected(x_flat)
+        pred = self.fully_connected(x_flat)
         return pred
 
-    def forward(self, x, epoch):
-        # get batch size from data
-        self.batch_size = x.shape[0]
+    def forward(self, x):
+        print(x.shape)
         # transform the input
         x_preds = self.classifier(x)
         # normalize outputs into probabilities
@@ -94,7 +93,7 @@ class TimeseriesClassifier(nn.Module):
             parameter_dict = parameter_dict_timeseries_CNN
         elif opt.model.lower() == 'stn':
             parameter_dict = parameter_dict_timeseries_STN
-        elif opt.model.lower() == 'p_stn':
+        elif opt.model.lower() == 'pstn':
             parameter_dict = parameter_dict_timeseries_P_STN
         else:
             print('Pass valid model!')

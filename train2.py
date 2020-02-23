@@ -15,10 +15,10 @@ if __name__ == '__main__':
     modelname = get_exp_name(opt)
 
     logger = TestTubeLogger(
-        save_dir=os.getcwd() + "/lightning_logs",
-        name=modelname,
-        debug=False,
-        create_git_tag=False
+       save_dir=os.getcwd() + "/lightning_logs",
+       name=modelname,
+       debug=False,
+       create_git_tag=False
     )
 
     model = System(opt)

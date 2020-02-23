@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch import distributions
 
-from utils.transformers import diffeomorphic_transformation
+from utils.transformers import DiffeomorphicTransformer
 
 
 class TimeseriesPSTN(nn.Module):
@@ -10,11 +10,12 @@ class TimeseriesPSTN(nn.Module):
         super().__init__()
         self.N = opt.N
         self.S = opt.test_samples
-        self.transformer = diffeomorphic_transformation(opt)
+        self.transformer = DiffeomorphicTransformer(opt)
+        self.theta_dim = self.transformer.T.get_theta_dim()
         self.train_samples = opt.train_samples
         self.test_samples = opt.test_samples
         self.num_param = opt.num_param
-        self.sigma_p = opt.sigma
+        self.sigma_p = opt.sigma_p
         self.channels = 1
 
         # Spatial transformer localization-network
@@ -47,8 +48,6 @@ class TimeseriesPSTN(nn.Module):
             nn.Softplus()
         )
 
-        self.transformer = None
-
     def forward(self, x):
         self.S = self.train_samples if self.training else self.test_samples
         batch_size, c, w, h = x.shape
@@ -76,27 +75,24 @@ class TimeseriesPSTN(nn.Module):
 
 class TimeseriesSTN(TimeseriesPSTN):
     def __init__(self, opt):
-        super().__init__()
-        self.N = opt.N
-        self.S = opt.test_samples
-        self.test_samples = opt.test_samples
-        self.num_param = opt.num_param
-        self.sigma_p = opt.sigma
-        self.channels = 1
+        super().__init__(opt)
+        self.fc_loc = nn.Sequential(
+            nn.Linear(64, self.theta_dim)  # HARD CODED FOR THE MEDIUM SIZE NETWORK FOR NOW
+        )
 
     def forward(self, x):
         self.S = self.train_samples if self.training else self.test_samples
-        batch_size, c, w, h = x.shape
+        batch_size, c, l = x.shape
         # shared localizer
         xs = self.localization(x)
         xs = xs.view(batch_size, -1)
         # estimate mean and variance regressor
-        theta_mu = self.fc_loc_mu(xs)
+        theta_mu = self.fc_loc_mean(xs)
         # repeat x in the batch dim so we avoid for loop
-        x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
+        x = x.unsqueeze(1).repeat(1, self.N, 1).view(self.N * batch_size, c, l)
         theta_mu_upsample = theta_mu.view(batch_size * self.N, self.num_param)
         # repeat for the number of samples
-        x = x.repeat(self.S, 1, 1, 1)
+        x = x.repeat(self.S, 1, 1)
         theta_mu_upsample = theta_mu_upsample.repeat(self.S, 1)
         x, params = self.transformer(x, theta_mu_upsample)
         return x, (theta_mu_upsample), params

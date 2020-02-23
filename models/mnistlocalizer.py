@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch import distributions
 
-from utils.transformers import diffeomorphic_transformation, affine_transformation
+from utils.transformers import DiffeomorphicTransformer, AffineTransformer
 
 parameter_dict_P_STN = {
     'loc_kernel_size': 5,
@@ -56,7 +56,6 @@ class MnistPSTN(nn.Module):
         if opt.transformer_type == 'affine':
             self.fc_loc_mu = nn.Sequential(
                 nn.Linear(self.parameter_dict['resulting_size_localizer'], self.num_param))
-            # TODO: initialize weights
         # Regressor for the diffeomorphic param's
         elif opt.transformer_type == 'diffeomorphic':
             self.fc_loc_mu = nn.Sequential(
@@ -71,6 +70,9 @@ class MnistPSTN(nn.Module):
                 nn.Linear(self.parameter_dict['resulting_size_localizer'], self.theta_dim),
                 # add activation function for positivity
                 nn.Softplus())
+            # initialize transformer
+            self.transfomer = AffineTransformer()
+
         elif opt.transformer_type == 'diffeomorphic':
             self.fc_loc_std = nn.Sequential(
                 nn.Linear(self.parameter_dict['resulting_size_localizer'],
@@ -79,8 +81,8 @@ class MnistPSTN(nn.Module):
                 nn.Linear(self.parameter_dict['hidden_layer_localizer'], self.theta_dim),
                 # add activation function for positivity
                 nn.Softplus())
-
-        self.transformer = None
+            # initialize transformer
+            self.transfomer = DiffeomorphicTransformer(opt)
 
     def forward(self, x):
         self.S = self.train_samples if self.training else self.test_samples
@@ -113,7 +115,6 @@ class MnistSTN(nn.Module):
         self.S = opt.test_samples
         self.test_samples = opt.test_samples
         self.num_param = opt.num_param
-        self.sigma_p = opt.sigma_p
         self.channels = 1
 
         self.parameter_dict = parameter_dict_STN
@@ -132,7 +133,11 @@ class MnistSTN(nn.Module):
             nn.ReLU(),
         )
 
-        self.transformer = None
+        if opt.transformer_type == 'diffeomorphic':
+            self.transfomer = DiffeomorphicTransformer(opt)
+        else:
+            self.transfomer = AffineTransformer()
+
 
     def forward(self, x):
         batch_size, c, w, h = x.shape

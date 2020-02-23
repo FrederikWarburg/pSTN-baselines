@@ -13,7 +13,7 @@ class CNN(nn.Module):
             from .celebaclassifier import CelebaClassifier as classifier
         elif opt.dataset.lower() == 'mnist':
             from .mnistclassifier import CNNClassifier as classifier
-        elif opt.dataset.lower() == 'timeseries':
+        elif opt.dataset in opt.TIMESERIESDATASETS:
             from .timeseriesclassifier import TimeseriesClassifier as classifier
 
         self.model = classifier(opt)
