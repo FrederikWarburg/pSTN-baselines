@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch import distributions
 
-from utils.transformers import DiffeomorphicTransformer, AffineTransformer
+from utils.transformers import init_transformer
 
 parameter_dict_P_STN = {
     'loc_kernel_size': 5,
@@ -35,6 +35,9 @@ class MnistPSTN(nn.Module):
         self.num_param = opt.num_param
         self.sigma_p = opt.sigma_p
         self.channels = 1
+        self.transformer = init_transformer(opt)
+        self.theta_dim = self.transformer.T.get_theta_dim()
+        # self.theta_dim = self.transformer.T.get_theta_dim()
 
         self.parameter_dict = parameter_dict_P_STN
 

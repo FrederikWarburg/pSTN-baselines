@@ -5,7 +5,10 @@ from matplotlib.figure import Figure
 import numpy as np
 import torch
 import torchvision
-
+import io
+import matplotlib.pyplot as plt
+import PIL.Image
+from torchvision.transforms import ToTensor
 
 def convert_image_np(inp, dataset='mnist'):
     """Convert a Tensor to numpy image."""
@@ -52,21 +55,40 @@ def visualize_stn(model, data, opt):
         # TIMESERIES VISUALIZATIONS
         if opt.xdim == 1:
             bbox_images = None
-            nr_plots = 3  # just visualize the first 3
+            nr_plots = min(3, data.shape[0])  # just visualize the first 3
             input_array = data.cpu().numpy()
-            in_fig, in_ax = plt.subplots(nr_plots, figsize=(20, 10))
-            for ix in range(nr_plots):
-                in_ax[ix].plot(input_array[ix, 0, :], c='darkblue')
 
-            # print figure to numpy array
-            fig = Figure()
-            canvas = FigureCanvas(in_fig)
-            ax = fig.gca()
-            ax.axis('off')
-            canvas.draw()
-            in_grid = np.fromstring(canvas.tostring_rgb(), dtype='uint8').reshape(1000, 2000, 3)
-            #plt.savefig('test.png')
+            plt.close()
+            plt.close()
+            plt.close()
+            def gen_plot(input_array, nr_plots):
+                """Create a pyplot plot and save to buffer."""
+                plt.figure()
+                for ix in range(nr_plots):
+                    plt.subplot(nr_plots, 1, ix+1)
+                    plt.plot(input_array[ix, 0, :], c='darkblue')
 
+                buf = io.BytesIO()
+
+                plt.savefig(buf, format='jpeg')
+                buf.seek(0)
+                return buf
+
+
+            # Prepare the plot
+            plot_buf = gen_plot(input_array, nr_plots)
+
+            image = PIL.Image.open(plot_buf)
+            image = ToTensor()(image)#.unsqueeze(0)
+
+            plt.close(); plt.close(); plt.close()
+
+            return image, None, None, None
+            #plt.imshow(image[0].permute(1,2,0))
+            #plt.axis("off")
+            #plt.show()
+
+            """
             if opt.model.lower() == 'cnn':
                 print('returning ', in_grid.shape, in_grid.dtype)
                 return in_grid, None, None, None  #in_grid, None, None, None
@@ -95,6 +117,8 @@ def visualize_stn(model, data, opt):
                                                alpha=alphas[ix], c='sienna')
             out_fig.canvas.draw()
             out_grid = np.array(out_fig.canvas.renderer.buffer_rgba())
+
+            """
 
     # Plot the results side-by-side
     return in_grid, out_grid, theta, bbox_images

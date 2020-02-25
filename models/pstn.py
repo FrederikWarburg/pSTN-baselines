@@ -17,12 +17,6 @@ class PSTN(nn.Module):
         self.init_localizer(opt)
         self.init_classifier(opt)
 
-        # we initialize the model weights and bias of the regressors
-        self.init_model_weights(opt)
-
-        # we initialize the transformation that we want to use (Affine / Diffeo)
-        self.init_transformer(opt)
-
     def init_localizer(self, opt):
         if opt.dataset.lower() == 'cub':
             from .cublocalizer import CubPSTN as PSTN
@@ -72,32 +66,21 @@ class PSTN(nn.Module):
         elif opt.transformer_type == 'diffeomorphic':
             # initialize param's as identity, default ok for variance in this case
             self.pstn.fc_loc_mu[-1].bias.data.copy_(
-                torch.tensor([1e-5], dtype=torch.float).repeat(self.self.theta_dim))
+                torch.tensor([1e-5], dtype=torch.float).repeat(self.pstn.theta_dim))
             self.pstn.fc_loc_std[-2].weight.data.zero_()
 
             if opt.dataset.lower() in opt.TIMESERIESDATASETS:
                 self.pstn.fc_loc_std[-2].bias.data.copy_(
-                     torch.tensor([-2], dtype=torch.float).repeat(self.self.theta_dim))
+                     torch.tensor([-2], dtype=torch.float).repeat(self.pstn.theta_dim))
 
-    def init_transformer(self, opt):
-        if opt.transformer_type == 'affine':
-            from utils.transformers import AffineTransformer
-            self.pstn.transformer = AffineTransformer()
-        elif opt.transformer_type == 'diffeomorphic':
-            from utils.transformers import DiffeomorphicTransformer
-            self.pstn.transformer = DiffeomorphicTransformer(opt)
 
     def forward(self, x):
-
         # get input shape
-        batch_size, c, w, h = x.shape
-
+        batch_size = x.shape[0]
         # get output for pstn module
         x, theta, _ = self.pstn(x)
-
         # make classification based on pstn output
         x = self.classifier(x)
-
         # format according to number of samples
         x = torch.stack(x.split([batch_size] * self.pstn.S))
         x = x.view(self.pstn.S, batch_size * self.num_classes)

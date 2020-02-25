@@ -27,7 +27,7 @@ def CreateDataset(opt, mode):  # mode in ['train', 'val', 'test']
 class DataLoader:
     """multi-threaded data loading"""
 
-    def __init__(self, opt, mode):
+    def __init__(self, opt, mode, shuffle):
         self.opt = opt
 
         self.dataset = CreateDataset(opt, mode)
@@ -35,7 +35,7 @@ class DataLoader:
         self.dataloader = torch.utils.data.DataLoader(
             self.dataset,
             batch_size=opt.batch_size,
-            shuffle=not opt.no_shuffle,
+            shuffle=shuffle,
             num_workers=int(opt.num_threads),
             pin_memory=True)
 

@@ -19,9 +19,6 @@ class STN(nn.Module):
         # we initialize the model weights and bias of the regressors
         self.init_model_weights(opt)
 
-        # we initialize the transformation that we want to use (Affine / Diffeo)
-        self.init_transformer(opt)
-
     def init_localizer(self, opt):
         if opt.dataset.lower() == 'cub':
             from .cublocalizer import CubSTN as STN
@@ -64,15 +61,6 @@ class STN(nn.Module):
             # initialize param's as identity, default ok for variance in this case
             self.stn.fc_loc[-1].bias.data.copy_(
                 torch.tensor([1e-5], dtype=torch.float).repeat(self.stn.theta_dim))
-
-    def init_transformer(self, opt):
-
-        if opt.transformer_type == 'affine':
-            from utils.transformers import AffineTransformer
-            self.stn.transformer = AffineTransformer()
-        elif opt.transformer_type == 'diffeomorphic':
-            from utils.transformers import DiffeomorphicTransformer
-            self.stn.transformer = DiffeomorphicTransformer(opt)
 
     def forward(self, x):
 

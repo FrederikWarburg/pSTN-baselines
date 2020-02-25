@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from torch import distributions
+from utils.transformers import init_transformer
 
 class CelebaPSTN(nn.Module):
     def __init__(self, opt):
@@ -47,7 +48,7 @@ class CelebaPSTN(nn.Module):
         )
 
         # initialize transformer attribute
-        self.transformer = None
+        self.transformer, self.theta_dim = init_transformer(opt)
 
     def forward(self, x):
 
@@ -122,7 +123,7 @@ class CelebaSTN(nn.Module):
         )
 
         # initializer transformer
-        self.transformer = None
+        self.transformer, self.theta_dim = init_transformer(opt)
 
     def forward(self, x):
 

@@ -1,8 +1,16 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-#from libcpab.cpab import Cpab
+from libcpab.cpab import Cpab
 from torch.distributions.utils import _standard_normal
+
+
+def init_transformer(opt):
+    if opt.transformer_type == 'affine':
+        return AffineTransformer(), 4
+    elif opt.transformer_type == 'diffeomorphic':
+        transformer = DiffeomorphicTransformer(opt)
+        return transformer, transformer.get_theta_dim()
 
 
 class DiffeomorphicTransformer(nn.Module):

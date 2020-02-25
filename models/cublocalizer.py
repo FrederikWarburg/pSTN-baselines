@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
 from torch import distributions
+from utils.transformers import init_transformer
+
 
 # possible base networks and their feature sizes
 FEATURE_SIZES = {'inception': 1024,
@@ -30,7 +32,7 @@ class CubPSTN(nn.Module):
         self.init_std_regressor(opt)
 
         # initialize transformer
-        self.transformer = None
+        self.transformer, self.theta_dim = init_transformer(opt)
 
     def init_localizer(self, opt):
 
@@ -135,7 +137,7 @@ class CubSTN(nn.Module):
         self.init_regressor(opt)
 
         # initalize transformer
-        self.transformer = None
+        self.transformer, self.theta_dim = init_transformer(opt)
 
     def init_localizer(self, opt):
 

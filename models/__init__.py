@@ -38,51 +38,33 @@ def create_optimizer(model, opt):
     if opt.optimizer.lower() == 'sgd':
         from torch.optim import SGD as Optimizer
         opt_param = {'momentum' : opt.momentum, 'weight_decay' : opt.weightDecay}
-        if opt.model.lower() == 'stn':
-            # enables the lr for the localizer to be lower than for the classifier
-            optimizer = Optimizer([
-                {'params': filter(lambda p: p.requires_grad, model.stn.parameters()), 'lr': opt.lr_loc * opt.lr},
-                {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
-            ], **opt_param)
-
-        elif opt.model.lower() == 'pstn' :
-            # enables the lr for the localizer to be lower than for the classifier
-            optimizer = Optimizer([
-                {'params': filter(lambda p: p.requires_grad, model.pstn.parameters()), 'lr': opt.lr_loc * opt.lr},
-                {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
-            ], **opt_param)
-
-        else:
-            optimizer = Optimizer(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr, **opt_param)
-
-        # create scheduler
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=0.1)
-
-    elif opt.optimizer.lower() == 'adam' or opt.model.lower() == 'cnn':
+    elif opt.optimizer.lower() == 'adam':
         from torch.optim import Adam as Optimizer
-        if 'MNIST' in opt.dataset.lower():  # straight forward for MNIST, and CNN for all datasets
-            optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr, weight_decay=opt.weight_decay)
-        else:  # different learning rates for timeseries STN/P_STN model parts
-            if opt.model.lower() == 'pstn':
-                optimizer = torch.optim.Adam(
-                    [{'params': model.pstn.fc_loc_mean.parameters(), 'lr': opt.lr / 10},
-                     {'params': model.pstn.localization.parameters(), 'lr': opt.lr / 10},
-                     {'params': model.pstn.fc_loc_std.parameters(), 'lr': opt.lr},
-                     {'params': model.classifier.CNN.parameters(), 'lr': opt.lr},
-                     {'params': model.classifier.fully_connected.parameters(), 'lr': opt.lr}],
-                    weight_decay=opt.weightDecay)
-            elif opt.model.lower() == 'stn':
-                optimizer = torch.optim.Adam(
-                    [{'params': model.stn.fc_loc.parameters(), 'lr': opt.lr / 10},
-                     {'params': model.stn.localization.parameters(), 'lr': opt.lr / 10},
-                     {'params': model.classifier.CNN.parameters(), 'lr': opt.lr},
-                     {'params': model.classifier.fully_connected.parameters(), 'lr': opt.lr}],
-                    weight_decay=opt.weightDecay)
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=1) # no decay
-
+        opt_param = {'weight_decay' : opt.weightDecay}
     else:
         print("{} is not implemented yet".format(opt.optimizer.lower()))
         raise NotImplemented
+
+    if opt.model.lower() == 'stn':
+        # enables the lr for the localizer to be lower than for the classifier
+        optimizer = Optimizer([
+            {'params': filter(lambda p: p.requires_grad, model.stn.parameters()), 'lr': opt.lr_loc * opt.lr},
+            {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
+        ], **opt_param)
+
+    elif opt.model.lower() == 'pstn' :
+        # enables the lr for the localizer to be lower than for the classifier
+        optimizer = Optimizer([
+            {'params': filter(lambda p: p.requires_grad, model.pstn.parameters()), 'lr': opt.lr_loc * opt.lr},
+            {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
+        ], **opt_param)
+
+    else:
+
+        optimizer = Optimizer(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr, **opt_param)
+
+    # create scheduler
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=0.1)
 
     return optimizer, scheduler
 
@@ -139,11 +121,11 @@ class System(pl.LightningModule):
         acc = accuracy(y_hat, y)
 
         # for the first batch in an epoch visualize the predictions for better debugging
-        #if batch_idx == 0:
-        #    # calculate different visualizations
-        #    grid_in, grid_out, theta, bbox_images = visualize_stn(self.model, x, self.opt)
-        #    # add these to tensorboard
-        #    self.add_images(grid_in, grid_out, bbox_images)
+        if batch_idx == 0:
+            # calculate different visualizations
+            grid_in, grid_out, theta, bbox_images = visualize_stn(self.model, x, self.opt)
+            # add these to tensorboard
+            self.add_images(grid_in, grid_out, bbox_images)
 
         return {'val_loss': loss, 'val_acc': acc}
 
@@ -197,17 +179,17 @@ class System(pl.LightningModule):
     @pl.data_loader
     def train_dataloader(self):
         # REQUIRED
-        return DataLoader(self.opt, mode='train')
+        return DataLoader(self.opt, mode='train', shuffle = True)
 
     @pl.data_loader
     def val_dataloader(self):
         # OPTIONAL
-        return DataLoader(self.opt, mode='val')
+        return DataLoader(self.opt, mode='val', shuffle = False)
 
     @pl.data_loader
     def test_dataloader(self):
         # OPTIONAL
-        return DataLoader(self.opt, mode='test')
+        return DataLoader(self.opt, mode='test', shuffle = False)
 
     def add_images(self, grid_in, grid_out, bbox_images):
 

@@ -13,7 +13,7 @@ NR_CLASSES=(14 2 8 14 4 3 2 2)
 for DATASET in {0..0}
 do
     echo ${DATASETS[$DATASET]}
-    for MODEL in {2..2}
+    for MODEL in {0..0}
     do
         echo ${MODELS[$MODEL]}
         echo ${PARAMS[$MODEL]}
@@ -22,7 +22,7 @@ do
         echo ${CRITERION[$MODEL]}
         CUDA_VISIBLE_DEVICES=0 python train.py --dataroot $DATAPATH \
                         --dataset ${DATASETS[$DATASET]} \
-                        --batch_size 16 \
+                        --batch_size 1 \
                         --num_classes ${NR_CLASSES[$DATASET]}  \
                         --num_threads 1 \
                         --epochs 200 \
