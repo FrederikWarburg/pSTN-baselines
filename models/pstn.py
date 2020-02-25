@@ -17,6 +17,9 @@ class PSTN(nn.Module):
         self.init_localizer(opt)
         self.init_classifier(opt)
 
+        # we initialize the model weights and bias of the regressors
+        self.init_model_weights(opt)
+
     def init_localizer(self, opt):
         if opt.dataset.lower() == 'cub':
             from .cublocalizer import CubPSTN as PSTN

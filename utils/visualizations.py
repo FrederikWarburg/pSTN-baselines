@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import PIL.Image
 from torchvision.transforms import ToTensor
 
+
 def convert_image_np(inp, dataset='mnist'):
     """Convert a Tensor to numpy image."""
     inp = inp.numpy().transpose((1, 2, 0))
@@ -22,12 +23,52 @@ def convert_image_np(inp, dataset='mnist'):
     return inp
 
 
+# def gen_plot_input(input_array, nr_plots):
+#     """Create a pyplot plot and save to buffer."""
+#     plt.figure()
+#     for ix in range(nr_plots):
+#         plt.subplot(nr_plots, 1, ix+1)
+#         plt.plot(input_array[ix, 0, :], c='darkblue')
+#     buf = io.BytesIO()
+#     plt.savefig(buf, format='jpeg')
+#     buf.seek(0)
+#     return buf
+
+
+def gen_plot_input(transformed_array, nr_plots):
+    plt.figure()
+    colors = ['darkgoldenrod', 'sienna', 'darkred']
+    for ix in range(nr_plots):
+        plt.subplot(nr_plots, 1, ix+1)
+        plt.plot(transformed_array[ix, 0, :], c=colors[ix])
+    buf = io.BytesIO()
+    plt.savefig(buf, format='jpeg')
+    buf.seek(0)
+    return buf
+
+
+def gen_plot_output(transformed_array, nr_plots, batch_size):
+    plt.figure()
+    # colors = ['darkgreen', 'darkgoldenrod', 'darkred']
+    nr_samples = 3
+    alphas = [0.5, 0.75, 1]
+    # Plot the results side-by-side
+    for data_ix in range(nr_plots):
+        plt.subplot(nr_plots, 1, data_ix+1)
+        for sample_ix in range(nr_samples):
+            plt.plot(transformed_array[data_ix + (sample_ix * batch_size), 0, :],
+                     alpha=alphas[sample_ix], c='sienna')
+    buf = io.BytesIO()
+    plt.savefig(buf, format='jpeg')
+    buf.seek(0)
+    return buf
+
+
 def normalize(images):
     return images / torch.max(images)
 
 
 def visualize_stn(model, data, opt):
-
     with torch.no_grad():
 
         # IMAGE VISUALIZATION
@@ -52,76 +93,41 @@ def visualize_stn(model, data, opt):
             out_grid = np.transpose(out_grid, (2, 0, 1))
             bbox_images = visualize_bbox(data.cpu(), affine_params, opt)
 
+            return in_grid, out_grid, theta, bbox_images
+
         # TIMESERIES VISUALIZATIONS
         if opt.xdim == 1:
-            bbox_images = None
-            nr_plots = min(3, data.shape[0])  # just visualize the first 3
+            batch_size = data.shape[0]
+            nr_plots = min(3, batch_size)  # just visualize the first 3
             input_array = data.cpu().numpy()
-
-            plt.close()
-            plt.close()
-            plt.close()
-            def gen_plot(input_array, nr_plots):
-                """Create a pyplot plot and save to buffer."""
-                plt.figure()
-                for ix in range(nr_plots):
-                    plt.subplot(nr_plots, 1, ix+1)
-                    plt.plot(input_array[ix, 0, :], c='darkblue')
-
-                buf = io.BytesIO()
-
-                plt.savefig(buf, format='jpeg')
-                buf.seek(0)
-                return buf
-
-
-            # Prepare the plot
-            plot_buf = gen_plot(input_array, nr_plots)
-
+            plt.close(); plt.close(); plt.close()
+            # Prepare the input plot
+            plot_buf = gen_plot_input(input_array, nr_plots)
             image = PIL.Image.open(plot_buf)
-            image = ToTensor()(image)#.unsqueeze(0)
-
+            image = ToTensor()(image)
             plt.close(); plt.close(); plt.close()
 
-            return image, None, None, None
-            #plt.imshow(image[0].permute(1,2,0))
-            #plt.axis("off")
-            #plt.show()
-
-            """
             if opt.model.lower() == 'cnn':
                 print('returning ', in_grid.shape, in_grid.dtype)
-                return in_grid, None, None, None  #in_grid, None, None, None
+                return image, None, None, None
 
-            out_fig, out_ax = plt.subplots(nr_plots, figsize=(20, 10))
             if opt.model.lower() == 'stn':
                 transformed_input, _, theta = model.stn(data)
                 transformed_input = transformed_input.cpu().numpy()
-                theta = theta.cpu().numpy()
-                colors = ['darkgoldenrod', 'sienna', 'darkred']
-                for ix in range(nr_plots):
-                    out_ax[ix].plot(transformed_input[ix, 0, :], c=colors[ix])
+                # prepare the STN output plot
+                out_plot_buf = gen_plot_input(transformed_input, nr_plots)
+                out_image = PIL.Image.open(out_plot_buf)
+                out_image = ToTensor()(out_image)
+                return image, out_image, theta, None
 
-            if opt.model.lower() == 'pstn':
-                # model.eval()
-                batch_size = data.shape[0]
-                transformed_input, _, sampled_theta = model.pstn(data).cpu().numpy()
-                theta = sampled_theta.cpu().numpy()
-                nr_samples = 3
-                colors = ['darkgreen', 'darkgoldenrod', 'darkred']
-                alphas = [0.5, 0.75, 1]
-                # Plot the results side-by-side
-                for data_ix in range(nr_plots):
-                    for sample_ix in range(nr_samples):
-                        out_ax[data_ix].plot(transformed_input[data_ix + (sample_ix * batch_size), 0, :],
-                                               alpha=alphas[ix], c='sienna')
-            out_fig.canvas.draw()
-            out_grid = np.array(out_fig.canvas.renderer.buffer_rgba())
-
-            """
-
-    # Plot the results side-by-side
-    return in_grid, out_grid, theta, bbox_images
+            elif opt.model.lower() == 'pstn':
+                transformed_input, _, sampled_theta = model.pstn(data)
+                transformed_input = transformed_input.cpu().numpy()
+                # prepare the P-STN output plot
+                out_plot_buf = gen_plot_output(transformed_input, nr_plots, batch_size)
+                out_image = PIL.Image.open(out_plot_buf)
+                out_image = ToTensor()(out_image)
+                return image, out_image, sampled_theta, None
 
 
 def visualize_bbox(data, affine_params, opt):

@@ -7,10 +7,10 @@ from torch.distributions.utils import _standard_normal
 
 def init_transformer(opt):
     if opt.transformer_type == 'affine':
-        return AffineTransformer(), 4
+        return AffineTransformer(), opt.N * opt.num_params
     elif opt.transformer_type == 'diffeomorphic':
         transformer = DiffeomorphicTransformer(opt)
-        return transformer, transformer.get_theta_dim()
+        return transformer, transformer.T.get_theta_dim() * opt.N
 
 
 class DiffeomorphicTransformer(nn.Module):

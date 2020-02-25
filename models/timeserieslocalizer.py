@@ -13,9 +13,9 @@ class TimeseriesPSTN(nn.Module):
         self.train_samples = opt.train_samples
         self.test_samples = opt.test_samples
         self.sigma_p = opt.sigma_p
+        self.sigma_n = opt.sigma_n
         self.channels = 1
         self.transformer, self.theta_dim = init_transformer(opt)
-        #self.theta_dim = self.transformer.T.get_theta_dim()
 
         # Spatial transformer localization-network
         self.localization = nn.Sequential(
@@ -66,7 +66,7 @@ class TimeseriesPSTN(nn.Module):
         theta_sigma_upsample = theta_sigma_upsample.repeat(self.S, 1)
         x, params = self.transformer(x, theta_mu_upsample, theta_sigma_upsample)
         gaussian = distributions.normal.Normal(0, 1)
-        epsilon = gaussian.sample(sample_shape=x.shape).to(self.device)
+        epsilon = gaussian.sample(sample_shape=x.shape).to(x.device)
         x = x + self.sigma_n * epsilon
 
         return x, (theta_mu, theta_sigma), params
@@ -76,7 +76,7 @@ class TimeseriesSTN(TimeseriesPSTN):
     def __init__(self, opt):
         super().__init__(opt)
         self.fc_loc = nn.Sequential(
-            nn.Linear(64, self.theta_dim)  # HARD CODED FOR THE MEDIUM SIZE NETWORK FOR NOW
+            nn.Linear(64, self.theta_dim)
         )
 
     def forward(self, x):

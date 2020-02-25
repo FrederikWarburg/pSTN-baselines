@@ -3,6 +3,7 @@ from __future__ import print_function
 import torch.nn as nn
 import torch
 
+
 class CNN(nn.Module):
     def __init__(self, opt):
         super().__init__()
