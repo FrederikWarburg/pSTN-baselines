@@ -3,7 +3,6 @@
 DATAPATH="../projects/data_augmentation/time_series/UCR_TS_Archive_2015/"
 
 MODELS=("cnn" "stn" "pstn")
-PARAMS=(1 4 4)
 TEST_SAMPELS=(1 1 10)
 TRAIN_SAMPELS=(1 1 1)
 CRITERION=("nll" "nll" "elbo")
@@ -11,10 +10,10 @@ DATASETS=("FaceAll" "wafer" "uWaveGestureLibrary_X" "FaceAll" "Two_Patterns"
  "StarLightCurves" "PhalangesOutlinesCorrect" "FordA")
 NR_CLASSES=(14 2 8 14 4 3 2 2)
 
-for DATASET in {0..1}
+for DATASET in {0..0}
 do
     echo ${DATASETS[$DATASET]}
-    for MODEL in {0..1}
+    for MODEL in {1..1}
     do
         echo ${MODELS[$MODEL]}
         echo ${PARAMS[$MODEL]}
@@ -29,7 +28,7 @@ do
                         --epochs 200 \
                         --seed 42 \
                         --model ${MODELS[$MODEL]} \
-                        --num_param ${PARAMS[$MODEL]} \
+                        --num_param 0 \
                         --N 1 \
                         --test_samples ${TEST_SAMPELS[$MODEL]} \
                         --train_samples ${TRAIN_SAMPELS[$MODEL]} \
@@ -38,7 +37,6 @@ do
                         --lr 0.001 \
                         --sigma_p 0.5 \
                         --run_test_freq 100 \
-                        --num_param ${PARAMS[$MODEL]} \
                         --trainval_split True \
                         --save_results True \
                         --savepath "test" \

@@ -81,7 +81,6 @@ class TimeseriesClassifier(nn.Module):
         return pred
 
     def forward(self, x):
-        print(x.shape)
         # transform the input
         x_preds = self.classifier(x)
         # normalize outputs into probabilities

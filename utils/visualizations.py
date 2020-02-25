@@ -1,5 +1,7 @@
 import cv2
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
 import numpy as np
 import torch
 import torchvision
@@ -53,22 +55,23 @@ def visualize_stn(model, data, opt):
             nr_plots = 3  # just visualize the first 3
             input_array = data.cpu().numpy()
             in_fig, in_ax = plt.subplots(nr_plots, figsize=(20, 10))
-            out_fig, out_ax = plt.subplots(nr_plots, figsize=(20, 10))
             for ix in range(nr_plots):
                 in_ax[ix].plot(input_array[ix, 0, :], c='darkblue')
-            in_fig.canvas.draw()
-            in_grid = np.array(in_fig.canvas.renderer.buffer_rgba())
-            in_grid = (in_grid * 255).astype(np.uint8)[:, :, :3]
 
-            # print(in_grid.dtype)
-            # print('TEST PLOT', in_grid.shape)
-            # plt.imshow(in_grid)
-            # plt.show()
+            # print figure to numpy array
+            fig = Figure()
+            canvas = FigureCanvas(in_fig)
+            ax = fig.gca()
+            ax.axis('off')
+            canvas.draw()
+            in_grid = np.fromstring(canvas.tostring_rgb(), dtype='uint8').reshape(1000, 2000, 3)
+            #plt.savefig('test.png')
 
             if opt.model.lower() == 'cnn':
-                print('returning ', in_grid.shape)
-                return np.zeros((1, 131)), None, None, None  #in_grid, None, None, None
+                print('returning ', in_grid.shape, in_grid.dtype)
+                return in_grid, None, None, None  #in_grid, None, None, None
 
+            out_fig, out_ax = plt.subplots(nr_plots, figsize=(20, 10))
             if opt.model.lower() == 'stn':
                 transformed_input, _, theta = model.stn(data)
                 transformed_input = transformed_input.cpu().numpy()

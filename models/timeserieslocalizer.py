@@ -14,7 +14,6 @@ class TimeseriesPSTN(nn.Module):
         self.theta_dim = self.transformer.T.get_theta_dim()
         self.train_samples = opt.train_samples
         self.test_samples = opt.test_samples
-        self.num_param = opt.num_param
         self.sigma_p = opt.sigma_p
         self.channels = 1
 
@@ -39,12 +38,12 @@ class TimeseriesPSTN(nn.Module):
 
         # Regressor for the mean
         self.fc_loc_mean = nn.Sequential(
-            nn.Linear(64, self.theta_dim)  # HARD CODED FOR THE MEDIUM SIZE NETWORK FOR NOW
+            nn.Linear(64, self.theta_dim)
         )
 
         # Regressor for the variance
         self.fc_loc_std = nn.Sequential(
-            nn.Linear(64, self.theta_dim),  # HARD CODED FOR THE MEDIUM SIZE NETWORK FOR NOW
+            nn.Linear(64, self.theta_dim),
             nn.Softplus()
         )
 
@@ -58,9 +57,9 @@ class TimeseriesPSTN(nn.Module):
         theta_mu = self.fc_loc_mu(xs)
         theta_sigma = self.fc_loc_std(xs)
         # repeat x in the batch dim so we avoid for loop
-        x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
-        theta_mu_upsample = theta_mu.view(batch_size * self.N, self.num_param)
-        theta_sigma_upsample = theta_sigma.view(batch_size * self.N, self.num_param)
+        x = x.repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
+        theta_mu_upsample = theta_mu.view(batch_size * self.N, self.theta_dim)
+        theta_sigma_upsample = theta_sigma.view(batch_size * self.N, self.theta_dim)
         # repeat for the number of samples
         x = x.repeat(self.S, 1, 1, 1)
         theta_mu_upsample = theta_mu_upsample.repeat(self.S, 1)
@@ -89,8 +88,8 @@ class TimeseriesSTN(TimeseriesPSTN):
         # estimate mean and variance regressor
         theta_mu = self.fc_loc_mean(xs)
         # repeat x in the batch dim so we avoid for loop
-        x = x.unsqueeze(1).repeat(1, self.N, 1).view(self.N * batch_size, c, l)
-        theta_mu_upsample = theta_mu.view(batch_size * self.N, self.num_param)
+        x = x.repeat(1, self.N, 1).view(self.N * batch_size, c, l)
+        theta_mu_upsample = theta_mu.view(batch_size * self.N, self.theta_dim)
         # repeat for the number of samples
         x = x.repeat(self.S, 1, 1)
         theta_mu_upsample = theta_mu_upsample.repeat(self.S, 1)
