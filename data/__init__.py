@@ -3,7 +3,9 @@ import torch.utils.data
 from data.celebA import CelebA
 from data.cub_200_2011 import Cub2011
 from data.gtsrb import GTSRB
-from data.mnist import MnistXKmnist, MnistRandomPlacement, make_mnist_subset
+from data.mnist import MnistXKmnist, make_mnist_subset
+from data.timeseries import make_timeseries_dataset
+
 
 def CreateDataset(opt, mode):  # mode in ['train', 'val', 'test']
     """loads dataset class"""
@@ -17,7 +19,8 @@ def CreateDataset(opt, mode):  # mode in ['train', 'val', 'test']
         dataset = MnistXKmnist(opt, mode)
     elif opt.dataset.lower().startswith('mnist'):
         dataset = make_mnist_subset(opt, mode)
-
+    elif opt.dataset in opt.TIMESERIESDATASETS:
+        dataset = make_timeseries_dataset(opt, mode)
     return dataset
 
 
