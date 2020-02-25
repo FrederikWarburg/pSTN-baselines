@@ -27,6 +27,7 @@ class Elbo(nn.Module):
         # split x into its stacked components
         x, mu, sigma = x
 
+        # calculate terms of elbo
         self.nll, self.kl, self.rec = elbo(x, mu, sigma, label, sigma_p=self.sigma_p)
 
         # increment counter for each update

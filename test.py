@@ -1,45 +1,42 @@
-import torch
+import os
 
-from data import DataLoader
-from models import create_model
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+
 from options.test_options import TestOptions
-from utils.evaluate import evaluate
-from utils.writer import Writer
-
-
-def run_test(epoch=-1, model=None, training_data=False):
-    print('Running Test')
-    opt = TestOptions().parse()
-
-    opt.is_train = training_data
-    dataset = DataLoader(opt)
-    opt.is_train = False
-
-    if model == None:
-        print("create new model")
-        model = create_model(opt)
-
-    writer = Writer(opt)
-
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model.to(device)
-
-    # test
-    writer.reset_counter()
-    model.eval()
-    with torch.no_grad():
-        for i, (input, label) in enumerate(dataset):
-            input, label = input.to(device), label.to(device)
-            pred = model(input)
-
-            ncorrect, nexamples = evaluate(pred, label)
-
-            writer.update_counter(ncorrect, nexamples)
-
-    mode = 'train' if training_data else 'test'
-    writer.print_acc(epoch, writer.acc, mode)
-    return writer.acc
-
+from pytorch_lightning import Trainer
+from pytorch_lightning.logging import TestTubeLogger
+from models import System
+import torch
+from utils.utils import get_exp_name
 
 if __name__ == '__main__':
-    run_test()
+
+    # get parameters
+    opt = TestOptions().parse()
+
+    # decide unique model name based on parameters
+    modelname = get_exp_name(opt)
+
+    # initialize a test logger for experiment
+    logger = TestTubeLogger(
+       save_dir=os.getcwd() + "/lightning_logs",
+       name=modelname,
+       debug=False,
+       create_git_tag=False
+    )
+
+    # initialize model
+    model = System(opt)
+
+    # use GPU if available
+    num_gpus = torch.cuda.device_count()
+    print("Let's use {} GPUS!".format(num_gpus))
+
+
+    # Initialize pytorch-lightning trainer with good defaults
+    trainer = Trainer(gpus=num_gpus,
+                      logger=logger,
+                      distributed_backend='dp')
+
+    # test model
+    trainer.test()

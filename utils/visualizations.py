@@ -24,11 +24,11 @@ def normalize(images):
 
 
 def visualize_stn(model, data, opt):
-    print('VISUALIZING')
+
     with torch.no_grad():
+
         # IMAGE VISUALIZATION
         if opt.xdim == 2:
-            print('IMAGE DIMS')
             data = data[:16]  # just visualize the first 16
             if opt.model.lower() == 'stn':
                 transformed_input_tensor, theta, affine_params = model.stn(data)
