@@ -50,7 +50,6 @@ def create_optimizer(model, opt):
                                         momentum=opt.momentum, weight_decay=opt.weightDecay)
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=0.1)
     elif opt.optimizer.lower() == 'adam':
-        scheduler = None
         if 'MNIST' in opt.dataset.lower():  # straight forward for MNIST, and CNN for all datasets
             optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr, weight_decay=opt.lr)
         else:  # different learning rates for timeseries STN/P_STN model parts
@@ -72,6 +71,7 @@ def create_optimizer(model, opt):
                      {'params': model.classifier.CNN.parameters(), 'lr': opt.lr},
                      {'params': model.classifier.fully_connected.parameters(), 'lr': opt.lr}],
                     weight_decay=opt.weightDecay)
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=1) # no decay
 
     return optimizer, scheduler
 
@@ -130,9 +130,9 @@ class System(pl.LightningModule):
         loss = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
 
-        if batch_idx == 0:
-            grid_in, grid_out, theta, bbox_images = visualize_stn(self.model, x, self.opt)
-            self.add_images(grid_in, grid_out, bbox_images)
+        #if batch_idx == 0:
+        #    grid_in, grid_out, theta, bbox_images = visualize_stn(self.model, x, self.opt)
+        #    self.add_images(grid_in, grid_out, bbox_images)
 
         return {'val_loss': loss, 'val_acc': acc}
 
