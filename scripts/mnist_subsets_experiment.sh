@@ -19,7 +19,7 @@ do
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        CUDA_VISIBLE_DEVICES=0 python train2.py --dataroot $DATAPATH \
+        CUDA_VISIBLE_DEVICES=0 python train.py --dataroot $DATAPATH \
                         --dataset "MNIST" \
                         --subset ${SUBSETS[$SUBSET]} \
                         --batch_size 8 \

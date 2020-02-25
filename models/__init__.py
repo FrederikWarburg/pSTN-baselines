@@ -138,19 +138,12 @@ class System(pl.LightningModule):
         loss = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
 
-<<<<<<< HEAD
-        #if batch_idx == 0:
-        #    grid_in, grid_out, theta, bbox_images = visualize_stn(self.model, x, self.opt)
-        #    self.add_images(grid_in, grid_out, bbox_images)
-=======
         # for the first batch in an epoch visualize the predictions for better debugging
-        if batch_idx == 0:
-            # calculate different visualizations
-            grid_in, grid_out, theta, bbox_images = visualize_stn(self.model, x, self.opt)
-
-            # add these to tensorboard
-            self.add_images(grid_in, grid_out, bbox_images)
->>>>>>> fd0a45d3223d080a32490e3483b2c2b2d24553b6
+        #if batch_idx == 0:
+        #    # calculate different visualizations
+        #    grid_in, grid_out, theta, bbox_images = visualize_stn(self.model, x, self.opt)
+        #    # add these to tensorboard
+        #    self.add_images(grid_in, grid_out, bbox_images)
 
         return {'val_loss': loss, 'val_acc': acc}
 
