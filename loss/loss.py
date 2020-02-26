@@ -19,6 +19,8 @@ class Elbo(nn.Module):
             from .functional import reduce_kl as annealing
         elif annealing == 'increase_kl':
             from .functional import increase_kl as annealing
+        else:
+            raise NotImplemented
 
         self.annealing = annealing
 

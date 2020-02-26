@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     # Initialize pytorch-lightning trainer with good defaults
     trainer = Trainer(max_nb_epochs=opt.epochs,
-                      #accumulate_grad_batches=num_batches,
+                      accumulate_grad_batches=num_batches,
                       gpus=num_gpus,
                       early_stop_callback=None,
                       logger=logger,

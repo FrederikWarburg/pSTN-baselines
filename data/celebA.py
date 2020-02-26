@@ -5,6 +5,7 @@ import pandas as pd
 import torch
 from PIL import Image
 from torchvision import transforms
+import numpy as np
 
 attribute_map = ['5_o_Clock_Shadow', 'Arched_Eyebrows', 'Attractive', 'Bags_Under_Eyes', 'Bald', 'Bangs', 'Big_Lips',
                  'Big_Nose', 'Black_Hair', 'Blond_Hair', 'Blurry', 'Brown_Hair', 'Bushy_Eyebrows', 'Chubby',
@@ -50,8 +51,8 @@ class CelebA(torch.utils.data.Dataset):
 
         mask = splits['partition'] == split_map[mode]
 
-        self.filename = filename[mask]
-        self.target = target[mask]
+        self.filename = np.asarray(filename[mask])
+        self.target = np.asarray(target[mask])
 
         self.transform = transforms.Compose(
             [transforms.Resize((64, 73)), transforms.RandomCrop((64, 64)), transforms.ToTensor()])

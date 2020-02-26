@@ -9,8 +9,9 @@ from torch.nn import functional as F
 from data import DataLoader
 from loss import create_criterion
 from utils.evaluate import accuracy
-from utils.utils import get_exp_name
+from utils.utils import get_exp_name, save_results
 from utils.visualizations import visualize_stn
+from collections import OrderedDict
 
 
 def create_model(opt):
@@ -77,6 +78,7 @@ class System(pl.LightningModule):
         # hyper parameters
         self.hparams = opt
         self.opt = opt
+        self.batch_size = opt.batch_size
 
         # initalize model
         self.model = create_model(opt)
@@ -104,14 +106,16 @@ class System(pl.LightningModule):
         acc = accuracy(y_hat, y)
 
         # log everything with tensorboard
-        tensorboard_logs = {'train_loss': loss, 'train_acc': acc, 'train_nll': F.nll_loss(y_hat, y, reduction='mean')}
+        tensorboard_logs = OrderedDict({'train_loss': loss, 'train_acc': acc, 'train_nll': F.nll_loss(y_hat, y, reduction='mean')})
 
-        return {'loss': loss, 'acc': acc, 'log': tensorboard_logs}
+        return OrderedDict({'loss': loss, 'acc': acc, 'log': tensorboard_logs})
 
     def validation_step(self, batch, batch_idx):
 
         # unpack batch
         x, y = batch
+
+        save_results(self.opt, 0,0)
 
         # forward
         y_hat = self.forward(x)
@@ -127,7 +131,7 @@ class System(pl.LightningModule):
             # add these to tensorboard
             self.add_images(grid_in, grid_out, bbox_images)
 
-        return {'val_loss': loss, 'val_acc': acc}
+        return OrderedDict({'val_loss': loss, 'val_acc': acc})
 
     def validation_end(self, outputs):
 
@@ -136,9 +140,9 @@ class System(pl.LightningModule):
         avg_acc = torch.stack([x['val_acc'] for x in outputs]).mean()
 
         # add to tensorboard
-        tensorboard_logs = {'val_loss': avg_loss, 'val_acc': avg_acc}
+        tensorboard_logs = OrderedDict({'val_loss': avg_loss, 'val_acc': avg_acc})
 
-        return {'val_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar': tensorboard_logs}
+        return OrderedDict({'val_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar': tensorboard_logs})
 
     def test_step(self, batch, batch_idx):
 
@@ -152,7 +156,7 @@ class System(pl.LightningModule):
         loss = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
 
-        return {'test_loss': loss, 'test_acc': acc}
+        return OrderedDict({'test_loss': loss, 'test_acc': acc})
 
     def test_end(self, outputs):
 
@@ -161,13 +165,13 @@ class System(pl.LightningModule):
         avg_acc = torch.stack([x['test_acc'] for x in outputs]).mean()
 
         # add to tensorboard
-        tensorboard_logs = {'test_loss': avg_loss, 'test_acc': avg_acc}
+        tensorboard_logs = OrderedDict({'test_loss': avg_loss, 'test_acc': avg_acc})
 
         # write results to json file also
-        if self.opt.write_to_json:
-            self.write_to_json(avg_loss, avg_acc)
+        if self.opt.save_results:
+            save_results(self.opt, avg_loss, avg_acc)
 
-        return {'test_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar': tensorboard_logs}
+        return OrderedDict({'test_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar': tensorboard_logs})
 
     def configure_optimizers(self):
 

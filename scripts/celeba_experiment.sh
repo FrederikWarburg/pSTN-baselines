@@ -6,6 +6,8 @@ PARAMS=(1 6 6)
 TEST_SAMPELS=(1 1 10)
 TRAIN_SAMPELS=(1 1 2)
 CRITERION=("nll" "nll" "elbo")
+MAXEPOCHS=10
+DATASETSIZE=100
 
 for ATTR in {0..40}
 do
@@ -17,17 +19,18 @@ do
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        echo CUDA_VISIBLE_DEVICES=4 python train2.py --dataroot $DATAPATH \
+        CUDA_VISIBLE_DEVICES=4 python train.py --dataroot $DATAPATH \
                         --dataset "celeba" \
                         --batch_size 256 \
                         --num_classes 2 \
                         --num_threads 1 \
-                        --epochs 4 \
+                        --epochs $MAXEPOCHS \
                         --step_size 1 \
                         --seed 42 \
                         --model ${MODELS[$MODEL]} \
                         --num_param ${PARAMS[$MODEL]} \
                         --N 1 \
+                        --max_dataset_size $DATASETSIZE \
                         --test_samples ${TEST_SAMPELS[$MODEL]} \
                         --train_samples ${TRAIN_SAMPELS[$MODEL]} \
                         --criterion ${CRITERION[$MODEL]} \
@@ -36,7 +39,6 @@ do
                         --lr_loc 0.1 \
                         --smallest_size 64 \
                         --crop_size 64 \
-                        --run_test_freq 1 \
                         --num_param ${PARAMS[$MODEL]} \
                         --basenet "simple" \
                         --digits 1 \
