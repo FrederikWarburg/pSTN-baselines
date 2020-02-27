@@ -207,18 +207,3 @@ class System(pl.LightningModule):
             if bbox_images is not None:
                 # add bounding boxes visualizations
                 self.logger.experiment.add_image('bbox', bbox_images, self.global_step)
-
-    def write_to_json(self, avg_loss, avg_acc):
-
-        # get unique experiment name based on hyper parameters
-        modelname = get_exp_name(self.opt)
-
-        # path to save results
-        basepath = self.opt.savepath if not None else os.getcwd()
-
-        # create folder if not already exists
-        if not isdir(join(basepath, 'results')): os.makedirs(join(basepath, 'results'))
-
-        # write json
-        with open(join(basepath,'results', modelname + '.json'), 'w') as fp:
-            json.dump({'test_loss': float(avg_loss), 'test_acc': float(avg_acc)}, fp)
