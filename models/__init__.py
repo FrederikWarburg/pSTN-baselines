@@ -115,8 +115,6 @@ class System(pl.LightningModule):
         # unpack batch
         x, y = batch
 
-        save_results(self.opt, 0,0)
-
         # forward
         y_hat = self.forward(x)
 
