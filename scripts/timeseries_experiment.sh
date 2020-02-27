@@ -6,9 +6,10 @@ MODELS=("cnn" "stn" "pstn")
 TEST_SAMPELS=(1 1 10)
 TRAIN_SAMPELS=(1 1 1)
 CRITERION=("nll" "nll" "elbo")
-DATASETS=("FaceAll" "wafer" "uWaveGestureLibrary_X" "FaceAll" "Two_Patterns"
+DATASETS=("FaceAll" "wafer" "uWaveGestureLibrary_X" "Two_Patterns"
  "StarLightCurves" "PhalangesOutlinesCorrect" "FordA")
 NR_CLASSES=(14 2 8 14 4 3 2 2)
+PRIORS=(0.1 0.1 0.1 0.6 0.2 0.1 0.1)
 
 for DATASET in {0..0}
 do
@@ -35,7 +36,7 @@ do
                         --criterion ${CRITERION[$MODEL]} \
                         --save_results True \
                         --lr 0.001 \
-                        --sigma_p 0.5 \
+                        --sigma_p ${PRIORS[$DATASET]} \
                         --run_test_freq 100 \
                         --trainval_split True \
                         --save_results True \

@@ -66,6 +66,7 @@ class BaseOptions:
         self.initialized = True
 
     def parse(self):
+        # self.opt.data_augmentation = self.data_augmentation  # train or test
         if not self.initialized:
             self.initialize()
         self.opt, unknown = self.parser.parse_known_args()

@@ -169,6 +169,8 @@ class System(pl.LightningModule):
         if self.opt.save_results:
             save_results(self.opt, avg_loss, avg_acc)
 
+        print('Done testing. Loss:', avg_loss.item(), 'Accuracy:', avg_acc.item())
+
         return OrderedDict({'test_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar': tensorboard_logs})
 
     def configure_optimizers(self):

@@ -28,17 +28,12 @@ parameter_dict_STN = {
 class MnistPSTN(nn.Module):
     def __init__(self, opt):
         super().__init__()
-        # self.N = opt.N
         self.S = opt.test_samples
-        # self.train_samples = opt.train_samples
         self.test_samples = opt.test_samples
         self.num_param = opt.num_param
         self.sigma_p = opt.sigma_p
         self.channels = 1
-        self.transformer = init_transformer(opt)
-        self.theta_dim = self.transformer.T.get_theta_dim()
-        # self.theta_dim = self.transformer.T.get_theta_dim()
-
+        self.transformer, self.theta_dim = init_transformer(opt)
         self.parameter_dict = parameter_dict_P_STN
 
         # Spatial transformer localization-network
@@ -73,8 +68,6 @@ class MnistPSTN(nn.Module):
                 nn.Linear(self.parameter_dict['resulting_size_localizer'], self.theta_dim),
                 # add activation function for positivity
                 nn.Softplus())
-            # initialize transformer
-            self.transfomer = AffineTransformer()
 
         elif opt.transformer_type == 'diffeomorphic':
             self.fc_loc_std = nn.Sequential(
@@ -84,8 +77,6 @@ class MnistPSTN(nn.Module):
                 nn.Linear(self.parameter_dict['hidden_layer_localizer'], self.theta_dim),
                 # add activation function for positivity
                 nn.Softplus())
-            # initialize transformer
-            self.transfomer = DiffeomorphicTransformer(opt)
 
     def forward(self, x):
         self.S = self.train_samples if self.training else self.test_samples
@@ -135,12 +126,6 @@ class MnistSTN(nn.Module):
             nn.MaxPool2d(2, stride=2),  # 2 for 28 x 28 datasets
             nn.ReLU(),
         )
-
-        if opt.transformer_type == 'diffeomorphic':
-            self.transfomer = DiffeomorphicTransformer(opt)
-        else:
-            self.transfomer = AffineTransformer()
-
 
     def forward(self, x):
         batch_size, c, w, h = x.shape

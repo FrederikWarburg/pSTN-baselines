@@ -12,7 +12,9 @@ def transform_image_affine(x, opt):
     gaussian = distributions.normal.Normal(0, 1)  # split up the multivariate Gaussian into 1d Gaussians
     epsilon = gaussian.sample(sample_shape=torch.Size([4]))
     random_params = epsilon * opt.sigma_p
-    random_params[0, 1] += 1
+    random_params[1] += 1
+    print('RP:', random_params)
+    print('DA', opt.data_augmentation)
     affine_transformer = transformers.affine_transformation()
     theta = affine_transformer.make_affine_parameters(random_params)
     x = x.unsqueeze(0)
@@ -31,20 +33,20 @@ def make_mnist_subset(opt, mode):
          lambda x: transform_image_affine(x, opt)])
 
     test_transformation = test_trafo
-    train_transformation = train_trafo_DA if opt.DA else train_trafo_no_DA
+    train_transformation = train_trafo_DA if opt.data_augmentation else train_trafo_no_DA
 
     if mode == 'test':
         dataset = datasets.MNIST(
             root='data', train=False, transform=test_transformation)
     else:
         train_indices = np.load(
-            'indices/MNIST%s_train_indices_fold_%s.npy' % (opt.subset, opt.fold))
-        validation_indices = np.load('indices/MNIST_validation_indices.npy')
+            'data/subset_indices/MNIST%s_train_indices_fold_%s.npy' % (opt.subset, opt.fold))
+        validation_indices = np.load('data/subset_indices/MNIST_validation_indices.npy')
         full_training_data = datasets.MNIST(
             root='data', train=True, download=True, transform=train_transformation)
         if mode == 'train':
             dataset = Subset(full_training_data, train_indices)
-        if mode == 'valid':
+        if mode == 'val':
             dataset = Subset(full_training_data, validation_indices)
     return dataset
 
