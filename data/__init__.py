@@ -41,7 +41,7 @@ class DataLoader:
 
         dataset_size = len(self.dataset)
         if mode == 'train': print('#training network on = %d images' % dataset_size)
-        if mode == 'val': print('#validationg network on = %d images' % dataset_size)
+        if mode == 'val': print('#validating network on = %d images' % dataset_size)
         if mode == 'test': print('#testing network on = %d images' % dataset_size)
 
     def __len__(self):

@@ -131,6 +131,9 @@ def visualize_stn(model, data, opt):
 
 
 def visualize_bbox(data, affine_params, opt):
+    if opt.transformer_type == 'diffeomorphic':
+        return None
+
     batch_size = data.shape[0]
     affine_params = torch.stack(affine_params.split([opt.N] * opt.test_samples * batch_size))
     sorted_params = torch.zeros(batch_size, opt.test_samples, opt.N, 2, 3, dtype=affine_params.dtype)

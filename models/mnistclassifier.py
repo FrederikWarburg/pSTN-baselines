@@ -8,7 +8,7 @@ parameter_dict_MNIST_CNN = {
     'CNN_filters1': 12,
     'CNN_filters2': 24,
     'CNN_kernel_size': 5,
-    'resulting_size_classifier': 24 * 24 * 4,
+    'resulting_size_classifier': 24 * 4 * 4,
     'hidden_layer_classifier': 52,
     'color_channels': 1
 }
@@ -30,7 +30,7 @@ parameter_dict_MNIST_P_STN = {
     'CNN_kernel_size': 5,
     'loc_kernel_size': 5,
     'resulting_size_classifier': 320,
-    'hidden_layer_localizer': 38,
+    'hidden_layer_classifier': 38,
     'color_channels': 1
 }
 
@@ -80,7 +80,7 @@ class MnistClassifier(nn.Module):
             parameter_dict = parameter_dict_MNIST_CNN
         elif opt.model.lower() == 'stn':
             parameter_dict = parameter_dict_MNIST_STN
-        elif opt.model.lower() == 'p_stn':
+        elif opt.model.lower() == 'pstn':
             parameter_dict = parameter_dict_MNIST_P_STN
         else:
             print('Pass valid model!')

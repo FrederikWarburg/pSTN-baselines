@@ -13,8 +13,6 @@ def transform_image_affine(x, opt):
     epsilon = gaussian.sample(sample_shape=torch.Size([4]))
     random_params = epsilon * opt.sigma_p
     random_params[1] += 1
-    print('RP:', random_params)
-    print('DA', opt.data_augmentation)
     affine_transformer = transformers.affine_transformation()
     theta = affine_transformer.make_affine_parameters(random_params)
     x = x.unsqueeze(0)

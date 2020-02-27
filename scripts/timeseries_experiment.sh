@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DATAPATH="../projects/data_augmentation/time_series/UCR_TS_Archive_2015/"
+DATAPATH="data/"
 
 MODELS=("cnn" "stn" "pstn")
 TEST_SAMPELS=(1 1 10)
@@ -11,7 +11,7 @@ DATASETS=("FaceAll" "wafer" "uWaveGestureLibrary_X" "Two_Patterns"
 NR_CLASSES=(14 2 8 14 4 3 2 2)
 PRIORS=(0.1 0.1 0.1 0.6 0.2 0.1 0.1)
 
-for DATASET in {0..0}
+for DATASET in {0..6}
 do
     echo ${DATASETS[$DATASET]}
     for MODEL in {2..2}

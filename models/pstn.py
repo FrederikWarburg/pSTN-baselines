@@ -76,7 +76,6 @@ class PSTN(nn.Module):
                 self.pstn.fc_loc_std[-2].bias.data.copy_(
                      torch.tensor([-2], dtype=torch.float).repeat(self.pstn.theta_dim))
 
-
     def forward(self, x):
         # get input shape
         batch_size = x.shape[0]

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DATAPATH="../projects/data_augmentation/time_series/UCR_TS_Archive_2015/"
+DATAPATH="data/"
 
 MODELS=("cnn" "stn" "pstn")
 PARAMS=(1 4 4)
@@ -9,12 +9,12 @@ TRAIN_SAMPELS=(1 1 1)
 CRITERION=("nll" "nll" "elbo")
 SUBSETS=(10 30 100 1000 3000 10000)
 
-for SUBSET in {0..5}
+for SUBSET in {2..2}
 do
     echo ${SUBSETS[$SUBSET]}
     for FOLD in {0..0}
     do
-        for MODEL in {0..0}
+        for MODEL in {1..1}
         do
             echo ${MODELS[$MODEL]}
             echo ${PARAMS[$MODEL]}
@@ -39,15 +39,15 @@ do
                             --save_results True \
                             --lr 0.001 \
                             --sigma_p 0.05 \
-                            --run_test_freq 100 \
                             --num_param ${PARAMS[$MODEL]} \
                             --trainval_split True \
                             --save_results True \
                             --savepath "test" \
                             --optimizer "adam" \
                             --weightDecay 0.01 \
-                            --transformer_type "affine" \
-                            --data_augmentation False
+                            --transformer_type "diffeomorphic" \
+                            --step_size 600 \
+
         done
     done
 done

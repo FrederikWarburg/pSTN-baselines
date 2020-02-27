@@ -33,11 +33,14 @@ if __name__ == '__main__':
     print("Let's use {} GPUS!".format(num_gpus))
 
     # use large batch sizes. We accumulate gradients to avoid memory issues
-    num_batches = 256 // opt.batch_size
+    if opt.dataset == 'MNIST':
+      num_batches = None
+    else:
+      num_batches = 256 // opt.batch_size
 
     # Initialize pytorch-lightning trainer with good defaults
     trainer = Trainer(max_nb_epochs=opt.epochs,
-                      accumulate_grad_batches=num_batches,
+                      # accumulate_grad_batches=num_batches,
                       gpus=num_gpus,
                       early_stop_callback=None,
                       logger=logger,
