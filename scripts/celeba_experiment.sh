@@ -23,25 +23,21 @@ do
                         --dataset "celeba" \
                         --batch_size 256 \
                         --num_classes 2 \
-                        --num_threads 1 \
+                        --num_threads 4 \
                         --epochs $MAXEPOCHS \
-                        --step_size 1 \
+                        --step_size 9999 \
                         --seed 42 \
                         --model ${MODELS[$MODEL]} \
                         --num_param ${PARAMS[$MODEL]} \
-                        --N 1 \
                         --max_dataset_size $DATASETSIZE \
                         --test_samples ${TEST_SAMPELS[$MODEL]} \
                         --train_samples ${TRAIN_SAMPELS[$MODEL]} \
                         --criterion ${CRITERION[$MODEL]} \
-                        --save_results True \
-                        --lr 0.1 \
+                        --lr 0.01 \
                         --lr_loc 0.1 \
                         --smallest_size 64 \
                         --crop_size 64 \
                         --num_param ${PARAMS[$MODEL]} \
-                        --basenet "simple" \
-                        --digits 1 \
                         --target_attr $ATTR \
                         --trainval_split True \
                         --save_results True \
