@@ -54,6 +54,10 @@ class CelebA(torch.utils.data.Dataset):
         self.filename = np.asarray(filename[mask])
         self.target = np.asarray(target[mask])
 
+        # make sure we only look at the first max_dataset_size images.
+        self.filename = self.filename[:opt.max_dataset_size]
+        self.target = self.target[:opt.max_dataset_size]
+
         self.transform = transforms.Compose(
             [transforms.Resize((64, 73)), transforms.RandomCrop((64, 64)), transforms.ToTensor()])
 
