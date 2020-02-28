@@ -4,3 +4,4 @@ lightning_logs
 d=*
 data/TIMESERIES_DATA_PARSED
 data/MNIST
+data/subset_indices
