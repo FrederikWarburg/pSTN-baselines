@@ -1,7 +1,5 @@
 #!/bin/sh
 
-DATAPATH="data/"
-
 MODELS=("cnn" "stn" "pstn")
 PARAMS=(1 4 4)
 TEST_SAMPELS=(1 1 10)
@@ -14,14 +12,14 @@ do
     echo ${SUBSETS[$SUBSET]}
     for FOLD in {0..0}
     do
-        for MODEL in {1..1}
+        for MODEL in {2..2}
         do
             echo ${MODELS[$MODEL]}
             echo ${PARAMS[$MODEL]}
             echo ${TEST_SAMPELS[$MODEL]}
             echo ${TRAIN_SAMPELS[$MODEL]}
             echo ${CRITERION[$MODEL]}
-            CUDA_VISIBLE_DEVICES=0 python train.py --dataroot $DATAPATH \
+            CUDA_VISIBLE_DEVICES=0 python train.py --dataroot 'data' \
                             --dataset "MNIST" \
                             --subset ${SUBSETS[$SUBSET]} \
                             --fold ${FOLD} \
@@ -45,9 +43,9 @@ do
                             --savepath "test" \
                             --optimizer "adam" \
                             --weightDecay 0.01 \
-                            --transformer_type "diffeomorphic" \
+                            --transformer_type "affine" \
                             --step_size 600 \
-
+                            --data_augmentation
         done
     done
 done

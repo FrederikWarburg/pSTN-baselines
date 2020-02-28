@@ -49,7 +49,7 @@ class BaseOptions:
         self.parser.add_argument('--N', type=int, default=1, help='number of parallel tracks')
         self.parser.add_argument('--test_samples', type=int, default=1, help='number of samples')
         self.parser.add_argument('--train_samples', type=int, default=1, help='number of samples')
-        self.parser.add_argument('--basenet', default='inception', type=str, help='base network to use')
+        self.parser.add_argument('--basenet', type=str, help='base network to use')
 
         # general params
         self.parser.add_argument('--num_threads', default=8, type=int, help='# threads for loading data')
@@ -70,7 +70,6 @@ class BaseOptions:
             self.initialize()
         self.opt, unknown = self.parser.parse_known_args()
         self.opt.is_train = self.is_train  # train or test
-        # self.opt.data_augmentation = self.data_augmentation  # train or test
         if not self.opt.is_train:
             self.opt.data_augmentation = self.data_augmentation  # train or test
             self.opt.horizontal_flip = self.horizontal_flip  # train or test

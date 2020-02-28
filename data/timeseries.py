@@ -8,6 +8,7 @@ DATA_PATH = 'data/TIMESERIES_DATA_PARSED/'
 
 
 def make_timeseries_dataset(opt, mode):
+    DATA_PATH = '%s/TIMESERIES_DATA_PARSED/' % opt.dataroot
     data_dict = pickle.load(open(DATA_PATH + opt.dataset, 'rb'))
     if mode == 'train':
         dataset = TensorDataset(
