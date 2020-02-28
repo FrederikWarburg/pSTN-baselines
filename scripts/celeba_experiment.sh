@@ -7,7 +7,7 @@ TEST_SAMPELS=(1 1 10)
 TRAIN_SAMPELS=(1 1 2)
 CRITERION=("nll" "nll" "elbo")
 MAXEPOCHS=10
-DATASETSIZE=100
+DATASETSIZE=1000
 
 for ATTR in {0..40}
 do
@@ -19,7 +19,7 @@ do
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        CUDA_VISIBLE_DEVICES=4 python train.py --dataroot $DATAPATH \
+        CUDA_VISIBLE_DEVICES=3 python train.py --dataroot $DATAPATH \
                         --dataset "celeba" \
                         --batch_size 256 \
                         --num_classes 2 \
@@ -41,6 +41,6 @@ do
                         --target_attr $ATTR \
                         --trainval_split True \
                         --save_results True \
-                        --savepath celeba_experiment
+                        --savepath celeba_experiment1000
     done
 done
