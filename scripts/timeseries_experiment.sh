@@ -1,16 +1,17 @@
 #!/bin/sh
 
-DATAPATH="../projects/data_augmentation/time_series/UCR_TS_Archive_2015/"
+DATAPATH="data/"
 
 MODELS=("cnn" "stn" "pstn")
 TEST_SAMPELS=(1 1 10)
 TRAIN_SAMPELS=(1 1 1)
 CRITERION=("nll" "nll" "elbo")
-DATASETS=("FaceAll" "wafer" "uWaveGestureLibrary_X" "FaceAll" "Two_Patterns"
+DATASETS=("FaceAll" "wafer" "uWaveGestureLibrary_X" "Two_Patterns"
  "StarLightCurves" "PhalangesOutlinesCorrect" "FordA")
 NR_CLASSES=(14 2 8 14 4 3 2 2)
+PRIORS=(0.1 0.1 0.1 0.6 0.2 0.1 0.1)
 
-for DATASET in {0..0}
+for DATASET in {0..6}
 do
     echo ${DATASETS[$DATASET]}
     for MODEL in {2..2}
@@ -35,7 +36,7 @@ do
                         --criterion ${CRITERION[$MODEL]} \
                         --save_results True \
                         --lr 0.001 \
-                        --sigma_p 0.5 \
+                        --sigma_p ${PRIORS[$DATASET]} \
                         --run_test_freq 100 \
                         --trainval_split True \
                         --save_results True \

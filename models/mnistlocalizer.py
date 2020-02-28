@@ -28,17 +28,14 @@ parameter_dict_STN = {
 class MnistPSTN(nn.Module):
     def __init__(self, opt):
         super().__init__()
-        # self.N = opt.N
+        self.N = opt.N
+        self.train_samples = opt.train_samples
         self.S = opt.test_samples
-        # self.train_samples = opt.train_samples
         self.test_samples = opt.test_samples
-        self.num_param = opt.num_param
         self.sigma_p = opt.sigma_p
+        self.sigma_n = opt.sigma_n
         self.channels = 1
-        self.transformer = init_transformer(opt)
-        self.theta_dim = self.transformer.T.get_theta_dim()
-        # self.theta_dim = self.transformer.T.get_theta_dim()
-
+        self.transformer, self.theta_dim = init_transformer(opt)
         self.parameter_dict = parameter_dict_P_STN
 
         # Spatial transformer localization-network
@@ -46,7 +43,7 @@ class MnistPSTN(nn.Module):
             nn.Conv2d(
                 self.parameter_dict['color_channels'], self.parameter_dict['localizer_filters1'],
                 kernel_size=self.parameter_dict['loc_kernel_size']),
-            nn.MaxPool2d(self.mnist_parameter_dict['max_pool_res'], stride=self.parameter_dict['max_pool_res']),
+            nn.MaxPool2d(self.parameter_dict['max_pool_res'], stride=self.parameter_dict['max_pool_res']),
             nn.ReLU(True),
             nn.Conv2d(
                 self.parameter_dict['localizer_filters1'], self.parameter_dict['localizer_filters2'],
@@ -58,14 +55,14 @@ class MnistPSTN(nn.Module):
         # Regressor for the affine matrix
         if opt.transformer_type == 'affine':
             self.fc_loc_mu = nn.Sequential(
-                nn.Linear(self.parameter_dict['resulting_size_localizer'], self.num_param))
+                nn.Linear(self.parameter_dict['resulting_size_localizer'], self.theta_dim))
         # Regressor for the diffeomorphic param's
         elif opt.transformer_type == 'diffeomorphic':
             self.fc_loc_mu = nn.Sequential(
                 nn.Linear(self.parameter_dict['resulting_size_localizer'],
                           self.parameter_dict['hidden_layer_localizer']),
                 nn.ReLU(True),
-                nn.Linear(self.parameter_dict['hidden_layer_localizer'], self.num_param)
+                nn.Linear(self.parameter_dict['hidden_layer_localizer'], self.theta_dim)
             )
 
         if opt.transformer_type == 'affine':
@@ -73,8 +70,6 @@ class MnistPSTN(nn.Module):
                 nn.Linear(self.parameter_dict['resulting_size_localizer'], self.theta_dim),
                 # add activation function for positivity
                 nn.Softplus())
-            # initialize transformer
-            self.transfomer = AffineTransformer()
 
         elif opt.transformer_type == 'diffeomorphic':
             self.fc_loc_std = nn.Sequential(
@@ -84,8 +79,6 @@ class MnistPSTN(nn.Module):
                 nn.Linear(self.parameter_dict['hidden_layer_localizer'], self.theta_dim),
                 # add activation function for positivity
                 nn.Softplus())
-            # initialize transformer
-            self.transfomer = DiffeomorphicTransformer(opt)
 
     def forward(self, x):
         self.S = self.train_samples if self.training else self.test_samples
@@ -98,15 +91,15 @@ class MnistPSTN(nn.Module):
         theta_sigma = self.fc_loc_std(xs)
         # repeat x in the batch dim so we avoid for loop
         x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
-        theta_mu_upsample = theta_mu.view(batch_size * self.N, self.num_param)
-        theta_sigma_upsample = theta_sigma.view(batch_size * self.N, self.num_param)
+        theta_mu_upsample = theta_mu.view(batch_size * self.N, self.theta_dim)
+        theta_sigma_upsample = theta_sigma.view(batch_size * self.N, self.theta_dim)
         # repeat for the number of samples
         x = x.repeat(self.S, 1, 1, 1)
         theta_mu_upsample = theta_mu_upsample.repeat(self.S, 1)
         theta_sigma_upsample = theta_sigma_upsample.repeat(self.S, 1)
-        x, params = self.transformer(x, theta_mu_upsample, theta_sigma_upsample, self.sigma_p)
+        x, params = self.transformer(x, theta_mu_upsample, theta_sigma_upsample)
         gaussian = distributions.normal.Normal(0, 1)
-        epsilon = gaussian.sample(sample_shape=x.shape).to(self.device)
+        epsilon = gaussian.sample(sample_shape=x.shape).to(x.device)
         x = x + self.sigma_n * epsilon
         return x, (theta_mu, theta_sigma), params
 
@@ -115,11 +108,9 @@ class MnistSTN(nn.Module):
     def __init__(self, opt):
         super().__init__()
         self.N = opt.N
-        self.S = opt.test_samples
         self.test_samples = opt.test_samples
-        self.num_param = opt.num_param
         self.channels = 1
-
+        self.transformer, self.theta_dim = init_transformer(opt)
         self.parameter_dict = parameter_dict_STN
 
         # Spatial transformer localization-network
@@ -127,7 +118,7 @@ class MnistSTN(nn.Module):
             nn.Conv2d(
                 self.parameter_dict['color_channels'], self.parameter_dict['localizer_filters1'],
                 kernel_size=self.parameter_dict['loc_kernel_size']),
-            nn.MaxPool2d(self.mnist_parameter_dict['max_pool_res'], stride=self.parameter_dict['max_pool_res']),
+            nn.MaxPool2d(self.parameter_dict['max_pool_res'], stride=self.parameter_dict['max_pool_res']),
             nn.ReLU(True),
             nn.Conv2d(
                 self.parameter_dict['localizer_filters1'], self.parameter_dict['localizer_filters2'],
@@ -136,11 +127,18 @@ class MnistSTN(nn.Module):
             nn.ReLU(),
         )
 
-        if opt.transformer_type == 'diffeomorphic':
-            self.transfomer = DiffeomorphicTransformer(opt)
-        else:
-            self.transfomer = AffineTransformer()
-
+        # Regressor for the affine matrix
+        if opt.transformer_type == 'affine':
+            self.fc_loc = nn.Sequential(
+                nn.Linear(self.parameter_dict['resulting_size_localizer'], self.theta_dim))
+        # Regressor for the diffeomorphic param's
+        elif opt.transformer_type == 'diffeomorphic':
+            self.fc_loc = nn.Sequential(
+                nn.Linear(self.parameter_dict['resulting_size_localizer'],
+                          self.parameter_dict['hidden_layer_localizer']),
+                nn.ReLU(True),
+                nn.Linear(self.parameter_dict['hidden_layer_localizer'], self.theta_dim)
+            )
 
     def forward(self, x):
         batch_size, c, w, h = x.shape
@@ -149,7 +147,7 @@ class MnistSTN(nn.Module):
         theta = self.fc_loc(xs)
         # repeat x in the batch dim so we avoid for loop
         x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
-        theta_upsample = theta.view(batch_size * self.N, self.num_param)
+        theta_upsample = theta.view(batch_size * self.N, self.theta_dim)
         x, params = self.transformer(x, theta_upsample)
 
         return x, theta_upsample, params
