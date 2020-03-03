@@ -26,7 +26,10 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--freeze_layers', type=int, default=np.inf)
 
         # pre-processing relatated
-        self.parser.add_argument('--data_augmentation', type=bool, default=False)
+        #self.parser.add_argument('--data_augmentation', type=bool, default=False)
+        self.parser.add_argument('--data_augmentation', action='store_true', default=False)
+
+
         self.parser.add_argument('--horizontal_flip', type=bool, default=False)
 
         # Evaluation related

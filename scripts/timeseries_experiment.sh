@@ -1,7 +1,5 @@
 #!/bin/sh
 
-DATAPATH="data/"
-
 MODELS=("cnn" "stn" "pstn")
 TEST_SAMPELS=(1 1 10)
 TRAIN_SAMPELS=(1 1 1)
@@ -21,7 +19,7 @@ do
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        CUDA_VISIBLE_DEVICES=0 python train.py --dataroot $DATAPATH \
+        CUDA_VISIBLE_DEVICES=0 python train.py --dataroot 'data' \
                         --dataset ${DATASETS[$DATASET]} \
                         --batch_size 16 \
                         --num_classes ${NR_CLASSES[$DATASET]}  \

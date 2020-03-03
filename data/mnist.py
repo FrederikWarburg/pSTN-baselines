@@ -13,8 +13,8 @@ def transform_image_affine(x, opt):
     epsilon = gaussian.sample(sample_shape=torch.Size([4]))
     random_params = epsilon * opt.sigma_p
     random_params[1] += 1
-    affine_transformer = transformers.affine_transformation()
-    theta = affine_transformer.make_affine_parameters(random_params)
+    transformer = transformers.AffineTransformer()
+    theta = transformer.make_affine_matrix(*random_params)
     x = x.unsqueeze(0)
     grid = F.affine_grid(theta, x.size())  # makes the flow field on a grid
     x_transformed = F.grid_sample(x, grid)  # interpolates x on the grid
@@ -35,13 +35,13 @@ def make_mnist_subset(opt, mode):
 
     if mode == 'test':
         dataset = datasets.MNIST(
-            root='data', train=False, transform=test_transformation)
+            root=opt.dataroot, train=False, transform=test_transformation)
     else:
         train_indices = np.load(
-            'data/subset_indices/MNIST%s_train_indices_fold_%s.npy' % (opt.subset, opt.fold))
-        validation_indices = np.load('data/subset_indices/MNIST_validation_indices.npy')
+            '%s/subset_indices/MNIST%s_train_indices_fold_%s.npy' % (opt.dataroot, opt.subset, opt.fold))
+        validation_indices = np.load('%s/subset_indices/MNIST_validation_indices.npy' %opt.dataroot)
         full_training_data = datasets.MNIST(
-            root='data', train=True, download=True, transform=train_transformation)
+            root=opt.dataroot, train=True, download=True, transform=train_transformation)
         if mode == 'train':
             dataset = Subset(full_training_data, train_indices)
         if mode == 'val':

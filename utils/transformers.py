@@ -56,6 +56,21 @@ class AffineTransformer(nn.Module):
 
         return x, affine_params
 
+    def make_affine_matrix(self, theta, scale, translation_x, translation_y):
+        # theta is rotation angle in radians
+        a = scale * torch.cos(theta)
+        b = -scale * torch.sin(theta)
+        c = translation_x
+
+        d = scale * torch.sin(theta)
+        e = scale * torch.cos(theta)
+        f = translation_y
+
+        param_tensor = torch.stack([a, b, c, d, e, f], dim=-1)
+
+        affine_matrix = param_tensor.view([-1, 2, 3])
+        return affine_matrix
+
     def make_affine_parameters(self, mean_params, std_params=None):
 
         if std_params is not None:
@@ -68,26 +83,20 @@ class AffineTransformer(nn.Module):
             scale = 0.5 * torch.ones(mean_params.shape[0], device=mean_params.device)
             translation_x = mean_params[:, 0]
             translation_y = mean_params[:, 1]
+            affine_matrix = self.make_affine_matrix(theta, scale, translation_x, translation_y)
+
         elif mean_params.shape[1] == 4:
             theta = mean_params[:, 0]
             scale = mean_params[:, 1]
             translation_x = mean_params[:, 2]
             translation_y = mean_params[:, 3]
+            affine_matrix = self.make_affine_matrix(theta, scale, translation_x, translation_y)
+
         elif mean_params.shape[1] == 6:
             affine_matrix = mean_params.view([-1, 2, 3])
             return affine_matrix
 
-        # theta is rotation angle in radians
-        a = scale * torch.cos(theta)
-        b = -scale * torch.sin(theta)
-        c = translation_x
 
-        d = scale * torch.sin(theta)
-        e = scale * torch.cos(theta)
-        f = translation_y
 
-        param_tensor = torch.stack([a, b, c, d, e, f], dim=1)
-
-        affine_matrix = param_tensor.view([-1, 2, 3])
 
         return affine_matrix
