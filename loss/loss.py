@@ -11,6 +11,9 @@ class Elbo(nn.Module):
         self.sigma_p = sigma_p
         self.iter = 0.0
 
+        # number of batches in epoch (only used for cyclic kl weighting)
+        self.M = None
+
         if annealing == 'no_annealing':
             from .functional import no_annealing as annealing
         elif annealing == 'no_kl':
@@ -19,6 +22,8 @@ class Elbo(nn.Module):
             from .functional import reduce_kl as annealing
         elif annealing == 'increase_kl':
             from .functional import increase_kl as annealing
+        elif annealing == 'cyclic_kl':
+            from .functional import cyclic_kl as annealing
         else:
             raise NotImplemented
 
@@ -35,5 +40,8 @@ class Elbo(nn.Module):
         # increment counter for each update
         self.iter += 1.0
 
-        return self.nll + self.annealing(self.iter) * self.kl + self.rec
+        # weighting of kl term
+        alpha = self.annealing(self.iter, self.M)
+
+        return self.nll + alpha * self.kl + self.rec
 

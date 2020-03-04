@@ -191,7 +191,13 @@ class System(pl.LightningModule):
         opt = {"batch_size": self.opt.batch_size, "shuffle": True, "pin_memory": True, "num_workers": int(self.opt.num_threads)}
         
         # return data loader
-        return DataLoader(dataset, **opt)
+        dataloader = DataLoader(dataset, **opt)
+
+        # if we use cyclic kl weigting we need to know how many batches for each epoch
+        if self.opt.annealing.lower() == 'cyclic_kl':
+            self.criterion.M = len(dataloader)
+
+        return dataloader
 
     @pl.data_loader
     def val_dataloader(self):
