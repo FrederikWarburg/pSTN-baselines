@@ -6,12 +6,13 @@ import pytorch_lightning as pl
 import torch
 from torch.nn import functional as F
 
-from data import DataLoader
+from torch.utils.data import DataLoader
 from loss import create_criterion
 from utils.evaluate import accuracy
 from utils.utils import get_exp_name, save_results
 from utils.visualizations import visualize_stn
 from collections import OrderedDict
+from data import create_dataset
 
 
 def create_model(opt):
@@ -182,18 +183,39 @@ class System(pl.LightningModule):
 
     @pl.data_loader
     def train_dataloader(self):
-        # REQUIRED
-        return DataLoader(self.opt, mode='train', shuffle = True)
+        
+        # initialize dataset
+        dataset = create_dataset(self.opt, mode = 'train')
+
+        # dataloader params
+        opt = {"batch_size": self.opt.batch_size, "shuffle": True, "pin_memory": True, "num_workers": int(self.opt.num_threads)}
+        
+        # return data loader
+        return DataLoader(dataset, **opt)
 
     @pl.data_loader
     def val_dataloader(self):
-        # OPTIONAL
-        return DataLoader(self.opt, mode='val', shuffle = False)
+        
+        # initialize dataset
+        dataset = create_dataset(self.opt, mode = 'val')
+
+        # dataloader params
+        opt = {"batch_size": self.opt.batch_size, "shuffle": False, "pin_memory": True, "num_workers": int(self.opt.num_threads)}
+        
+        # return data loader
+        return DataLoader(dataset, **opt)
 
     @pl.data_loader
     def test_dataloader(self):
-        # OPTIONAL
-        return DataLoader(self.opt, mode='test', shuffle = False)
+
+        # initialize dataset
+        dataset = create_dataset(self.opt, mode = 'test')
+
+        # dataloader params
+        opt = {"batch_size": self.opt.batch_size, "shuffle": False, "pin_memory": True, "num_workers": int(self.opt.num_threads)}
+        
+        # return data loader
+        return DataLoader(dataset, **opt)
 
     def add_images(self, grid_in, grid_out, bbox_images):
 
