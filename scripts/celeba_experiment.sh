@@ -6,10 +6,12 @@ PARAMS=(1 6 6)
 TEST_SAMPELS=(1 1 10)
 TRAIN_SAMPELS=(1 1 2)
 CRITERION=("nll" "nll" "elbo")
-MAXEPOCHS=10
-DATASETSIZE=1000
+MAXEPOCHS=50
+SIZES=(100 250 500 1000 2500 5000)
 
-for ATTR in {0..40}
+for SIZE in ${SIZES[@]}
+do
+for ATTR in {0..39}
 do
     for MODEL in {0..2}
     do
@@ -19,17 +21,17 @@ do
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        CUDA_VISIBLE_DEVICES=3 python train.py --dataroot $DATAPATH \
+        OMP_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=3 python train.py --dataroot $DATAPATH \
                         --dataset "celeba" \
                         --batch_size 256 \
                         --num_classes 2 \
-                        --num_threads 4 \
+                        --num_threads 2 \
                         --epochs $MAXEPOCHS \
                         --step_size 9999 \
                         --seed 42 \
                         --model ${MODELS[$MODEL]} \
                         --num_param ${PARAMS[$MODEL]} \
-                        --max_dataset_size $DATASETSIZE \
+                        --max_dataset_size $SIZE \
                         --test_samples ${TEST_SAMPELS[$MODEL]} \
                         --train_samples ${TRAIN_SAMPELS[$MODEL]} \
                         --criterion ${CRITERION[$MODEL]} \
@@ -41,6 +43,7 @@ do
                         --target_attr $ATTR \
                         --trainval_split True \
                         --save_results True \
-                        --savepath celeba_experiment1000
+                        --savepath "celeba_experiment$SIZE"
     done
+done
 done
