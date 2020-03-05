@@ -56,8 +56,9 @@ class CelebA(torch.utils.data.Dataset):
 
         # make sure we only look at the first max_dataset_size images.
         if mode == 'train':
-            self.filename = self.filename[:opt.max_dataset_size]
-            self.target = self.target[:opt.max_dataset_size]
+            size = min(opt.max_dataset_size, len(self.filename))
+            self.filename = self.filename[:size]
+            self.target = self.target[:size]
 
         self.transform = transforms.Compose(
             [transforms.Resize((64, 73)), transforms.RandomCrop((64, 64)), transforms.ToTensor()])

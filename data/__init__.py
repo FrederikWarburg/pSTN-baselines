@@ -7,7 +7,7 @@ from data.mnist import MnistXKmnist, make_mnist_subset
 from data.timeseries import make_timeseries_dataset
 
 
-def CreateDataset(opt, mode):  # mode in ['train', 'val', 'test']
+def create_dataset(opt, mode):  # mode in ['train', 'val', 'test']
     """loads dataset class"""
     if opt.dataset.lower() == 'cub':
         dataset = Cub2011(opt, mode)
@@ -22,31 +22,3 @@ def CreateDataset(opt, mode):  # mode in ['train', 'val', 'test']
     elif opt.dataset in opt.TIMESERIESDATASETS:
         dataset = make_timeseries_dataset(opt, mode)
     return dataset
-
-
-class DataLoader:
-    """multi-threaded data loading"""
-
-    def __init__(self, opt, mode, shuffle):
-        self.opt = opt
-
-        self.dataset = CreateDataset(opt, mode)
-
-        self.dataloader = torch.utils.data.DataLoader(
-            self.dataset,
-            batch_size=opt.batch_size,
-            shuffle=shuffle,
-            num_workers=int(opt.num_threads),
-            pin_memory=True)
-
-        dataset_size = len(self.dataset)
-        if mode == 'train': print('#training network on = %d images' % dataset_size)
-        if mode == 'val': print('#validating network on = %d images' % dataset_size)
-        if mode == 'test': print('#testing network on = %d images' % dataset_size)
-
-    def __len__(self):
-        return min(len(self.dataset), self.opt.max_dataset_size)
-
-    def __iter__(self):
-        for i, data in enumerate(self.dataloader):
-            yield data
