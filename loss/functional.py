@@ -34,16 +34,16 @@ def elbo(x, mu, sigma, label, sigma_p=0.1):
     return nll_loss, kl_loss, reconstruction_loss
 
 
-def no_annealing(iter, M):
+def no_annealing(iter, M = None):
     return 1
 
-def no_kl(iter, M):
+def no_kl(iter, M = None):
     return 0
 
-def reduce_kl(iter, M):
+def reduce_kl(iter, M = None):
     return 1.0 / iter
 
-def increase_kl(iter, M):
+def increase_kl(iter, M = None):
     return 1 - reduce_kl(iter)
 
 def cyclic_kl(iter, M):
