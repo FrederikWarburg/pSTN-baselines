@@ -12,6 +12,7 @@ class CelebaClassifier(nn.Module):
         # hyper parameters
         self.N = opt.N
         self.S = opt.test_samples
+        self.dropout_rate = opt.dropout_rate
         self.train_samples = opt.train_samples
         self.test_samples = opt.test_samples
         self.feature_size = 640
@@ -39,11 +40,11 @@ class CelebaClassifier(nn.Module):
             nn.MaxPool2d(2),
             nn.ReLU(),
             nn.Conv2d(10, 20, kernel_size=5),
-            nn.Dropout2d(),
+            nn.Dropout2d(self.dropout_rate),
             nn.MaxPool2d(2),
             nn.ReLU(),
             nn.Conv2d(20, 40, kernel_size=5),
-            nn.Dropout2d(),
+            nn.Dropout2d(self.dropout_rate),
             nn.MaxPool2d(2),
             nn.ReLU()
         )
@@ -75,7 +76,7 @@ class CelebaClassifier(nn.Module):
         x = F.relu(self.fc1(features))
 
         # use drop out during training
-        x = F.dropout(x, training=self.training)
+        x = F.dropout(x, p=self.dropout_rate, training=self.training)
 
         x = self.fc2(x)
 
