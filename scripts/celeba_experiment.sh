@@ -6,7 +6,7 @@ PARAMS=(1 4 4)
 TEST_SAMPELS=(1 1 10)
 TRAIN_SAMPELS=(1 1 2)
 CRITERION=("nll" "nll" "elbo")
-MAXEPOCHS=10
+MAXEPOCHS=50
 DATASETSIZES=(100 250 500 1000 2500 5000)
 
 for DATASETSIZE in {0..5}
@@ -44,7 +44,7 @@ do
                             --target_attr $ATTR \
                             --trainval_split True \
                             --save_results True \
-                            --savepath celeba_experiment1000
+                            --savepath celeba_experiment_${DATASETSIZES[$DATASETSIZE]}
         done
     done
 done
