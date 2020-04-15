@@ -20,9 +20,9 @@ class STN(nn.Module):
         self.init_model_weights(opt)
 
     def init_localizer(self, opt):
-        if opt.dataset.lower() == 'cub':
+        if opt.dataset.lower() == ['celeba','cub']:
             from .cublocalizer import CubSTN as STN
-        elif opt.dataset.lower() in ['celeba', 'mnistxkmnist']:
+        elif opt.dataset.lower() in ['mnistxkmnist']:
             from .celebalocalizer import CelebaSTN as STN
         elif opt.dataset.lower() == 'mnist':
             from .mnistlocalizer import MnistSTN as STN

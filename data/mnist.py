@@ -51,11 +51,18 @@ def make_mnist_subset(opt, mode):
 
 class MnistXKmnist(Dataset):
 
-    def __init__(self, opt, train_div):
+    def __init__(self, opt, mode):
         self.datasets = []
 
         # False (test) or True (train,val)
-        trainingset = train_div in ['train', 'val']
+        trainingset = mode in ['train', 'val']
+
+        transforms = [transforms.Normalize((0.1307,), (0.3081,))]
+        if mode in ['train'] and opt.data_augmentation:
+            transforms.append( lambda x: transform_image_affine(x, opt))
+
+        self.transform = transforms.Compose(transforms)
+
 
         self.datasets.append(datasets.MNIST(opt.dataroot,
                                             transform=transforms.Compose([
@@ -90,21 +97,20 @@ class MnistXKmnist(Dataset):
             im[:, y:y + h, x:x + w] = im1.type(torch.float)
             target += str(target1)
 
-        transform = transforms.Compose([transforms.Normalize((0.1307,), (0.3081,))])
-        im = transform(im)
+        im = self.transform(im)
 
         return im, int(target)
 
 
 class MnistRandomPlacement(Dataset):
 
-    def __init__(self, opt, train_div):
+    def __init__(self, opt, mode):
 
         self.datasets = []
         self.cropsize = opt.crop_size
 
         # False (test) or True (train,val)
-        trainingset = train_div in ['train', 'val']
+        trainingset = mode in ['train', 'val']
 
         self.datasets.append(datasets.MNIST(opt.dataroot,
                                             transform=transforms.Compose([
