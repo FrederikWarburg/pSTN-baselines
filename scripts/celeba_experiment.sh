@@ -37,6 +37,7 @@ do
                             --train_samples ${TRAIN_SAMPELS[$MODEL]} \
                             --criterion ${CRITERION[$MODEL]} \
                             --lr 0.01 \
+			    --basenet 'resnet50' \
                             --lr_loc 0.1 \
                             --weightDecay 0 \
                             --smallest_size 64 \
