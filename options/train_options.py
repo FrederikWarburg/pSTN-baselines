@@ -1,6 +1,6 @@
 import numpy as np
 
-from .base_options import BaseOptions
+from .base_options import BaseOptions, str2bool
 
 
 class TrainOptions(BaseOptions):
@@ -27,15 +27,13 @@ class TrainOptions(BaseOptions):
 
         # pre-processing relatated
         #self.parser.add_argument('--data_augmentation', type=bool, default=False)
-        self.parser.add_argument('--data_augmentation', action='store_true', default=False)
-
-
-        self.parser.add_argument('--horizontal_flip', type=bool, default=False)
+        self.parser.add_argument('--data_augmentation', type=str2bool, nargs='?', const=True, default=False, help="Activate data augmentation")
+        self.parser.add_argument('--horizontal_flip', type=str2bool, nargs='?', const=True, default=False)
 
         # Evaluation related
         self.parser.add_argument('--val_percent_check', type=float, default=1.0, help='percentage of validation set to check')
         self.parser.add_argument('--val_check_interval', type=float, default=1.0, help='the rate for checking')
-        self.parser.add_argument('--trainval_split', type=bool, default=False)
+        self.parser.add_argument('--trainval_split', type=str2bool, nargs='?', const=True, default=False)
         self.parser.add_argument('--save_dir', type=str, default='', help='path for saving models')
 
         self.is_train = True
