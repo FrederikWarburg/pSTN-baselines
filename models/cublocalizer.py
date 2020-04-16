@@ -24,6 +24,7 @@ class CubPSTN(nn.Module):
         self.test_samples = opt.test_samples
         self.num_param = opt.num_param
         self.sigma_p = opt.sigma_p
+        self.sigma_n = opt.sigma_n
         self.feature_size = FEATURE_SIZES[opt.basenet.lower()]
 
         # initialzie localizer, mean regressor and std regressor
