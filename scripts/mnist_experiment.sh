@@ -1,25 +1,29 @@
 #!/bin/sh
 
-DATAPATH="/scratch/s153847/data/"
-MODELS=("cnn" "stn" "pstn")
-BRANCHES=(1 2 2)
-PARAMS=(1 2 2)
-TEST_SAMPELS=(0 0 10)
-TRAIN_SAMPELS=(1 1 2)
-CRITERION=("nll" "nll" "elbo")
+DATAPATH="/scratch/frwa/data/"
+MODELS=("cnn" "cnn" "stn" "stn" "pstn")
+BRANCHES=(1 1 2 2 2)
+PARAMS=(1 1 2 2 2)
+TEST_SAMPELS=(1 1 1 1 10)
+TRAIN_SAMPELS=(1 1 1 1 2)
+CRITERION=("nll" "nll" "nll" "nll" "elbo")
+GPUS=(0 2 3 6 7)
+DATAAUGMENTATION=("f" "t" "f" "t" "f")
 
-for MODEL in 0 1 2
+for MODEL in 2 3 #{0..4}
 do
+    echo $MODEL
     echo ${MODELS[$MODEL]}
     echo ${TRAIN_SAMPELS[$MODEL]}
-    CUDA_VISIBLE_DEVICES=4 python train.py --dataroot $DATAPATH \
-                    --dataset "mnist_easy" \
+    OMP_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=${GPUS[$MODEL]} python train.py --dataroot $DATAPATH \
+                    --dataset "mnistxkmnist" \
                     --batch_size 256 \
                     --num_classes 100 \
-                    --num_threads 8 \
-                    --epochs 10 \
-                    --step_size 3 \
-                    --seed 42 \
+                    --num_threads 2 \
+                    --epochs 30 \
+                    --step_size 10 \
+                    --seed 123 \
+		    --data_augmentation ${DATAAUGMENTATION[$MODEL]} \
                     --model ${MODELS[$MODEL]} \
                     --num_param ${PARAMS[$MODEL]} \
                     --N ${BRANCHES[$MODEL]} \
@@ -27,12 +31,6 @@ do
                     --train_samples ${TRAIN_SAMPELS[$MODEL]} \
                     --criterion ${CRITERION[$MODEL]} \
                     --lr 0.1 \
-                    --sigma 0.1 \
-                    --smallest_size 64 \
-                    --crop_size 64 \
-                    --run_test_freq 1 \
-                    --num_param 2 \
-                    --lr_loc 0.01 \
-                    --basenet "simple" \
-		            --digits 2
+                    --digits 2 \
+                    --lr_loc 0.001 & 
 done
