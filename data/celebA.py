@@ -22,16 +22,16 @@ class CelebA(torch.utils.data.Dataset):
                                          std=[0.229, 0.224, 0.225])
 
         if mode in ['train']:
-            transforms = [transforms.Resize((64, 73))]
+            transform = [transforms.Resize((64, 73))]
             if opt.data_augmentation:
-                transforms.append(transforms.RandomCrop((64, 64)))
-                transforms.append(transforms.RandomHorizontalFlip(0.5))
+                transform.append(transforms.RandomCrop((64, 64)))
+                transform.append(transforms.RandomHorizontalFlip(0.5))
             else:
-                transforms.append(transforms.CenterCrop((64, 64)))
+                transform.append(transforms.CenterCrop((64, 64)))
 
-            transforms.extend([transforms.ToTensor(), normalize])
+            transform.extend([transforms.ToTensor(), normalize])
 
-            self.transform = transforms.Compose(transforms)
+            self.transform = transforms.Compose(transform)
                 
         elif mode in ['test','val']:
             self.transform = transforms.Compose(
