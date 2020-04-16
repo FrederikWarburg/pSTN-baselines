@@ -13,13 +13,19 @@ from torchvision.transforms import ToTensor
 
 def convert_image_np(inp, dataset='mnist'):
     """Convert a Tensor to numpy image."""
-    inp = inp.numpy().transpose((1, 2, 0))
-    mean = np.array([0.485, 0.456, 0.406])
-    std = np.array([0.229, 0.224, 0.225])
-    if 'mnist' in dataset:
-        inp = std * inp + mean
-        inp = np.clip(inp, 0, 1)
+    if dataset == 'mnist':
+        mean, std = 0.1307, 0.3081
+    else:
+        mean = np.array([0.485, 0.456, 0.406])
+        std = np.array([0.229, 0.224, 0.225])
 
+    # convert to numpy (C,H,W) -> (H,W,C)
+    inp = inp.numpy().transpose((1, 2, 0))
+
+    # normalize
+    inp = std * inp + mean
+    inp = np.clip(inp, 0, 1)
+    
     return inp
 
 
