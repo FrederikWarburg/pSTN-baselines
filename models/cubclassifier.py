@@ -16,6 +16,10 @@ class CubClassifier(nn.Module):
 
         # hyper parameters
         self.N = opt.N
+        self.S = opt.test_samples
+        self.dropout_rate = opt.dropout_rate
+        self.train_samples = opt.train_samples
+        self.test_samples = opt.test_samples
         self.feature_size = FEATURE_SIZES[opt.basenet.lower()]
 
         # initialize a classifier for each branch
