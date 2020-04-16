@@ -69,9 +69,6 @@ class CelebA(torch.utils.data.Dataset):
             self.filename = self.filename[:size]
             self.target = self.target[:size]
 
-        self.transform = transforms.Compose(
-            [transforms.Resize((64, 73)), transforms.RandomCrop((64, 64)), transforms.ToTensor()])
-
     def __len__(self):
         return len(self.target)
 
