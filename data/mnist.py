@@ -57,11 +57,12 @@ class MnistXKmnist(Dataset):
         # False (test) or True (train,val)
         trainingset = mode in ['train', 'val']
 
-        transforms = [transforms.Normalize((0.1307,), (0.3081,))]
+        transform = [transforms.Normalize((0.1307,), (0.3081,))]
         if mode in ['train'] and opt.data_augmentation:
-            transforms.append( lambda x: transform_image_affine(x, opt))
+            print("data augmentation", mode, opt.data_augmentation)
+            transform.append( lambda x: transform_image_affine(x, opt))
 
-        self.transform = transforms.Compose(transforms)
+        self.transform = transforms.Compose(transform)
 
 
         self.datasets.append(datasets.MNIST(opt.dataroot,
