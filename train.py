@@ -39,17 +39,22 @@ if __name__ == '__main__':
       num_batches = 256 // opt.batch_size
     val_check_interval = opt.val_check_interval if opt.val_check_interval < 1 else int(opt.val_check_interval)
     # Initialize pytorch-lightning trainer with good defaults
-    trainer = Trainer(max_nb_epochs=opt.epochs,
+    trainer = Trainer(max_epochs=opt.epochs,
                       # accumulate_grad_batches=num_batches,
                       gpus=num_gpus,
                       early_stop_callback=None,
                       logger=logger,
                       check_val_every_n_epoch=val_check_interval,
                       val_percent_check=opt.val_percent_check,
-                      distributed_backend='dp')
+                      distributed_backend='dp',
+                      checkpoint_callback=False)
 
-    # train model
-    trainer.fit(model)
+    if opt.resume_from_ckpt:
+        model = model.load_from_checkpoint(checkpoint_path="checkpoints/%s.ckpt" % modelname)
+    else:
+        # train model
+        trainer.fit(model)
+        trainer.save_checkpoint("checkpoints/%s.ckpt" % modelname)
 
     # test model
-    trainer.test()
+    trainer.test(model)

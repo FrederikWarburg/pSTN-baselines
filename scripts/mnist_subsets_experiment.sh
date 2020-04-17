@@ -12,7 +12,7 @@ do
     echo ${SUBSETS[$SUBSET]}
     for FOLD in {0..0}
     do
-        for MODEL in {2..2}
+        for MODEL in {0..0}
         do
             echo ${MODELS[$MODEL]}
             echo ${PARAMS[$MODEL]}
@@ -45,7 +45,8 @@ do
                             --weightDecay 0.01 \
                             --transformer_type "affine" \
                             --step_size 600 \
-                            --data_augmentation
+                            --data_augmentation \
+                            --resume_from_ckpt True
         done
     done
 done

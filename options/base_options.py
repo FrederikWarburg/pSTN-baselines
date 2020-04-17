@@ -55,7 +55,9 @@ class BaseOptions:
         # network params
         self.parser.add_argument('--model', type=str, default='cnn', help='model name')
         self.parser.add_argument('--batch_size', type=int, default=16, help='input batch size')
-        self.parser.add_argument('--resume_ckpt', type=str, default=None, help='path to pretrained model')
+        #self.parser.add_argument('--resume_ckpt', type=str, default=None, help='path to pretrained model')
+        self.parser.add_argument('--resume_from_ckpt', type=str2bool, nargs='?', const=True, default=False, help='Load pre-trained model?')
+
         self.parser.add_argument('--dropout_rate', type=float, default=0.5)
         self.parser.add_argument('--N', type=int, default=1, help='number of parallel tracks')
         self.parser.add_argument('--test_samples', type=int, default=1, help='number of samples')
