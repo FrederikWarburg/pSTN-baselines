@@ -49,8 +49,13 @@ if __name__ == '__main__':
                       distributed_backend='dp',
                       checkpoint_callback=False)
 
-    if opt.resume_from_ckpt:
+    if opt.optimize_temperature:
+        print('Loading model.')
         model = model.load_from_checkpoint(checkpoint_path="checkpoints/%s.ckpt" % modelname)
+        model.opt.optimize_temperature = True
+        model.model.model.T.requires_grad = True
+        model.configure_optimizers()
+        trainer.fit(model)  # only fit temperature parameter here
     else:
         # train model
         trainer.fit(model)

@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import torch.nn as nn
 import torch.nn.functional as F
+import torch
 
 parameter_dict_MNIST_CNN = {
     'nr_target_classes': 10,
@@ -40,7 +41,7 @@ class MnistClassifier(nn.Module):
         super(MnistClassifier, self).__init__()
 
         self.parameter_dict = self.load_specifications(opt)
-
+        self.T = torch.ones(1, requires_grad=False)  # softmax temperature parameter
         self.CNN = nn.Sequential(
             # first conv layer
             nn.Conv2d(
@@ -72,7 +73,7 @@ class MnistClassifier(nn.Module):
 
     def forward(self, x):
         x = self.classifier(x)
-        probs = F.log_softmax(x, dim=1)
+        probs = F.log_softmax(x / self.T, dim=1)
         return probs
 
     def load_specifications(self, opt):

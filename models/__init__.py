@@ -36,34 +36,38 @@ def create_optimizer(model, opt):
     """
     Returns an optimizer and scheduler based on chosen criteria
     """
-
-    if opt.optimizer.lower() == 'sgd':
+    if opt.optimize_temperature:
         from torch.optim import SGD as Optimizer
-        opt_param = {'momentum' : opt.momentum, 'weight_decay' : opt.weightDecay}
-    elif opt.optimizer.lower() == 'adam':
-        from torch.optim import Adam as Optimizer
-        opt_param = {'weight_decay' : opt.weightDecay}
-    else:
-        print("{} is not implemented yet".format(opt.optimizer.lower()))
-        raise NotImplemented
-
-    if opt.model.lower() == 'stn':
-        # enables the lr for the localizer to be lower than for the classifier
-        optimizer = Optimizer([
-            {'params': filter(lambda p: p.requires_grad, model.stn.parameters()), 'lr': opt.lr_loc * opt.lr},
-            {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
-        ], **opt_param)
-
-    elif opt.model.lower() == 'pstn' :
-        # enables the lr for the localizer to be lower than for the classifier
-        optimizer = Optimizer([
-            {'params': filter(lambda p: p.requires_grad, model.pstn.parameters()), 'lr': opt.lr_loc * opt.lr},
-            {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
-        ], **opt_param)
+        optimizer = Optimizer([model.model.T], lr=1e-3)
 
     else:
+        if opt.optimizer.lower() == 'sgd':
+            from torch.optim import SGD as Optimizer
+            opt_param = {'momentum' : opt.momentum, 'weight_decay' : opt.weightDecay}
+        elif opt.optimizer.lower() == 'adam':
+            from torch.optim import Adam as Optimizer
+            opt_param = {'weight_decay' : opt.weightDecay}
+        else:
+            print("{} is not implemented yet".format(opt.optimizer.lower()))
+            raise NotImplemented
 
-        optimizer = Optimizer(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr, **opt_param)
+        if opt.model.lower() == 'stn':
+            # enables the lr for the localizer to be lower than for the classifier
+            optimizer = Optimizer([
+                {'params': filter(lambda p: p.requires_grad, model.stn.parameters()), 'lr': opt.lr_loc * opt.lr},
+                {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
+            ], **opt_param)
+
+        elif opt.model.lower() == 'pstn' :
+            # enables the lr for the localizer to be lower than for the classifier
+            optimizer = Optimizer([
+                {'params': filter(lambda p: p.requires_grad, model.pstn.parameters()), 'lr': opt.lr_loc * opt.lr},
+                {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
+            ], **opt_param)
+
+        else:
+
+            optimizer = Optimizer(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr, **opt_param)
 
     # create scheduler
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=0.1)
@@ -75,6 +79,7 @@ class System(pl.LightningModule):
 
     def __init__(self, opt):
         super(System, self).__init__()
+        print('system opt', opt)
 
         # hyper parameters
         self.hparams = opt
@@ -107,7 +112,7 @@ class System(pl.LightningModule):
         acc = accuracy(y_hat, y)
 
         # log everything with tensorboard
-        tensorboard_logs = OrderedDict({'train_loss': loss, 'train_acc': acc, 'train_nll': F.nll_loss(y_hat, y, reduction='mean')})
+        tensorboard_logs = OrderedDict({'train_loss': loss, 'train_acc': acc, 'train_nll': F.nll_loss(y_hat, y, reduction='mean'), 'T': self.model.model.T})
 
         return OrderedDict({'loss': loss, 'acc': acc, 'log': tensorboard_logs})
 
@@ -183,13 +188,16 @@ class System(pl.LightningModule):
 
     @pl.data_loader
     def train_dataloader(self):
-        
+
         # initialize dataset
-        dataset = create_dataset(self.opt, mode = 'train')
+        if self.opt.optimize_temperature:  # learn optimal temperature on the validation data
+            dataset = create_dataset(self.opt, mode='val')
+        else:
+            dataset = create_dataset(self.opt, mode='train')
 
         # dataloader params
         opt = {"batch_size": self.opt.batch_size, "shuffle": True, "pin_memory": True, "num_workers": int(self.opt.num_threads)}
-        
+
         # return data loader
         dataloader = DataLoader(dataset, **opt)
 
@@ -201,13 +209,13 @@ class System(pl.LightningModule):
 
     @pl.data_loader
     def val_dataloader(self):
-        
+
         # initialize dataset
-        dataset = create_dataset(self.opt, mode = 'val')
+        dataset = create_dataset(self.opt, mode='val')
 
         # dataloader params
         opt = {"batch_size": self.opt.batch_size, "shuffle": False, "pin_memory": True, "num_workers": int(self.opt.num_threads)}
-        
+
         # return data loader
         return DataLoader(dataset, **opt)
 
@@ -215,11 +223,11 @@ class System(pl.LightningModule):
     def test_dataloader(self):
 
         # initialize dataset
-        dataset = create_dataset(self.opt, mode = 'test')
+        dataset = create_dataset(self.opt, mode='test')
 
         # dataloader params
         opt = {"batch_size": self.opt.batch_size, "shuffle": False, "pin_memory": True, "num_workers": int(self.opt.num_threads)}
-        
+
         # return data loader
         return DataLoader(dataset, **opt)
 
