@@ -19,7 +19,7 @@ do
             echo ${TEST_SAMPELS[$MODEL]}
             echo ${TRAIN_SAMPELS[$MODEL]}
             echo ${CRITERION[$MODEL]}
-            CUDA_VISIBLE_DEVICES=0 python train.py --dataroot '..ProbabilisticSpatialTransformer/data' \
+            CUDA_VISIBLE_DEVICES=3 python train.py --dataroot '../ProbabilisticSpatialTransformer/data' \
                             --dataset "MNIST" \
                             --subset ${SUBSETS[$SUBSET]} \
                             --fold ${FOLD} \
