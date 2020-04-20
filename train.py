@@ -9,6 +9,7 @@ from models import System
 import torch
 from utils.utils import get_exp_name
 
+
 if __name__ == '__main__':
 
     # get parameters
@@ -26,7 +27,7 @@ if __name__ == '__main__':
     )
 
     # initialize model
-    model = System(opt)
+    lightning_system = System(opt)
 
     # use GPU if available
     num_gpus = torch.cuda.device_count()
@@ -49,17 +50,21 @@ if __name__ == '__main__':
                       distributed_backend='dp',
                       checkpoint_callback=False)
 
-    if opt.optimize_temperature:
+    if opt.resume_from_ckpt:
         print('Loading model.')
-        model = model.load_from_checkpoint(checkpoint_path="checkpoints/%s.ckpt" % modelname)
-        model.opt.optimize_temperature = True
-        model.model.model.T.requires_grad = True
-        model.configure_optimizers()
-        trainer.fit(model)  # only fit temperature parameter here
+        lightning_system = lightning_system.load_from_checkpoint(checkpoint_path="checkpoints/%s.ckpt" % modelname)
+
+    elif opt.optimize_temperature:
+        print('Loading model.')
+        lightning_system = lightning_system.load_from_checkpoint(checkpoint_path="checkpoints/%s.ckpt" % modelname)
+        lightning_system.opt.optimize_temperature = True
+        lightning_system.model.model.T.requires_grad = True
+        lightning_system.configure_optimizers()
+        trainer.fit(lightning_system)  # only fit temperature parameter here
     else:
         # train model
-        trainer.fit(model)
+        trainer.fit(lightning_system)
         trainer.save_checkpoint("checkpoints/%s.ckpt" % modelname)
 
     # test model
-    trainer.test(model)
+    trainer.test(lightning_system)

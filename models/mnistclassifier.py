@@ -31,7 +31,7 @@ parameter_dict_MNIST_P_STN = {
     'CNN_kernel_size': 5,
     'loc_kernel_size': 5,
     'resulting_size_classifier': 320,
-    'hidden_layer_classifier': 38,
+    'hidden_layer_classifier': 50,
     'color_channels': 1
 }
 
@@ -39,9 +39,10 @@ parameter_dict_MNIST_P_STN = {
 class MnistClassifier(nn.Module):
     def __init__(self, opt):
         super(MnistClassifier, self).__init__()
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.parameter_dict = self.load_specifications(opt)
-        self.T = torch.ones(1, requires_grad=False)  # softmax temperature parameter
+        self.T = torch.ones(1, requires_grad=False, device=device)  # softmax temperature parameter
         self.CNN = nn.Sequential(
             # first conv layer
             nn.Conv2d(

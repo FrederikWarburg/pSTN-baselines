@@ -1,6 +1,7 @@
 import json
 import os
 from os.path import join, isdir
+import pickle
 
 import pytorch_lightning as pl
 import torch
@@ -112,7 +113,13 @@ class System(pl.LightningModule):
         acc = accuracy(y_hat, y)
 
         # log everything with tensorboard
-        tensorboard_logs = OrderedDict({'train_loss': loss, 'train_acc': acc, 'train_nll': F.nll_loss(y_hat, y, reduction='mean'), 'T': self.model.model.T})
+        if self.opt.model == "pstn":
+            T = self.model.classifier.T
+        if self.opt.model == "stn":
+            T = self.model.classifier.T
+        if self.opt.model == "cnn":
+            T = self.model.cnn.T
+        tensorboard_logs = OrderedDict({'train_loss': loss, 'train_acc': acc, 'train_nll': F.nll_loss(y_hat, y, reduction='mean'), 'T': T})
 
         return OrderedDict({'loss': loss, 'acc': acc, 'log': tensorboard_logs})
 
@@ -160,13 +167,30 @@ class System(pl.LightningModule):
         loss = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
 
-        return OrderedDict({'test_loss': loss, 'test_acc': acc})
+        # compute UQ statistics
+        pred = y_hat.max(1, keepdim=True)[1]
+        check_predictions = pred.eq(y.view_as(pred)).all(dim=1)
+        return OrderedDict({'test_loss': loss, 'test_acc': acc,
+                      'probabilities': y_hat.data,
+                      'correct_prediction': y.data,
+                      'correct': check_predictions.data})
 
     def test_end(self, outputs):
+        modelname = get_exp_name(self.opt)
 
         # calculate mean of nll and accuarcy
         avg_loss = torch.stack([x['test_loss'] for x in outputs]).mean()
         avg_acc = torch.stack([x['test_acc'] for x in outputs]).mean()
+
+        # concatenate UQ results
+        probabilities = torch.stack([x['probabilities'] for x in outputs]).cpu().numpy()
+        correct_predictions = torch.stack([x['correct_prediction'] for x in outputs]).cpu().numpy()
+        correct = torch.stack([x['correct'] for x in outputs]).cpu().numpy()
+
+        path = 'UQ/' + modelname
+        results = {'probabilities': probabilities, 'correct_prediction': correct_predictions,
+                  'correct': correct}
+        pickle.dump(results, open(path + '_results.p', 'wb'))
 
         # add to tensorboard
         tensorboard_logs = OrderedDict({'test_loss': avg_loss, 'test_acc': avg_acc})
