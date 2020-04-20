@@ -151,6 +151,14 @@ class System(pl.LightningModule):
         # forward image
         y_hat = self.forward(x)
 
+        # for the first batch in an epoch visualize the predictions for better debugging
+        if batch_idx == 0:
+            print("Visualize during test")
+            # calculate different visualizations
+            grid_in, grid_out, theta, bbox_images = visualize_stn(self.model, x, self.opt)
+            # add these to tensorboard
+            self.add_images(grid_in, grid_out, bbox_images)
+
         # calculate nll and loss
         loss = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
