@@ -1,21 +1,21 @@
 #!/bin/sh
 
-DATAPATH="/scratch/frwa/"
-MODELS=("cnn" "cnn" "stn" "stn" "pstn")
-PARAMS=(1 1 4 4 4)
-TEST_SAMPELS=(1 1 1 1 10)
-TRAIN_SAMPELS=(1 1 1 1 1)
-CRITERION=("nll" "nll" "nll" "nll" "elbo")
-MAXEPOCHS=10
+DATAPATH="/scratch/frwa/data"
+MODELS=("pstn" "pstn" "cnn" "cnn" "stn" "stn" "pstn")
+PARAMS=(4 4 1 1 4 4 4)
+TEST_SAMPELS=(10 10 1 1 10)
+TRAIN_SAMPELS=(2 2 1 1 1)
+CRITERION=("elbo" "elbo" "nll" "nll" "nll" "nll" "elbo")
+MAXEPOCHS=50
 #DATASETSIZES=(100 250 500 1000 2500 5000)
-DATAAUGMENTATION=("f" "t" "f" "t" "f")
-GPUS=(2 3 6 7 7)
+DATAAUGMENTATION=("f" "f" "f" "t" "f")
+GPUS=(0 6 1 2 3 6 6 6)
 
 #for DATASETSIZE in {0..5}
 #do
     for ATTR in 15
     do
-        for MODEL in {0..4}
+        for MODEL in 1
         do
             echo ${MODELS[$MODEL]}
             echo $ATTR
@@ -23,13 +23,13 @@ GPUS=(2 3 6 7 7)
             echo ${TEST_SAMPELS[$MODEL]}
             echo ${TRAIN_SAMPELS[$MODEL]}
             echo ${CRITERION[$MODEL]}
-            OMP_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=${GPUS[$model]} python train.py --dataroot $DATAPATH \
+            OMP_NUM_THREADS=8 CUDA_VISIBLE_DEVICES=${GPUS[$MODEL]} python train.py --dataroot $DATAPATH \
                             --dataset "celeba" \
                             --batch_size 256 \
                             --num_classes 2 \
                             --num_threads 2 \
                             --epochs $MAXEPOCHS \
-                            --step_size 5 \
+                            --step_size 9999 \
                             --seed 123 \
 			    --val_check_interval 1 \
                             --model ${MODELS[$MODEL]} \
@@ -37,10 +37,12 @@ GPUS=(2 3 6 7 7)
                             --test_samples ${TEST_SAMPELS[$MODEL]} \
                             --train_samples ${TRAIN_SAMPELS[$MODEL]} \
                             --criterion ${CRITERION[$MODEL]} \
-                            --lr 0.1 \
+                            --lr 1e-3 \
 			    --basenet 'resnet34' \
-                            --lr_loc 0.01 \
+			    --crop_size 64 \
+                            --lr_loc 1 \
                             --weightDecay 0 \
+			    --data_augmentation ${DATAAUGMENTATION[$MODEL]} \
                             --num_param ${PARAMS[$MODEL]} \
                             --target_attr $ATTR \
                             --trainval_split True \
