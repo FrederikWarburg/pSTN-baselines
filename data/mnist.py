@@ -22,6 +22,7 @@ def transform_image_affine(x, opt):
 
 
 def make_mnist_subset(opt, mode):
+    # print('MODE is ', mode)
     train_trafo_no_DA = transforms.Compose(
         [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
     test_trafo = train_trafo_no_DA
@@ -46,6 +47,8 @@ def make_mnist_subset(opt, mode):
             dataset = Subset(full_training_data, train_indices)
         if mode == 'val':
             dataset = Subset(full_training_data, validation_indices)
+
+        print(len(train_indices), 'train images - ', len(validation_indices), 'val_images')
     return dataset
 
 

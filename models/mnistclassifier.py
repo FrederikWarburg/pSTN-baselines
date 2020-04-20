@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import torch.nn as nn
 import torch.nn.functional as F
+import torch
 
 parameter_dict_MNIST_CNN = {
     'nr_target_classes': 10,
@@ -30,7 +31,7 @@ parameter_dict_MNIST_P_STN = {
     'CNN_kernel_size': 5,
     'loc_kernel_size': 5,
     'resulting_size_classifier': 320,
-    'hidden_layer_classifier': 38,
+    'hidden_layer_classifier': 50,
     'color_channels': 1
 }
 
@@ -38,9 +39,12 @@ parameter_dict_MNIST_P_STN = {
 class MnistClassifier(nn.Module):
     def __init__(self, opt):
         super(MnistClassifier, self).__init__()
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.parameter_dict = self.load_specifications(opt)
 
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.T = torch.ones(1, requires_grad=False, device=device)  # softmax temperature parameter
         self.CNN = nn.Sequential(
             # first conv layer
             nn.Conv2d(
@@ -72,7 +76,7 @@ class MnistClassifier(nn.Module):
 
     def forward(self, x):
         x = self.classifier(x)
-        probs = F.log_softmax(x, dim=1)
+        probs = F.log_softmax(x / self.T, dim=1)
         return probs
 
     def load_specifications(self, opt):
