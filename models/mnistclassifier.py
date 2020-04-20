@@ -42,6 +42,8 @@ class MnistClassifier(nn.Module):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.parameter_dict = self.load_specifications(opt)
+
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.T = torch.ones(1, requires_grad=False, device=device)  # softmax temperature parameter
         self.CNN = nn.Sequential(
             # first conv layer
