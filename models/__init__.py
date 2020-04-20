@@ -1,6 +1,7 @@
 import json
 import os
 from os.path import join, isdir
+import pickle
 
 import pytorch_lightning as pl
 import torch
@@ -36,34 +37,38 @@ def create_optimizer(model, opt):
     """
     Returns an optimizer and scheduler based on chosen criteria
     """
-
-    if opt.optimizer.lower() == 'sgd':
+    if opt.optimize_temperature:
         from torch.optim import SGD as Optimizer
-        opt_param = {'momentum' : opt.momentum, 'weight_decay' : opt.weightDecay}
-    elif opt.optimizer.lower() == 'adam':
-        from torch.optim import Adam as Optimizer
-        opt_param = {'weight_decay' : opt.weightDecay}
-    else:
-        print("{} is not implemented yet".format(opt.optimizer.lower()))
-        raise NotImplemented
-
-    if opt.model.lower() == 'stn':
-        # enables the lr for the localizer to be lower than for the classifier
-        optimizer = Optimizer([
-            {'params': filter(lambda p: p.requires_grad, model.stn.parameters()), 'lr': opt.lr_loc * opt.lr},
-            {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
-        ], **opt_param)
-
-    elif opt.model.lower() == 'pstn' :
-        # enables the lr for the localizer to be lower than for the classifier
-        optimizer = Optimizer([
-            {'params': filter(lambda p: p.requires_grad, model.pstn.parameters()), 'lr': opt.lr_loc * opt.lr},
-            {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
-        ], **opt_param)
+        optimizer = Optimizer([model.model.T], lr=1e-3)
 
     else:
+        if opt.optimizer.lower() == 'sgd':
+            from torch.optim import SGD as Optimizer
+            opt_param = {'momentum' : opt.momentum, 'weight_decay' : opt.weightDecay}
+        elif opt.optimizer.lower() == 'adam':
+            from torch.optim import Adam as Optimizer
+            opt_param = {'weight_decay' : opt.weightDecay}
+        else:
+            print("{} is not implemented yet".format(opt.optimizer.lower()))
+            raise NotImplemented
 
-        optimizer = Optimizer(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr, **opt_param)
+        if opt.model.lower() == 'stn':
+            # enables the lr for the localizer to be lower than for the classifier
+            optimizer = Optimizer([
+                {'params': filter(lambda p: p.requires_grad, model.stn.parameters()), 'lr': opt.lr_loc * opt.lr},
+                {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
+            ], **opt_param)
+
+        elif opt.model.lower() == 'pstn' :
+            # enables the lr for the localizer to be lower than for the classifier
+            optimizer = Optimizer([
+                {'params': filter(lambda p: p.requires_grad, model.pstn.parameters()), 'lr': opt.lr_loc * opt.lr},
+                {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
+            ], **opt_param)
+
+        else:
+
+            optimizer = Optimizer(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr, **opt_param)
 
     # create scheduler
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=0.1)
@@ -75,6 +80,7 @@ class System(pl.LightningModule):
 
     def __init__(self, opt):
         super(System, self).__init__()
+        print('system opt', opt)
 
         # hyper parameters
         self.hparams = opt
@@ -107,7 +113,13 @@ class System(pl.LightningModule):
         acc = accuracy(y_hat, y)
 
         # log everything with tensorboard
-        tensorboard_logs = OrderedDict({'train_loss': loss, 'train_acc': acc, 'train_nll': F.nll_loss(y_hat, y, reduction='mean')})
+        if self.opt.model == "pstn":
+            T = self.model.classifier.T
+        if self.opt.model == "stn":
+            T = self.model.classifier.T
+        if self.opt.model == "cnn":
+            T = self.model.cnn.T
+        tensorboard_logs = OrderedDict({'train_loss': loss, 'train_acc': acc, 'train_nll': F.nll_loss(y_hat, y, reduction='mean'), 'T': T})
 
         return OrderedDict({'loss': loss, 'acc': acc, 'log': tensorboard_logs})
 
@@ -151,25 +163,42 @@ class System(pl.LightningModule):
         # forward image
         y_hat = self.forward(x)
 
-
         # for the first batch in an epoch visualize the predictions for better debugging
         if batch_idx == 0:
+            print("Visualize during test")
             # calculate different visualizations
             grid_in, grid_out, theta, bbox_images = visualize_stn(self.model, x, self.opt)
             # add these to tensorboard
-            self.add_images(grid_in, grid_out, bbox_images
+            self.add_images(grid_in, grid_out, bbox_images)
 
         # calculate nll and loss
         loss = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
 
-        return OrderedDict({'test_loss': loss, 'test_acc': acc})
+        # compute UQ statistics
+        pred = y_hat.max(1, keepdim=True)[1]
+        check_predictions = pred.eq(y.view_as(pred)).all(dim=1)
+        return OrderedDict({'test_loss': loss, 'test_acc': acc,
+                      'probabilities': y_hat.data,
+                      'correct_prediction': y.data,
+                      'correct': check_predictions.data})
 
     def test_end(self, outputs):
+        modelname = get_exp_name(self.opt)
 
         # calculate mean of nll and accuarcy
         avg_loss = torch.stack([x['test_loss'] for x in outputs]).mean()
         avg_acc = torch.stack([x['test_acc'] for x in outputs]).mean()
+
+        # concatenate UQ results
+        probabilities = torch.stack([x['probabilities'] for x in outputs]).cpu().numpy()
+        correct_predictions = torch.stack([x['correct_prediction'] for x in outputs]).cpu().numpy()
+        correct = torch.stack([x['correct'] for x in outputs]).cpu().numpy()
+
+        path = 'UQ/' + modelname
+        results = {'probabilities': probabilities, 'correct_prediction': correct_predictions,
+                  'correct': correct}
+        pickle.dump(results, open(path + '_results.p', 'wb'))
 
         # add to tensorboard
         tensorboard_logs = OrderedDict({'test_loss': avg_loss, 'test_acc': avg_acc})
@@ -191,13 +220,16 @@ class System(pl.LightningModule):
 
     @pl.data_loader
     def train_dataloader(self):
-        
+
         # initialize dataset
-        dataset = create_dataset(self.opt, mode = 'train')
+        if self.opt.optimize_temperature:  # learn optimal temperature on the validation data
+            dataset = create_dataset(self.opt, mode='val')
+        else:
+            dataset = create_dataset(self.opt, mode='train')
 
         # dataloader params
         opt = {"batch_size": self.opt.batch_size, "shuffle": True, "pin_memory": True, "num_workers": int(self.opt.num_threads)}
-        
+
         # return data loader
         dataloader = DataLoader(dataset, **opt)
 
@@ -209,13 +241,13 @@ class System(pl.LightningModule):
 
     @pl.data_loader
     def val_dataloader(self):
-        
+
         # initialize dataset
-        dataset = create_dataset(self.opt, mode = 'val')
+        dataset = create_dataset(self.opt, mode='val')
 
         # dataloader params
         opt = {"batch_size": self.opt.batch_size, "shuffle": False, "pin_memory": True, "num_workers": int(self.opt.num_threads)}
-        
+
         # return data loader
         return DataLoader(dataset, **opt)
 
@@ -223,11 +255,11 @@ class System(pl.LightningModule):
     def test_dataloader(self):
 
         # initialize dataset
-        dataset = create_dataset(self.opt, mode = 'test')
+        dataset = create_dataset(self.opt, mode='test')
 
         # dataloader params
         opt = {"batch_size": self.opt.batch_size, "shuffle": False, "pin_memory": True, "num_workers": int(self.opt.num_threads)}
-        
+
         # return data loader
         return DataLoader(dataset, **opt)
 

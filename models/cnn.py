@@ -17,8 +17,8 @@ class CNN(nn.Module):
         elif opt.dataset in opt.TIMESERIESDATASETS:
             from .timeseriesclassifier import TimeseriesClassifier as Classifier
 
-        self.model = Classifier(opt)
+        self.cnn = Classifier(opt)
 
     def forward(self, x):
 
-        return self.model(x)
+        return self.cnn(x)
