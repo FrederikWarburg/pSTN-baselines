@@ -26,7 +26,7 @@ if __name__ == '__main__':
     )
 
     # initialize model
-    model = System(opt)
+    lightning_system = System(opt)
 
     # use GPU if available
     num_gpus = torch.cuda.device_count()
@@ -37,6 +37,10 @@ if __name__ == '__main__':
     trainer = Trainer(gpus=num_gpus,
                       logger=logger,
                       distributed_backend='dp')
+
+    if opt.resume_from_ckpt:
+        print('Loading model.')
+        lightning_system = lightning_system.load_from_checkpoint(checkpoint_path="checkpoints/%s.ckpt" % modelname)
 
     # test model
     trainer.test()
