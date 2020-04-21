@@ -39,8 +39,6 @@ parameter_dict_MNIST_P_STN = {
 class MnistClassifier(nn.Module):
     def __init__(self, opt):
         super(MnistClassifier, self).__init__()
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
         self.parameter_dict = self.load_specifications(opt)
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
