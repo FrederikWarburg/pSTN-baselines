@@ -15,7 +15,7 @@ if __name__ == '__main__':
     opt = TestOptions().parse()
 
     # decide unique model name based on parameters
-    modelname = get_exp_name(opt)
+    modelname = 'testing_' + opt.checkpoints_dir 
 
     # initialize a test logger for experiment
     logger = TestTubeLogger(
@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     if opt.resume_from_ckpt:
         print('Loading model.')
-        lightning_system = lightning_system.load_from_checkpoint(checkpoint_path="checkpoints/%s.ckpt" % modelname)
+        lightning_system = lightning_system.load_from_checkpoint(checkpoint_path=opt.checkpoints_dir)
 
     # test model
     trainer.test()
