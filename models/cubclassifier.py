@@ -21,7 +21,7 @@ class CubClassifier(nn.Module):
         self.train_samples = opt.train_samples
         self.test_samples = opt.test_samples
         self.feature_size = FEATURE_SIZES[opt.basenet.lower()]
-        self.T = torch.ones(1, requires_grad=False, device=device)  # softmax temperature parameter
+        self.T = torch.ones(1, requires_grad=False)  # softmax temperature parameter
 
         # initialize a classifier for each branch
         self.model = nn.Module()

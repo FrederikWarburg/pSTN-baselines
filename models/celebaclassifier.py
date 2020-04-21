@@ -16,7 +16,7 @@ class CelebaClassifier(nn.Module):
         self.train_samples = opt.train_samples
         self.test_samples = opt.test_samples
         self.feature_size = 640
-        self.T = torch.ones(1, requires_grad=False, device=device)  # softmax temperature parameter
+        self.T = torch.ones(1, requires_grad=False)  # softmax temperature parameter
 
         # number of channels
         self.channels = 1 if 'mnist' in opt.dataset.lower() else 3
