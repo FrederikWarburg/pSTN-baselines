@@ -24,7 +24,7 @@ class STN(nn.Module):
             from .cublocalizer import CubSTN as STN
         elif opt.dataset.lower() in ['mnistxkmnist']:
             from .celebalocalizer import CelebaSTN as STN
-        elif opt.dataset.lower() == 'mnist':
+        elif opt.dataset.lower() in ['mnist']:
             from .mnistlocalizer import MnistSTN as STN
         elif opt.dataset in opt.TIMESERIESDATASETS:
             from .timeserieslocalizer import TimeseriesSTN as STN
@@ -36,7 +36,7 @@ class STN(nn.Module):
             from .cubclassifier import CubClassifier as Classifier
         elif opt.dataset.lower() in ['mnistxkmnist']:
             from .celebaclassifier import CelebaClassifier as Classifier
-        elif opt.dataset.lower() == 'mnist':
+        elif opt.dataset.lower() in ['mnist']:
             from .mnistclassifier import MnistClassifier as Classifier
         elif opt.dataset in opt.TIMESERIESDATASETS:
             from .timeseriesclassifier import TimeseriesClassifier as Classifier
