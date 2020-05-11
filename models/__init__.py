@@ -190,21 +190,21 @@ class System(pl.LightningModule):
         avg_loss = torch.stack([x['test_loss'] for x in outputs]).mean()
         avg_acc = torch.stack([x['test_acc'] for x in outputs]).mean()
 
-        # concatenate UQ results
-        probabilities = torch.stack([x['probabilities'] for x in outputs]).cpu().numpy()
-        correct_predictions = torch.stack([x['correct_prediction'] for x in outputs]).cpu().numpy()
-        correct = torch.stack([x['correct'] for x in outputs]).cpu().numpy()
-
-        path = 'UQ/' + modelname
-        results = {'probabilities': probabilities, 'correct_prediction': correct_predictions,
-                  'correct': correct}
-        pickle.dump(results, open(path + '_results.p', 'wb'))
-
-        # add to tensorboard
-        tensorboard_logs = OrderedDict({'test_loss': avg_loss, 'test_acc': avg_acc})
-
-        # write results to json file also
         if self.opt.save_results:
+            # concatenate UQ results
+            probabilities = torch.stack([x['probabilities'] for x in outputs]).cpu().numpy()
+            correct_predictions = torch.stack([x['correct_prediction'] for x in outputs]).cpu().numpy()
+            correct = torch.stack([x['correct'] for x in outputs]).cpu().numpy()
+
+            path = 'UQ/' + modelname
+            results = {'probabilities': probabilities, 'correct_prediction': correct_predictions,
+                      'correct': correct}
+            pickle.dump(results, open(path + '_results.p', 'wb'))
+
+            # add to tensorboard
+            tensorboard_logs = OrderedDict({'test_loss': avg_loss, 'test_acc': avg_acc})
+
+            # write results to json file also
             save_results(self.opt, avg_loss, avg_acc)
 
         print('Done testing. Loss:', avg_loss.item(), 'Accuracy:', avg_acc.item())
