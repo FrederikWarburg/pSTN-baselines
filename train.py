@@ -23,7 +23,7 @@ if __name__ == '__main__':
        save_dir=os.getcwd() + "/lightning_logs",
        name=modelname,
        debug=False,
-       create_git_tag=False
+       create_git_tag=True
     )
 
     # initialize model

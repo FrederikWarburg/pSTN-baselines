@@ -84,6 +84,7 @@ class System(pl.LightningModule):
 
         # hyper parameters
         self.hparams = opt
+        
         self.opt = opt
         self.batch_size = opt.batch_size
 
@@ -163,6 +164,10 @@ class System(pl.LightningModule):
         # forward image
         y_hat = self.forward(x)
 
+        # calculate nll and loss
+        loss = F.nll_loss(y_hat, y, reduction='mean')
+        acc = accuracy(y_hat, y)
+
         # for the first batch in an epoch visualize the predictions for better debugging
         if batch_idx == 0:
             print("Visualize during test")
@@ -171,13 +176,10 @@ class System(pl.LightningModule):
             # add these to tensorboard
             self.add_images(grid_in, grid_out, bbox_images)
 
-        # calculate nll and loss
-        loss = F.nll_loss(y_hat, y, reduction='mean')
-        acc = accuracy(y_hat, y)
-
         # compute UQ statistics
         pred = y_hat.max(1, keepdim=True)[1]
         check_predictions = pred.eq(y.view_as(pred)).all(dim=1)
+
         return OrderedDict({'test_loss': loss, 'test_acc': acc,
                       'probabilities': y_hat.data,
                       'correct_prediction': y.data,
