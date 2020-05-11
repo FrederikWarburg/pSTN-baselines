@@ -23,8 +23,10 @@ if __name__ == '__main__':
        save_dir=os.getcwd() + "/lightning_logs",
        name=modelname,
        debug=False,
-       create_git_tag=False
+       create_git_tag=True
     )
+
+    logger.add_hparams(opt.toDict())
 
     # initialize model
     lightning_system = System(opt)
