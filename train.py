@@ -1,4 +1,6 @@
 import os
+from utils.utils import check_learnable_parameters
+
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
@@ -49,6 +51,8 @@ if __name__ == '__main__':
                       val_percent_check=opt.val_percent_check,
                       distributed_backend='dp',
                       checkpoint_callback=False)
+
+    # check_learnable_parameters(lightning_system.model, opt.model)
 
     if opt.resume_from_ckpt:
         print('Loading model.')
