@@ -10,7 +10,7 @@ class CelebaPSTN(nn.Module):
         # hyper parameters
         self.N = opt.N
         self.S = opt.test_samples
-        self.dropout_rate = opt.dropout_rate
+        #self.dropout_rate = opt.dropout_rate
         self.train_samples = opt.train_samples
         self.test_samples = opt.test_samples
         self.num_param = opt.num_param
@@ -26,11 +26,11 @@ class CelebaPSTN(nn.Module):
             nn.MaxPool2d(2, stride=2),
             nn.ReLU(True),
             nn.Conv2d(8, 16, kernel_size=5),
-            nn.Dropout2d(self.dropout_rate),
+            #nn.Dropout2d(self.dropout_rate),
             nn.MaxPool2d(2, stride=2),
             nn.ReLU(True),
             nn.Conv2d(16, 32, kernel_size=5),
-            nn.Dropout2d(self.dropout_rate),
+            #nn.Dropout2d(self.dropout_rate),
             nn.MaxPool2d(2, stride=2),
             nn.ReLU(True)
         )
@@ -101,7 +101,7 @@ class CelebaSTN(nn.Module):
         # hyper parameters
         self.N = opt.N
         self.num_param = opt.num_param
-        self.dropout_rate = opt.dropout_rate
+        #self.dropout_rate = opt.dropout_rate
 
         # number of channels
         self.channels = 1 if 'mnist' in opt.dataset.lower() else 3
@@ -112,11 +112,11 @@ class CelebaSTN(nn.Module):
             nn.MaxPool2d(2, stride=2),
             nn.ReLU(True),
             nn.Conv2d(8, 16, kernel_size=5),
-            nn.Dropout2d(self.dropout_rate),
+            #nn.Dropout2d(self.dropout_rate),
             nn.MaxPool2d(2, stride=2),
             nn.ReLU(True),
             nn.Conv2d(16, 32, kernel_size=5),
-            nn.Dropout2d(self.dropout_rate),
+            #nn.Dropout2d(self.dropout_rate),
             nn.MaxPool2d(2, stride=2),
             nn.ReLU(True)
         )

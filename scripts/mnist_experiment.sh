@@ -7,10 +7,10 @@ PARAMS=(1 1 2 2 2)
 TEST_SAMPELS=(1 1 1 1 10)
 TRAIN_SAMPELS=(1 1 1 1 2)
 CRITERION=("nll" "nll" "nll" "nll" "elbo")
-GPUS=(3 3 6 6 6 6 3 3)
+GPUS=(1 2 3 4 1 2 3 4)
 DATAAUGMENTATION=("f" "t" "f" "t" "f")
 
-for MODEL in 4 #{0..4}
+for MODEL in {0..4}
 do
     echo $MODEL
     echo ${MODELS[$MODEL]}
@@ -19,11 +19,11 @@ do
                     --dataset "mnistxkmnist" \
                     --batch_size 256 \
                     --num_classes 100 \
-		    --num_threads 2 \
+                    --num_threads 2 \
                     --epochs 30 \
                     --step_size 10 \
-                    --seed 123 \
-		    --data_augmentation ${DATAAUGMENTATION[$MODEL]} \
+                    --seed 42 \
+                    --data_augmentation ${DATAAUGMENTATION[$MODEL]} \
                     --model ${MODELS[$MODEL]} \
                     --num_param ${PARAMS[$MODEL]} \
                     --N ${BRANCHES[$MODEL]} \
@@ -32,7 +32,8 @@ do
                     --criterion ${CRITERION[$MODEL]} \
                     --lr 0.1 \
                     --digits 2 \
-		    --optimizer 'sgd' \
-		    --trainval_split True \
+                    --dropout_rate 0 \
+        		    --optimizer 'sgd' \
+        		    --trainval_split True \
                     --lr_loc 0.01 & 
 done

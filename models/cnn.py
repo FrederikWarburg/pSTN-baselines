@@ -8,9 +8,9 @@ class CNN(nn.Module):
     def __init__(self, opt):
         super().__init__()
 
-        if opt.dataset.lower() in ['celeba','cub']:
+        if opt.dataset.lower() in ['cub']:
             from .cubclassifier import CubClassifier as Classifier
-        elif opt.dataset.lower() in ['mnistxkmnist']:
+        elif opt.dataset.lower() in ['celeba', 'mnistxkmnist']:
             from .celebaclassifier import CelebaClassifier as Classifier
         elif opt.dataset.lower() == 'mnist':
             from .mnistclassifier import MnistClassifier as Classifier
