@@ -83,8 +83,8 @@ class System(pl.LightningModule):
         print('system opt', opt)
 
         # hyper parameters
-        #self.hparams = opt
-        self.add_hparams(opt)
+        self.hparams = opt
+        
         self.opt = opt
         self.batch_size = opt.batch_size
 
@@ -264,10 +264,6 @@ class System(pl.LightningModule):
 
         # return data loader
         return DataLoader(dataset, **opt)
-
-    def add_hparams(self, opt):
-
-        self.logger.experiment.add_hparams(opt.toDict())
 
     def add_images(self, grid_in, grid_out, bbox_images):
 

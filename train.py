@@ -26,7 +26,10 @@ if __name__ == '__main__':
        create_git_tag=True
     )
 
-    logger.add_hparams(opt.toDict())
+    hparam_dict = {'hparam/test': 0.0}
+    metric_dict = {'test': 0.0}
+    print(type(metric_dict), type(hparam_dict))
+    logger.experiment.add_hparams(hparam_dict, metric_dict)
 
     # initialize model
     lightning_system = System(opt)
