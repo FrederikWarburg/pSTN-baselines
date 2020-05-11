@@ -10,9 +10,9 @@ SUBSETS=(10 30 100 1000 3000 10000)
 for SUBSET in {2..2}
 do
     echo ${SUBSETS[$SUBSET]}
-    for FOLD in {0..0}
+    for FOLD in {0..5}
     do
-        for MODEL in {1..1}
+        for MODEL in {0..2}
         do
             echo ${MODELS[$MODEL]}
             echo ${PARAMS[$MODEL]}
@@ -20,7 +20,7 @@ do
             echo ${TRAIN_SAMPELS[$MODEL]}
             echo ${CRITERION[$MODEL]}
 
-            CUDA_VISIBLE_DEVICES=0 python train.py --dataroot '../ProbabilisticSpatialTransformer/data' \
+            CUDA_VISIBLE_DEVICES=0 python train.py --dataroot 'data' \
                             --dataset "MNIST" \
                             --subset ${SUBSETS[$SUBSET]} \
                             --fold ${FOLD} \
@@ -37,6 +37,7 @@ do
                             --criterion ${CRITERION[$MODEL]} \
                             --save_results True \
                             --lr 0.001 \
+                            --lr_loc 0.1 \
                             --sigma_p 0.05 \
                             --num_param ${PARAMS[$MODEL]} \
                             --trainval_split True \
@@ -46,8 +47,8 @@ do
                             --weightDecay 0.01 \
                             --transformer_type "affine" \
                             --step_size 600 \
-                            --optimize_temperature False \
-                            --resume_from_ckpt
+                            --val_check_interval 600 \
+                            --optimize_temperature False
         done
     done
 done

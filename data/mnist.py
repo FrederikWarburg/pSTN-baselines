@@ -40,6 +40,8 @@ def make_mnist_subset(opt, mode):
     else:
         train_indices = np.load(
             '%s/subset_indices/MNIST%s_train_indices_fold_%s.npy' % (opt.dataroot, opt.subset, opt.fold))
+        print(train_indices)
+
         validation_indices = np.load('%s/subset_indices/MNIST_validation_indices.npy' %opt.dataroot)
         full_training_data = datasets.MNIST(
             root=opt.dataroot, train=True, download=True, transform=train_transformation)
