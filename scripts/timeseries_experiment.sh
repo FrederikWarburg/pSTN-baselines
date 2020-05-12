@@ -34,6 +34,7 @@ do
                         --criterion ${CRITERION[$MODEL]} \
                         --save_results True \
                         --lr 0.001 \
+                        --lr_loc 0.1 \
                         --sigma_p ${PRIORS[$DATASET]} \
                         --run_test_freq 100 \
                         --trainval_split True \
@@ -42,7 +43,8 @@ do
                         --optimizer "adam" \
                         --weightDecay 0 \
                         --transformer_type "diffeomorphic" \
-                        --step_size 200
+                        --step_size 200 \
+                        --val_check_interval 200 \
 
     done
 done

@@ -35,7 +35,7 @@ def save_results(opt, avg_loss, avg_acc):
     if opt.dataset.lower() == 'celeba':
         save_celeba(opt, avg_loss, avg_acc)
     if "mnist" in opt.dataset.lower():
-        MNIST_RESULTS_PATH = 'experiments/mnist_results/%s_%s_%s_fold_%s_DA=%s_' %(opt.model, opt.dataset, opt.sigma_p, opt.fold, opt.data_augmentation)
+        MNIST_RESULTS_PATH = 'experiments/mnist_results/%s_mnist%s_%s_fold_%s_DA=%s_' %(opt.model, opt.subset, opt.sigma_p, opt.fold, opt.data_augmentation)
         pickle.dump(avg_acc.cpu().numpy(), open(MNIST_RESULTS_PATH + 'test_accuracy.p', 'wb'))
         pickle.dump(avg_loss.cpu().numpy(), open(MNIST_RESULTS_PATH + 'test_loss.p', 'wb'))
 

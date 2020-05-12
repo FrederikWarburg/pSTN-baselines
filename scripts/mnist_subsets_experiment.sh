@@ -37,7 +37,7 @@ do
                             --criterion ${CRITERION[$MODEL]} \
                             --save_results True \
                             --lr 0.001 \
-                            --lr_loc 0.1 \
+                            --lr_loc 1 \
                             --sigma_p 0.05 \
                             --num_param ${PARAMS[$MODEL]} \
                             --trainval_split True \
