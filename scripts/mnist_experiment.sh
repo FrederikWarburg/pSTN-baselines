@@ -35,5 +35,6 @@ do
                     --dropout_rate 0 \
         		    --optimizer 'sgd' \
         		    --trainval_split True \
-                    --lr_loc 0.01 & 
+                    --moving_mean True \
+                    --lr_loc 0.01 &
 done

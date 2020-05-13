@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-#from libcpab.cpab import Cpab
+from libcpab.cpab import Cpab
 from torch.distributions.utils import _standard_normal
 
 
@@ -10,7 +10,9 @@ def init_transformer(opt):
         return AffineTransformer(), opt.N * opt.num_param
     elif opt.transformer_type == 'diffeomorphic':
         transformer = DiffeomorphicTransformer(opt)
-        return transformer, transformer.T.get_theta_dim() * opt.N
+        theta_dim = transformer.T.get_theta_dim()
+        opt.num_param = theta_dim
+        return transformer, theta_dim * opt.N
 
 
 class DiffeomorphicTransformer(nn.Module):
@@ -18,10 +20,11 @@ class DiffeomorphicTransformer(nn.Module):
         super().__init__()
         print("Use diffeomorphic transformer")
 
+        self.device = 'gpu' if torch.cuda.is_available() else 'cpu'
         if opt.xdim == 2:
-            self.T = Cpab(tess_size=[3, 3], device='gpu', zero_boundary=True, backend='pytorch')
+            self.T = Cpab(tess_size=[3, 3], device=self.device, zero_boundary=True, backend='pytorch')
         elif opt.xdim == 1:
-            self.T = Cpab(tess_size=[10], device='gpu', zero_boundary=True, backend='pytorch')
+            self.T = Cpab(tess_size=[10], device=self.device, zero_boundary=True, backend='pytorch')
         else:
             raise NotImplementedError
 
@@ -72,7 +75,6 @@ class AffineTransformer(nn.Module):
         return affine_matrix
 
     def make_affine_parameters(self, mean_params, std_params=None):
-
         if std_params is not None:
             eps = _standard_normal(
                 mean_params.shape, dtype=mean_params.dtype, device=mean_params.device)
@@ -94,9 +96,5 @@ class AffineTransformer(nn.Module):
 
         elif mean_params.shape[1] == 6:
             affine_matrix = mean_params.view([-1, 2, 3])
-            return affine_matrix
-
-
-
 
         return affine_matrix

@@ -1,14 +1,35 @@
 import torch.nn as nn
-
 from .functional import elbo
+import torch
+
+
+def initialize_mu_prior(opt):
+    if opt.moving_mean:
+        mu_p = None  # in this case it will get updated on the fly
+
+    elif opt.transformer_type == 'diffeomorphic':
+        theta_dim = opt.num_param * opt.N
+        print(theta_dim)
+        mu_p = torch.zeros((1, theta_dim))
+
+    elif opt.transformer_type == 'affine':
+        if opt.num_param == 4:
+            mu_p = torch.Tensor([0, 1, 0, 0])
+        # TODO?
+
+    else:
+        raise NotImplementedError
+
+    return mu_p
 
 
 class Elbo(nn.Module):
 
-    def __init__(self, sigma_p=0.1, annealing='reduce_kl'):
+    def __init__(self, opt, annealing='reduce_kl'):
         super(Elbo, self).__init__()
-
-        self.sigma_p = sigma_p
+        self.moving_mean = opt.moving_mean
+        self.sigma_p = opt.sigma_p
+        self.mu_p = initialize_mu_prior(opt)
         self.iter = 0.0
 
         # number of batches in epoch (only used for cyclic kl weighting)
@@ -35,7 +56,7 @@ class Elbo(nn.Module):
         x, mu, sigma = x
 
         # calculate terms of elbo
-        self.nll, self.kl, self.rec = elbo(x, mu, sigma, label, sigma_p=self.sigma_p)
+        self.nll, self.kl, self.rec = elbo(x, mu, sigma, label, mu_p=self.mu_p, sigma_p=self.sigma_p, moving_mean=self.moving_mean)
 
         # increment counter for each update
         self.iter += 1.0
@@ -44,4 +65,3 @@ class Elbo(nn.Module):
         alpha = self.annealing(self.iter, self.M)
 
         return self.nll + alpha * self.kl + self.rec
-

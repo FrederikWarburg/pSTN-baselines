@@ -9,9 +9,9 @@ SUBSETS=(10 30 100 1000 3000 10000)
 for SUBSET in {2..2}
 do
     echo ${SUBSETS[$SUBSET]}
-    for FOLD in {0..5}
+    for FOLD in {0..0}
     do
-        for MODEL in {0..2}
+        for MODEL in {2..2}
         do
             echo ${MODELS[$MODEL]}
             echo ${PARAMS[$MODEL]}
@@ -29,6 +29,7 @@ do
                             --seed 42 \
                             --model ${MODELS[$MODEL]} \
                             --N 1 \
+                            --num_param 0 \
                             --test_samples ${TEST_SAMPELS[$MODEL]} \
                             --train_samples ${TRAIN_SAMPELS[$MODEL]} \
                             --criterion ${CRITERION[$MODEL]} \
@@ -36,7 +37,7 @@ do
                             --lr 0.001 \
                             --lr_loc 1 \
                             --sigma_p 0.5 \
-                            --num_param ${PARAMS[$MODEL]} \
+                            --num_param 0 \
                             --trainval_split True \
                             --save_results True \
                             --savepath "test" \

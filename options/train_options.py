@@ -19,6 +19,7 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--step_size', type=float, default=50, help='Scheduler update every n (default 50) epochs')
 
         # loss related
+        self.parser.add_argument('--moving_mean', type=str2bool, nargs='?', const=False, default=False)
         self.parser.add_argument('--criterion', type=str, default='nll')
         self.parser.add_argument('--annealing', type=str, default='no_annealing')
 

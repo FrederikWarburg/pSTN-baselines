@@ -3,14 +3,15 @@ import torch.nn.functional as F
 from torch.distributions import MultivariateNormal, kl
 
 
-def kl_div(mu, sigma, sigma_p, reduction='mean'):
+def kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', moving_mean=False):
     batch_size, params = mu.shape
 
     sigma = torch.diag_embed(sigma)
-    mu_prior = torch.zeros_like(mu, device=mu.device)
+    mu_prior = mu if moving_mean else mu_p
+
     sigma_p = sigma_p * torch.eye(params, device=mu.device).unsqueeze(0).repeat(batch_size, 1, 1)
 
-    p = MultivariateNormal(loc=mu, scale_tril=sigma_p)
+    p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_p)
     q = MultivariateNormal(loc=mu, scale_tril=sigma)
 
     kl_loss = kl.kl_divergence(q, p)
@@ -21,12 +22,12 @@ def kl_div(mu, sigma, sigma_p, reduction='mean'):
         return kl_loss.sum()
 
 
-def elbo(x, mu, sigma, label, sigma_p=0.1):
+def elbo(x, mu, sigma, label, mu_p, sigma_p=0.1, moving_mean=False):
     # NLL LOSS
     nll_loss = F.nll_loss(x, label, reduction='mean')
 
     # KL LOSS
-    kl_loss = kl_div(mu, sigma, sigma_p, reduction='mean')
+    kl_loss = kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', moving_mean=moving_mean)
 
     # RECONSTRUCTION LOSS
     reconstruction_loss = 0
