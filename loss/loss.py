@@ -4,7 +4,7 @@ import torch
 
 
 def initialize_mu_prior(opt):
-    device = 'gpu' if torch.cuda.is_available() else 'cpu'
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     if opt.moving_mean:
         mu_p = None  # in this case it will get updated on the fly
