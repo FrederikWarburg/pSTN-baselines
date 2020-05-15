@@ -4,17 +4,18 @@ import torch
 
 
 def initialize_mu_prior(opt):
+    device = 'gpu' if torch.cuda.is_available() else 'cpu'
+
     if opt.moving_mean:
         mu_p = None  # in this case it will get updated on the fly
 
     elif opt.transformer_type == 'diffeomorphic':
         theta_dim = opt.num_param * opt.N
-        print(theta_dim)
-        mu_p = torch.zeros((1, theta_dim))
+        mu_p = torch.zeros((1, theta_dim), device=device)
 
     elif opt.transformer_type == 'affine':
         if opt.num_param == 4:
-            mu_p = torch.Tensor([0, 1, 0, 0])
+            mu_p = torch.Tensor([0, 1, 0, 0], device=device)
         # TODO?
 
     else:

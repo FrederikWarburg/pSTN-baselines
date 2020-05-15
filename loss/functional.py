@@ -7,7 +7,7 @@ def kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', moving_mean=False):
     batch_size, params = mu.shape
 
     sigma = torch.diag_embed(sigma)
-    mu_prior = mu if moving_mean else mu_p
+    mu_prior = mu if moving_mean else mu_p.repeat(batch_size, 1) # am I missing an N here?
 
     sigma_p = sigma_p * torch.eye(params, device=mu.device).unsqueeze(0).repeat(batch_size, 1, 1)
 
@@ -36,7 +36,7 @@ def elbo(x, mu, sigma, label, mu_p, sigma_p=0.1, moving_mean=False):
     return nll_loss, kl_loss, reconstruction_loss
 
 
-def no_annealing(iter, M = None):
+def no_annealing(iter, M=None):
     return 1
 
 def no_kl(iter, M = None):
