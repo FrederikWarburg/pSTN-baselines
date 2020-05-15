@@ -8,7 +8,7 @@ TRAIN_SAMPELS=(2 2 1 1 1)
 CRITERION=("elbo" "elbo" "nll" "nll" "nll" "nll" "elbo")
 MAXEPOCHS=50
 #DATASETSIZES=(100 250 500 1000 2500 5000)
-DATAAUGMENTATION=("f" "f" "f" "t" "f")
+DATAAUGMENTATION=("None" "None" "None" "standard" "None")
 GPUS=(0 6 1 2 3 6 6 6)
 
 #for DATASETSIZE in {0..5}

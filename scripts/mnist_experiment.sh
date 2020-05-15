@@ -8,7 +8,7 @@ TEST_SAMPELS=(1 1 1 1 10)
 TRAIN_SAMPELS=(1 1 1 1 2)
 CRITERION=("nll" "nll" "nll" "nll" "elbo")
 GPUS=(1 2 3 4 1 2 3 4)
-DATAAUGMENTATION=("f" "t" "f" "t" "f")
+DATAAUGMENTATION=("None" "standard" "None" "standard" "None")
 
 for MODEL in {0..4}
 do

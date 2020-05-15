@@ -71,6 +71,8 @@ class BaseOptions:
         self.parser.add_argument('--name', type=str, default='debug',
                                  help='name of the experiment. It decides where to store samples and models')
         self.parser.add_argument('--checkpoints_dir', type=str, default='checkpoints', help='models are saved here')
+        self.parser.add_argument('--test_on', type=str, default='test', help='evaluate on validation or test?')
+        self.parser.add_argument('--results_folder', type=str, default='mnist_results')
 
         # visualization params
         self.parser.add_argument('--export_folder', type=str, default='',

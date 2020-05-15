@@ -7,19 +7,19 @@ TRAIN_SAMPELS=(1 1 1)
 CRITERION=("nll" "nll" "elbo")
 SUBSETS=(10 30 100 1000 3000 10000)
 
-for SUBSET in {0..5}
+for SUBSET in {0..0}
 do
     echo ${SUBSETS[$SUBSET]}
-    for FOLD in {0..4}
+    for FOLD in {0..0}
     do
-        for MODEL in {2..2}
+        for MODEL in {0..0}
         do
             echo ${MODELS[$MODEL]}
             echo ${PARAMS[$MODEL]}
             echo ${TEST_SAMPELS[$MODEL]}
             echo ${TRAIN_SAMPELS[$MODEL]}
             echo ${CRITERION[$MODEL]}
-            CUDA_VISIBLE_DEVICES=6 python train.py --dataroot '../ProbabilisticSpatialTransformer/data' \
+            CUDA_VISIBLE_DEVICES=6 python train.py --dataroot 'data' \
                             --dataset "MNIST" \
                             --subset ${SUBSETS[$SUBSET]} \
                             --fold ${FOLD} \
@@ -46,8 +46,11 @@ do
                             --weightDecay 0.01 \
                             --transformer_type "affine" \
                             --step_size 600 \
-                            --val_check_interval 600 \
-                            --optimize_temperature False
+                            --val_check_interval 1 \
+                            --optimize_temperature False \
+                            --data_augmentation 'standard' \
+                            --test_on 'test' \
+                            --results_folder 'grid_search_mnist_results'
         done
     done
 done

@@ -71,4 +71,10 @@ if __name__ == '__main__':
         trainer.save_checkpoint("checkpoints/%s.ckpt" % modelname)
 
     # test model
-    trainer.test(lightning_system)
+    if opt.test_on == 'test':
+        test_dataloader = lightning_system.test_dataloader()
+
+    elif opt.test_on == 'val':
+        test_dataloader = [lightning_system.val_dataloader()]
+
+    trainer.test(lightning_system, test_dataloaders=test_dataloader)

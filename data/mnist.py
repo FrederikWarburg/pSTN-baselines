@@ -21,36 +21,50 @@ def transform_image_affine(x, opt):
     return x_transformed.squeeze(0)
 
 
-def make_mnist_subset(opt, mode):
-    # print('MODE is ', mode)
-    train_trafo_no_DA = transforms.Compose(
-        [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
+def get_trafo(opt):
+    train_trafo_no_DA = transforms.Compose([
+        transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
     test_trafo = train_trafo_no_DA
-    train_trafo_DA = transforms.Compose(
-        [transforms.ToTensor(),
-         transforms.Normalize((0.1307,), (0.3081,)),
-         lambda x: transform_image_affine(x, opt)])
 
-    test_transformation = test_trafo
-    train_transformation = train_trafo_DA if opt.data_augmentation else train_trafo_no_DA
+    if opt.data_augmentation == 'None':
+        train_trafo = train_trafo_no_DA
+
+    elif opt.data_augmentation == 'standard':
+        train_trafo = transforms.Compose(
+            [transforms.ToTensor(),
+             transforms.Normalize((0.1307,), (0.3081,)),
+             lambda x: transform_image_affine(x, opt)])
+    elif opt.data_augmentation == 'RandAugment':
+        pass
+    elif opt.data_augmentation == 'AffineRandAugment':
+        pass
+    else:
+        print('Please pass valid DA method!')
+    return train_trafo, test_trafo
+
+
+def make_mnist_subset(opt, mode):
+    train_trafo, test_trafo = get_trafo(opt)
+
+    if mode == 'train':
+        train_indices = np.load(
+            '%s/subset_indices/MNIST%s_train_indices_fold_%s.npy' % (opt.dataroot, opt.subset, opt.fold))
+        full_training_data = datasets.MNIST(
+            root=opt.dataroot, train=True, download=True, transform=train_trafo)
+        dataset = Subset(full_training_data, train_indices)
+
+    if mode == 'val':
+        full_training_data_no_trafo = datasets.MNIST(
+            root=opt.dataroot, train=True, download=True, transform=test_trafo)
+        # validation_indices = np.load('%s/subset_indices/MNIST_validation_indices.npy' %opt.dataroot)
+        validation_indices = np.load(
+            '%s/subset_indices/MNIST%s_train_indices_fold_%s.npy' % (opt.dataroot, opt.subset, opt.fold))[:8]
+        dataset = Subset(full_training_data_no_trafo, validation_indices)
 
     if mode == 'test':
         dataset = datasets.MNIST(
-            root=opt.dataroot, train=False, transform=test_transformation)
-    else:
-        train_indices = np.load(
-            '%s/subset_indices/MNIST%s_train_indices_fold_%s.npy' % (opt.dataroot, opt.subset, opt.fold))
-        print(train_indices)
+            root=opt.dataroot, train=False, transform=test_trafo)
 
-        validation_indices = np.load('%s/subset_indices/MNIST_validation_indices.npy' %opt.dataroot)
-        full_training_data = datasets.MNIST(
-            root=opt.dataroot, train=True, download=True, transform=train_transformation)
-        if mode == 'train':
-            dataset = Subset(full_training_data, train_indices)
-        if mode == 'val':
-            dataset = Subset(full_training_data, validation_indices)
-
-        print(len(train_indices), 'train images - ', len(validation_indices), 'val_images')
     return dataset
 
 
@@ -65,11 +79,9 @@ class MnistXKmnist(Dataset):
         transform = [transforms.Normalize((0.1307,), (0.3081,))]
         if mode in ['train'] and opt.data_augmentation:
             print("data augmentation", mode, opt.data_augmentation)
-            transform.append( lambda x: transform_image_affine(x, opt))
+            transform.append(lambda x: transform_image_affine(x, opt))
 
         self.transform = transforms.Compose(transform)
-
-
         self.datasets.append(datasets.MNIST(opt.dataroot,
                                             transform=transforms.Compose([
                                                 transforms.ToTensor()
