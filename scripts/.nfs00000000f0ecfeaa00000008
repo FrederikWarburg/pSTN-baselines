@@ -12,7 +12,7 @@ do
     echo ${SUBSETS[$SUBSET]}
     for FOLD in {0..4}
     do
-        for MODEL in {2..2}
+        for MODEL in {0..2}
         do
             echo ${MODELS[$MODEL]}
             echo ${PARAMS[$MODEL]}
