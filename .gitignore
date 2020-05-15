@@ -7,3 +7,4 @@ data/MNIST
 data/subset_indices
 UQ/
 experiments/
+*.pyc

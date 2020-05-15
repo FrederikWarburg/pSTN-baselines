@@ -13,7 +13,8 @@ def kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', moving_mean=False):
 
     p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_p)
     q = MultivariateNormal(loc=mu, scale_tril=sigma)
-
+    print('Moving mean is', moving_mean)
+    print('devices are', mu.device, sigma.device, mu_prior.device, sigma_p.device)
     kl_loss = kl.kl_divergence(q, p)
 
     if reduction == 'mean':
