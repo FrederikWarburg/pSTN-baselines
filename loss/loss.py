@@ -11,11 +11,11 @@ def initialize_mu_prior(opt):
 
     elif opt.transformer_type == 'diffeomorphic':
         theta_dim = opt.num_param * opt.N
-        mu_p = torch.zeros((1, theta_dim), device=device)
+        mu_p = torch.zeros((1, theta_dim)).to(device)
 
     elif opt.transformer_type == 'affine':
         if opt.num_param == 4:
-            mu_p = torch.Tensor([0, 1, 0, 0], device=device)
+            mu_p = torch.Tensor([0, 1, 0, 0]).to(device)
         # TODO?
 
     else:
