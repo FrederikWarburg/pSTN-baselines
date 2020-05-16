@@ -56,9 +56,7 @@ def make_mnist_subset(opt, mode):
     if mode == 'val':
         full_training_data_no_trafo = datasets.MNIST(
             root=opt.dataroot, train=True, download=True, transform=test_trafo)
-        # validation_indices = np.load('%s/subset_indices/MNIST_validation_indices.npy' %opt.dataroot)
-        validation_indices = np.load(
-            '%s/subset_indices/MNIST%s_train_indices_fold_%s.npy' % (opt.dataroot, opt.subset, opt.fold))[:8]
+        validation_indices = np.load('%s/subset_indices/%s_validation_indices.npy' % (opt.dataroot, opt.dataset))
         dataset = Subset(full_training_data_no_trafo, validation_indices)
 
     if mode == 'test':

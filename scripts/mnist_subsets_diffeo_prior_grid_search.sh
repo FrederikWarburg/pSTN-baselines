@@ -1,16 +1,16 @@
 #!/bin/sh
 
 SUBSETS=(10 30 100 1000 3000 10000)
-PRIORS=(0.1, 0.3, 0.5, 0.7, 0.9)
+PRIORS=(0.1 0.3 0.5 0.7 0.9)
 
 for SUBSET in {0..5}
 do
     echo ${SUBSETS[$SUBSET]}
     for PRIOR in {0..8}
     do
-        for FOLD in {0..2} # only do 2 folds for the grid search to limit computation time
+        for FOLD in {0..1} # only do 2 folds for the grid search to limit computation time
         do
-            CUDA_VISIBLE_DEVICES=6 python train.py --dataroot '../ProbabilisticSpatialTransformer/data' \
+            CUDA_VISIBLE_DEVICES=6 python train.py --dataroot 'data' \
                                 --dataset "MNIST" \
                                 --subset ${SUBSETS[$SUBSET]} \
                                 --fold ${FOLD} \
@@ -20,7 +20,7 @@ do
                                 --epochs 600 \
                                 --seed 42 \
                                 --model "pstn" \
-                                --num_param 4 \
+                                --num_param 0 \
                                 --N 1 \
                                 --test_samples 10 \
                                 --train_samples 1 \
@@ -38,8 +38,9 @@ do
                                 --transformer_type "affine" \
                                 --step_size 600 \
                                 --val_check_interval 600 \
-                                --grid_search_exp True \
-                                --optimize_temperature False
+                                --optimize_temperature False \
+                                --results_folder "grid_search_mnist_diffeo" \
+                                --test_on "val"
         done
     done
 done
