@@ -68,6 +68,7 @@ class TimeseriesPSTN(nn.Module):
         gaussian = distributions.normal.Normal(0, 1)
         epsilon = gaussian.sample(sample_shape=x.shape).to(x.device)
         x = x + self.sigma_n * epsilon
+        # print('theta mu:', theta_mu, '\n theta_sigma:', theta_sigma)
 
         return x, (theta_mu, theta_sigma), params
 

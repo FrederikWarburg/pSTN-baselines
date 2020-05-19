@@ -40,6 +40,7 @@ if __name__ == '__main__':
       num_batches = None
     else:
       num_batches = 256 // opt.batch_size
+
     val_check_interval = opt.val_check_interval if opt.val_check_interval < 1 else int(opt.val_check_interval)
     # Initialize pytorch-lightning trainer with good defaults
     trainer = Trainer(max_epochs=opt.epochs,
@@ -52,7 +53,8 @@ if __name__ == '__main__':
                       distributed_backend='dp',
                       checkpoint_callback=False)
 
-    # check_learnable_parameters(lightning_system.model, opt.model)
+    print('printing parameter check:')
+    check_learnable_parameters(lightning_system.model, opt.model)
 
     if opt.resume_from_ckpt:
         print('Loading model.')
