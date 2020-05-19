@@ -6,12 +6,12 @@ TRAIN_SAMPELS=(1 1 1)
 CRITERION=("nll" "nll" "elbo")
 SUBSETS=(10 30 100 1000 3000 10000)
 
-for SUBSET in {0..5}
+for SUBSET in {4..5}
 do
     echo ${SUBSETS[$SUBSET]}
     for FOLD in {0..4}
     do
-        for MODEL in {0..2}
+        for MODEL in {1..2}
         do
             echo ${MODELS[$MODEL]}
             echo ${PARAMS[$MODEL]}
@@ -46,6 +46,7 @@ do
                             --transformer_type "diffeomorphic" \
                             --step_size 600 \
                             --val_check_interval 600 \
+			    --results_folder 'mnist_results' \
                             --optimize_temperature False
         done
     done
