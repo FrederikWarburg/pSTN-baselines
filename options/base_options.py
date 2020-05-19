@@ -86,9 +86,14 @@ class BaseOptions:
             self.initialize()
         self.opt, unknown = self.parser.parse_known_args()
         self.opt.is_train = self.is_train  # train or test
-        if not self.opt.is_train:
-            self.opt.data_augmentation = self.data_augmentation  # train or test
-            self.opt.horizontal_flip = self.horizontal_flip  # train or test
+
+        if self.opt.is_train:
+            self.opt.data_augmentation = str2bool(self.opt.data_augmentation)
+            self.opt.horizontal_flip = str2bool(self.opt.horizontal_flip )
+        else:
+            self.opt.data_augmentation = self.data_augmentation 
+            self.opt.horizontal_flip = self.horizontal_flip  
+
         self.opt.no_shuffle = self.no_shuffle  # train or test
         self.opt.xdim = 1 if self.opt.dataset in TIMESERIESDATASETS else 2
 

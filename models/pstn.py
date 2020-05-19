@@ -98,7 +98,7 @@ class PSTN(nn.Module):
             # during training we want to return the mean as well as mu and sigma as the elbo uses all for optimization
             # return (x, mu, sigma)
         else:
-            x = torch.log(torch.tensor(1 / self.pstn.S)) + torch.logsumexp(x, dim=0)
+            x = torch.log(torch.tensor(1.0 / float(self.pstn.S))) + torch.logsumexp(x, dim=0)
             x = x.view(batch_size, self.num_classes)
 
         return x, theta
