@@ -72,7 +72,7 @@ class PSTN(nn.Module):
                 torch.tensor([1e-5], dtype=torch.float).repeat(self.pstn.theta_dim))
             self.pstn.fc_loc_std[-2].weight.data.zero_()
 
-            if opt.dataset.lower() in opt.TIMESERIESDATASETS:
+            if opt.dataset in opt.TIMESERIESDATASETS:
                 self.pstn.fc_loc_std[-2].bias.data.copy_(
                      torch.tensor([-2], dtype=torch.float).repeat(self.pstn.theta_dim))
 
@@ -96,9 +96,9 @@ class PSTN(nn.Module):
             x = x.view(batch_size, self.num_classes)
 
             # during training we want to return the mean as well as mu and sigma as the elbo uses all for optimization
-            return (x, mu, sigma)
+            # return (x, mu, sigma)
         else:
             x = torch.log(torch.tensor(1 / self.pstn.S)) + torch.logsumexp(x, dim=0)
             x = x.view(batch_size, self.num_classes)
 
-        return x
+        return x, theta

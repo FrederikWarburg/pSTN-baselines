@@ -6,6 +6,12 @@ import pickle
 def get_exp_name(opt):
     modelname = "d={}-m={}-b={}-n={}-p={}".format(opt.dataset, opt.model, opt.basenet, opt.N, opt.num_param)
 
+    if opt.subset is not None:
+        modelname = "d={}{}-m={}-b={}-n={}-p={}".format(opt.dataset, opt.subset, opt.model, opt.basenet, opt.N, opt.num_param)
+
+    if opt.fold is not None:
+        modelname += '-fold=' + str(opt.fold)
+
     if opt.dataset.lower() == 'celeba':
         modelname += '-a=' + str(opt.target_attr)
 
@@ -34,14 +40,28 @@ def mkdir(path):
 def save_results(opt, avg_loss, avg_acc):
     if opt.dataset.lower() == 'celeba':
         save_celeba(opt, avg_loss, avg_acc)
-
     if "mnist" in opt.dataset.lower():
-        if not os.path.exists('experiments/%s' % opt.results_folder):
-            os.mkdir('experiments/%s' % opt.results_folder)
-        MNIST_RESULTS_PATH = 'experiments/%s/%s_mnist%s_%s_fold_%s_DA=%s_%s_' %(
-            opt.results_folder, opt.model, opt.subset, opt.sigma_p, opt.fold, opt.data_augmentation, opt.transformer_type)
-        pickle.dump(avg_acc.cpu().numpy(), open(MNIST_RESULTS_PATH + 'test_accuracy.p', 'wb'))
-        pickle.dump(avg_loss.cpu().numpy(), open(MNIST_RESULTS_PATH + 'test_loss.p', 'wb'))
+        save_mnist(opt, avg_loss, avg_acc)
+    if opt.dataset in opt.TIMESERIESDATASETS:
+        save_timeseries(opt, avg_loss, avg_acc)
+
+
+def save_timeseries(opt, avg_loss, avg_acc):
+    if not os.path.exists('experiments/%s' % opt.results_folder):
+        mkdir('experiments/%s' % opt.results_folder)
+    RESULTS_PATH = 'experiments/%s/%s_%s_%s_fold_%s_DA=%s_' % (
+        opt.results_folder, opt.model, opt.dataset, opt.sigma_p, opt.fold, opt.data_augmentation)
+    pickle.dump(avg_acc.cpu().numpy(), open(RESULTS_PATH + 'test_accuracy.p', 'wb'))
+    pickle.dump(avg_loss.cpu().numpy(), open(RESULTS_PATH + 'test_loss.p', 'wb'))
+
+
+def save_mnist(opt, avg_loss, avg_acc):
+    if not os.path.exists('experiments/%s' % opt.results_folder):
+        mkdir('experiments/%s' % opt.results_folder)
+    RESULTS_PATH = 'experiments/%s/%s_mnist%s_%s_fold_%s_DA=%s_%s_' % (
+        opt.results_folder, opt.model, opt.subset, opt.sigma_p, opt.fold, opt.data_augmentation, opt.transformer_type)
+    pickle.dump(avg_acc.cpu().numpy(), open(RESULTS_PATH + 'test_accuracy.p', 'wb'))
+    pickle.dump(avg_loss.cpu().numpy(), open(RESULTS_PATH + 'test_loss.p', 'wb'))
 
 
 def save_celeba(opt, avg_loss, avg_acc):

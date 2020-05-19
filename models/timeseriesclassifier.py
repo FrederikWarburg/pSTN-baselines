@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import torch.nn as nn
 import torch.nn.functional as F
+import torch
 
 from utils import timeseries_io as io
 
@@ -38,6 +39,8 @@ class TimeseriesClassifier(nn.Module):
         super(TimeseriesClassifier, self).__init__()
         self.parameter_dict = self.load_specifications(opt)
         self.nr_classes = io.get_nr_classes_and_features(opt.dataset)[0]
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.T = torch.ones(1, requires_grad=False, device=device)  # softmax temperature parameter
 
         self.CNN = nn.Sequential(
             nn.Conv1d(1, self.parameter_dict['CNN_filters1'],

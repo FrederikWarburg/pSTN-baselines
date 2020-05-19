@@ -25,7 +25,7 @@ def convert_image_np(inp, dataset='mnist'):
     # normalize
     inp = std * inp + mean
     inp = np.clip(inp, 0, 1)
-    
+
     return inp
 
 
@@ -114,7 +114,6 @@ def visualize_stn(model, data, opt):
             plt.close(); plt.close(); plt.close()
 
             if opt.model.lower() == 'cnn':
-                print('returning ', in_grid.shape, in_grid.dtype)
                 return image, None, None, None
 
             if opt.model.lower() == 'stn':

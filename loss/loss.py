@@ -51,10 +51,8 @@ class Elbo(nn.Module):
 
         self.annealing = annealing
 
-    def forward(self, x, label):
-
-        # split x into its stacked components
-        x, mu, sigma = x
+    def forward(self, x, theta, label):
+        mu, sigma = theta
 
         # calculate terms of elbo
         self.nll, self.kl, self.rec = elbo(x, mu, sigma, label, mu_p=self.mu_p, sigma_p=self.sigma_p, moving_mean=self.moving_mean)

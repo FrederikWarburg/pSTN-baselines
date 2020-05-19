@@ -150,4 +150,4 @@ class MnistSTN(nn.Module):
         theta_upsample = theta.view(batch_size * self.N, self.theta_dim)
         x, params = self.transformer(x, theta_upsample)
 
-        return x, theta_upsample, params
+        return x, theta, params

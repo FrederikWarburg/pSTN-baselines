@@ -6,14 +6,16 @@ TRAIN_SAMPELS=(1 1 1)
 CRITERION=("nll" "nll" "elbo")
 DATASETS=("FaceAll" "wafer" "uWaveGestureLibrary_X" "Two_Patterns"
  "StarLightCurves" "PhalangesOutlinesCorrect" "FordA")
-NR_CLASSES=(14 2 8 14 4 3 2 2)
+NR_CLASSES=(14 2 8 4 3 2 2)
 PRIORS=(0.1 0.1 0.1 0.6 0.2 0.1 0.1)
 
 for DATASET in {0..6}
 do
     echo ${DATASETS[$DATASET]}
-    for MODEL in {2..2}
+    for FOLD in {0..0}
     do
+        for MODEL in {1..1}
+        do
         echo ${MODELS[$MODEL]}
         echo ${PARAMS[$MODEL]}
         echo ${TEST_SAMPELS[$MODEL]}
@@ -21,6 +23,7 @@ do
         echo ${CRITERION[$MODEL]}
         CUDA_VISIBLE_DEVICES=0 python train.py --dataroot 'data' \
                         --dataset ${DATASETS[$DATASET]} \
+                        --fold ${FOLD} \
                         --batch_size 16 \
                         --num_classes ${NR_CLASSES[$DATASET]}  \
                         --num_threads 1 \
@@ -36,7 +39,7 @@ do
                         --lr 0.001 \
                         --lr_loc 0.1 \
                         --sigma_p ${PRIORS[$DATASET]} \
-                        --run_test_freq 100 \
+                        --run_test_freq 200 \
                         --trainval_split True \
                         --save_results True \
                         --savepath "test" \
@@ -45,6 +48,8 @@ do
                         --transformer_type "diffeomorphic" \
                         --step_size 200 \
                         --val_check_interval 200 \
-
+                        --optimize_temperature False \
+                        --results_folder "timeseries_results"
+        done
     done
 done
