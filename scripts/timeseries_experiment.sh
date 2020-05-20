@@ -12,9 +12,9 @@ PRIORS=(0.1 0.1 0.1 0.6 0.2 0.1 0.1)
 for DATASET in {0..6}
 do
     echo ${DATASETS[$DATASET]}
-    for FOLD in {0..0}
+    for FOLD in {0..5}
     do
-        for MODEL in {1..1}
+        for MODEL in {0..2}
         do
         echo ${MODELS[$MODEL]}
         echo ${PARAMS[$MODEL]}
