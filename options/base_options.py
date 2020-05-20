@@ -91,8 +91,8 @@ class BaseOptions:
             #self.opt.data_augmentation = str2bool(self.opt.data_augmentation)
             self.opt.horizontal_flip = str2bool(self.opt.horizontal_flip )
         else:
-            self.opt.data_augmentation = self.data_augmentation 
-            self.opt.horizontal_flip = self.horizontal_flip  
+            self.opt.data_augmentation = self.data_augmentation
+            self.opt.horizontal_flip = self.horizontal_flip
 
         self.opt.no_shuffle = self.no_shuffle  # train or test
         self.opt.xdim = 1 if self.opt.dataset in TIMESERIESDATASETS else 2

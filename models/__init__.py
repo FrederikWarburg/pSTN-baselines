@@ -162,6 +162,7 @@ class System(pl.LightningModule):
 
         # unpack batch
         x, y = batch
+        print('batch size is', x.shape[0])
 
         # forward image
         y_hat, theta = self.forward(x)
@@ -174,7 +175,7 @@ class System(pl.LightningModule):
         if batch_idx == 0:
             print("Visualize during test")
             # calculate different visualizations
-            grid_in, grid_out, theta, bbox_images = visualize_stn(self.model, x, self.opt)
+            grid_in, grid_out, _, bbox_images = visualize_stn(self.model, x, self.opt)
             # add these to tensorboard
             self.add_images(grid_in, grid_out, bbox_images)
 
@@ -183,6 +184,7 @@ class System(pl.LightningModule):
         theta_sigma = None
         if 'stn' in self.opt.model.lower():
             theta_mu = theta[0]
+            print('theta mu is size', theta_mu.shape)
         if self.opt.model.lower() == 'pstn':
             theta_sigma = theta[1]
 
