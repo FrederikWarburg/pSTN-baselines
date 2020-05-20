@@ -14,14 +14,14 @@ do
     echo ${DATASETS[$DATASET]}
     for FOLD in {0..5}
     do
-        for MODEL in {0..2}
+        for MODEL in {2..2}
         do
         echo ${MODELS[$MODEL]}
         echo ${PARAMS[$MODEL]}
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        CUDA_VISIBLE_DEVICES=7 python train.py --dataroot 'data' \
+        CUDA_VISIBLE_DEVICES=5 python train.py --dataroot 'data' \
                         --dataset ${DATASETS[$DATASET]} \
                         --fold ${FOLD} \
                         --batch_size 16 \
