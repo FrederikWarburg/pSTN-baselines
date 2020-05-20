@@ -88,7 +88,7 @@ class BaseOptions:
         self.opt.is_train = self.is_train  # train or test
 
         if self.opt.is_train:
-            self.opt.data_augmentation = str2bool(self.opt.data_augmentation)
+            #self.opt.data_augmentation = str2bool(self.opt.data_augmentation)
             self.opt.horizontal_flip = str2bool(self.opt.horizontal_flip )
         else:
             self.opt.data_augmentation = self.data_augmentation 
