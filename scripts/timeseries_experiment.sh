@@ -9,19 +9,19 @@ DATASETS=("FaceAll" "wafer" "uWaveGestureLibrary_X" "Two_Patterns"
 NR_CLASSES=(14 2 8 4 3 2 2)
 PRIORS=(0.1 0.1 0.1 0.6 0.2 0.1 0.1)
 
-for DATASET in {0..6}
+for DATASET in {0..7}
 do
     echo ${DATASETS[$DATASET]}
     for FOLD in {0..5}
     do
-        for MODEL in {0..2}
+        for MODEL in {2..2}
         do
         echo ${MODELS[$MODEL]}
         echo ${PARAMS[$MODEL]}
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        CUDA_VISIBLE_DEVICES=0 python train.py --dataroot 'data' \
+        CUDA_VISIBLE_DEVICES=5 python train.py --dataroot 'data' \
                         --dataset ${DATASETS[$DATASET]} \
                         --fold ${FOLD} \
                         --batch_size 16 \
@@ -49,7 +49,8 @@ do
                         --step_size 200 \
                         --val_check_interval 200 \
                         --optimize_temperature False \
-                        --results_folder "timeseries_results"
+                        --results_folder "timeseries_results" \
+			--data_augmentation "False"
         done
     done
 done

@@ -10,7 +10,7 @@ do
     do
         for FOLD in {0..1} # only do 2 folds for the grid search to limit computation time
         do
-            CUDA_VISIBLE_DEVICES=2 python train.py --dataroot 'data' \
+            CUDA_VISIBLE_DEVICES=3 python train.py --dataroot 'data' \
                                 --dataset "MNIST" \
                                 --subset ${SUBSETS[$SUBSET]} \
                                 --fold ${FOLD} \

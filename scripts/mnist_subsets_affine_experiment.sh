@@ -10,9 +10,9 @@ SUBSETS=(10 30 100 1000 3000 10000)
 for SUBSET in {5..5}
 do
     echo ${SUBSETS[$SUBSET]}
-    for FOLD in {0..0}
+    for FOLD in {0..5}
     do
-        for MODEL in {0..0}
+        for MODEL in {0..2}
         do
             echo ${MODELS[$MODEL]}
             echo ${PARAMS[$MODEL]}
