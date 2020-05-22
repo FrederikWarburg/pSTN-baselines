@@ -208,9 +208,9 @@ class System(pl.LightningModule):
 
         if self.opt.save_results:
             # concatenate UQ results
-            probabilities = torch.stack([x['probabilities'] for x in outputs]).cpu().numpy()
-            correct_predictions = torch.stack([x['correct_prediction'] for x in outputs]).cpu().numpy()
-            correct = torch.stack([x['correct'] for x in outputs]).cpu().numpy()
+            # probabilities = torch.stack([x['probabilities'] for x in outputs]).cpu().numpy()
+            # correct_predictions = torch.stack([x['correct_prediction'] for x in outputs]).cpu().numpy()
+            # correct = torch.stack([x['correct'] for x in outputs]).cpu().numpy()
 
             # concatenate and save thetas
             theta_path = 'theta_stats/' + modelname
@@ -222,10 +222,10 @@ class System(pl.LightningModule):
                 pickle.dump(theta_sigma, open(theta_path + '_sigma.p', 'wb'))
 
             # save UQ results
-            UQ_path = 'UQ/' + modelname
-            results = {'probabilities': probabilities, 'correct_prediction': correct_predictions,
-                      'correct': correct}
-            pickle.dump(results, open(UQ_path + '_results.p', 'wb'))
+            # UQ_path = 'UQ/' + modelname
+            # results = {'probabilities': probabilities, 'correct_prediction': correct_predictions,
+            #          'correct': correct}
+            # pickle.dump(results, open(UQ_path + '_results.p', 'wb'))
 
             # add to tensorboard
             tensorboard_logs = OrderedDict({'test_loss': avg_loss, 'test_acc': avg_acc})

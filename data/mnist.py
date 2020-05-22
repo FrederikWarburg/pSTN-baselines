@@ -108,7 +108,7 @@ class MnistXKmnist(Dataset):
 
             c, w, h = im1.shape
 
-            x = i * w + i * 8  # np.random.randint(0,32-w)
+            x = np.random.randint(0,32)
 
             im[:, y:y + h, x:x + w] = im1.type(torch.float)
             target += str(target1)
