@@ -184,7 +184,6 @@ class System(pl.LightningModule):
         theta_sigma = None
         if 'stn' in self.opt.model.lower():
             theta_mu = theta[0]
-            print('theta mu is size', theta_mu.shape)
         if self.opt.model.lower() == 'pstn':
             theta_sigma = theta[1]
 
