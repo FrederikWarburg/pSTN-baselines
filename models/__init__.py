@@ -162,7 +162,6 @@ class System(pl.LightningModule):
 
         # unpack batch
         x, y = batch
-        print('batch size is', x.shape[0])
 
         # forward image
         y_hat, theta = self.forward(x)

@@ -27,10 +27,12 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--freeze_layers', type=int, default=np.inf)
 
         # pre-processing related
-        #self.parser.add_argument('--data_augmentation', type=bool, default=False)
+        # self.parser.add_argument('--data_augmentation', type=bool, default=False)
         # self.parser.add_argument('--data_augmentation', type=str2bool, nargs='?', const=True, default=False, help="Activate data augmentation")
         self.parser.add_argument('--horizontal_flip', type=str2bool, nargs='?', const=True, default=False)
         self.parser.add_argument('--data_augmentation', type=str, default='None')
+        self.parser.add_argument('--rand_augment_N', type=int, default=0)
+        self.parser.add_argument('--rand_augment_M', type=int, default=0)
 
         # Evaluation related
         self.parser.add_argument('--val_percent_check', type=float, default=1.0, help='percentage of validation set to check')

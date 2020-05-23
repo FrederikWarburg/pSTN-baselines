@@ -12,6 +12,9 @@ def get_exp_name(opt):
     if opt.fold is not None:
         modelname += '-fold=' + str(opt.fold)
 
+    if 'RandAugment' in opt.data_augmentation:
+        modelname += '-randaug_N=%s-randaug_M=%s' % (opt.rand_augment_N, opt.rand_augment_M)
+
     if opt.dataset.lower() == 'celeba':
         modelname += '-a=' + str(opt.target_attr)
 

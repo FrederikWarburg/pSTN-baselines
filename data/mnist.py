@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torch import distributions
 from torch.utils.data import Dataset, Subset
 from torchvision import transforms, datasets
-# from RandAugment import RandAugment
+from RandAugment import RandAugment
 
 from utils import transformers
 
@@ -37,12 +37,12 @@ def get_trafo(opt):
              lambda x: transform_image_affine(x, opt)])
 
     elif opt.data_augmentation == 'RandAugment':
-        pass
+        train_trafo = train_trafo_no_DA
+        train_trafo.transforms.insert(0, RandAugment(opt.rand_augment_N, opt.rand_augment_M, 'full'))
 
     elif opt.data_augmentation == 'AffineRandAugment':
-        pass
-        # train_trafo = train_trafo_no_DA
-        # train_trafo.transforms.insert(0, RandAugment(opt.N, opt.M))
+        train_trafo = train_trafo_no_DA
+        train_trafo.transforms.insert(0, RandAugment(opt.rand_augment_N, opt.rand_augment_M, 'affine'))
 
     else:
         print('Please pass valid DA method!')
