@@ -12,7 +12,7 @@ do
     echo ${SUBSETS[$SUBSET]}
     for FOLD in {0..2}
     do
-        for MODEL in {0..1} # run pstn later when we have optimal sigma vals
+        for MODEL in {0..0} # run pstn later when we have optimal sigma vals
         do
             for N in {0..4}
             do
@@ -23,7 +23,7 @@ do
                     echo ${TEST_SAMPELS[$MODEL]}
                     echo ${TRAIN_SAMPELS[$MODEL]}
                     echo ${CRITERION[$MODEL]}
-                    CUDA_VISIBLE_DEVICES=6 python train.py --dataroot 'data' \
+                    CUDA_VISIBLE_DEVICES=0 python train.py --dataroot 'data' \
                                     --dataset "MNIST" \
                                     --subset ${SUBSETS[$SUBSET]} \
                                     --fold ${FOLD} \
