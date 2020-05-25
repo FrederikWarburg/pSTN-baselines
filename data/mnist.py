@@ -70,6 +70,8 @@ class MnistXKmnist(Dataset):
     def __init__(self, opt, mode):
         self.datasets = []
 
+        self.samples = []
+
         # False (test) or True (train,val)
         trainingset = mode in ['train', 'val']
 
@@ -107,10 +109,12 @@ class MnistXKmnist(Dataset):
 
             c, w, h = im1.shape
 
-            x = np.random.randint(0,32)
+            x = np.random.randint(0, 32)
 
             im[:, y:y + h, x:x + w] = im1.type(torch.float)
             target += str(target1)
+
+            self.samples.append((x, y))
 
         im = self.transform(im)
 
@@ -167,6 +171,8 @@ class MnistRandomPlacement(Dataset):
             c, w, h = im1.shape
 
             im[:, y:y + h, x:x + w] = im1.type(torch.float)
+            # print('created image', im.shape, 'x:', x, 'y:', y)
+
             target += str(target1)
 
         transform = transforms.Compose(

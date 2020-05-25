@@ -10,7 +10,7 @@ CRITERION=("nll" "nll" "nll" "nll" "elbo")
 GPUS=(1 2 3 4 1 2 3 4)
 DATAAUGMENTATION=("None" "standard" "None" "standard" "None")
 
-for MODEL in 2
+for MODEL in 4
 do
     echo $MODEL
     echo ${MODELS[$MODEL]}
@@ -20,7 +20,7 @@ do
                     --batch_size 256 \
                     --num_classes 10 \
                     --num_threads 2 \
-                    --epochs 1 \
+                    --epochs 15 \
                     --step_size 10 \
                     --seed 42 \
                     --data_augmentation ${DATAAUGMENTATION[$MODEL]} \
@@ -37,7 +37,8 @@ do
         		    --trainval_split True \
                     --moving_mean True \
                     --save_results True \
+                    --save_training_theta True \
                     --theta_path 'random_placement_mnist' \
                     --download True \
-                    --lr_loc 0.01 &
+                    --lr_loc 1 &
 done
