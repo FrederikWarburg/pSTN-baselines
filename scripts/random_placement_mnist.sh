@@ -41,5 +41,5 @@ do
                     --save_training_theta True \
                     --theta_path 'random_placement_mnist' \
                     --download True \
-                    --lr_loc 1 &
+                    --lr_loc 1
 done
