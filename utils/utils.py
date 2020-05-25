@@ -106,7 +106,7 @@ def save_generating_thetas(self, dataloader):
 def save_learned_thetas(opt, outputs, mode='train', epoch=None):
     modelname = get_exp_name(opt)
     if mode == 'train':
-        mode_and_epoch = 'train_epoch_' + epoch
+        mode_and_epoch = 'train_epoch_' + str(epoch)
     if mode == 'test':
         mode_and_epoch = 'test'
     # concatenate and save thetas
