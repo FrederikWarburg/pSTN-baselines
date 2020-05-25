@@ -107,6 +107,9 @@ def save_learned_thetas(opt, outputs):
     modelname = get_exp_name(opt)
     # concatenate and save thetas
     theta_path = 'theta_stats/%s/' % modelname
+    if not exists(theta_path):
+        mkdir(theta_path)
+
     if 'stn' in opt.model.lower():
         theta_mu = torch.stack([x['theta_mu'] for x in outputs]).cpu().numpy()
         pickle.dump(theta_mu, open(theta_path + '_test_mu.p', 'wb'))
