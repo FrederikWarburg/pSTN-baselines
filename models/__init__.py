@@ -180,18 +180,19 @@ class System(pl.LightningModule):
             self.add_images(grid_in, grid_out, bbox_images)
 
         # unpack theta for logging
-        theta_mu = None
-        theta_sigma = None
         if 'stn' in self.opt.model.lower():
-            theta_mu = theta[0]
+            theta_mu = theta
+            theta_sigma = None
             print('theta mu is size', theta_mu.shape)
         if self.opt.model.lower() == 'pstn':
+            theta_mu = theta[0]
             theta_sigma = theta[1]
 
         # compute UQ statistics
         pred = y_hat.max(1, keepdim=True)[1]
         check_predictions = pred.eq(y.view_as(pred)).all(dim=1)
 
+        print(theta_mu.shape)
         return OrderedDict({'test_loss': loss, 'test_acc': acc,
                       'probabilities': y_hat.data,
                       'correct_prediction': y.data,
