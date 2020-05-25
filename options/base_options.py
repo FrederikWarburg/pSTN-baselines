@@ -43,6 +43,8 @@ class BaseOptions:
         self.parser.add_argument('--num_param', default=2, type=int,
                                  help='if we use a affine (s, r, tx, ty) or crop (0.5, 1, tx, ty) transformation')
         self.parser.add_argument('--save_results', type=bool, default=False, help='should we save the results?')
+        self.parser.add_argument('--save_training_theta', type=bool, default=False, help='should we save thetas during training?')
+
         self.parser.add_argument('--savepath', type=str, default='results', help='where should we save the results?')
         # data params - MNIST subset experiment
         self.parser.add_argument('--subset', type=str, default=None, help='using a subset of MNIST? What size?')

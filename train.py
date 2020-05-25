@@ -9,7 +9,7 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.logging import TestTubeLogger
 from models import System
 import torch
-from utils.utils import get_exp_name
+from utils.utils import get_exp_name, save_generating_thetas
 
 
 if __name__ == '__main__':
@@ -80,3 +80,6 @@ if __name__ == '__main__':
         test_dataloader = [lightning_system.val_dataloader()]
 
     trainer.test(lightning_system, test_dataloaders=test_dataloader)
+
+    if opt.dataset == 'mnistxkmnist':
+        save_generating_thetas(test_dataloader)

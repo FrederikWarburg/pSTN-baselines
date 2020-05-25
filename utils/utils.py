@@ -1,6 +1,7 @@
 import os
-from os.path import join, isdir
+from os.path import join, isdir, exists
 import pickle
+import torch
 
 
 def get_exp_name(opt):
@@ -88,3 +89,34 @@ def check_learnable_parameters(model, architecture):
     pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print([(p[0], p[1].numel()) for p in model.named_parameters() if p[1].requires_grad])
     print('Number of trainable parameters for %s:' %architecture, pytorch_total_params)
+
+
+def save_generating_thetas(self, dataloader):
+    if self.opt.save_training_theta:
+        modelname = get_exp_name(self.opt)
+
+    # concatenate and save thetas
+    theta_path = 'theta_stats/%s/' % modelname
+    if not exists(theta_path):
+        mkdir(theta_path)
+
+    pickle.dump(dataloader.samples, open(theta_path + 'generating_thetas.p', 'wb'))
+
+
+def save_learned_thetas(opt, outputs, mode='train', epoch=None):
+    modelname = get_exp_name(opt)
+    if mode == 'train':
+        mode_and_epoch = 'train_epoch_' + str(epoch)
+    if mode == 'test':
+        mode_and_epoch = 'test'
+    # concatenate and save thetas
+    theta_path = 'theta_stats/%s/%s' % (modelname, mode_and_epoch)
+    if not exists(theta_path):
+        mkdir(theta_path)
+
+    if 'stn' in opt.model.lower():
+        theta_mu = torch.stack([x['theta_mu'] for x in outputs]).cpu().numpy()
+        pickle.dump(theta_mu, open(theta_path + '_mu.p', 'wb'))
+    if opt.model.lower() == 'pstn':
+        theta_sigma = torch.stack([x['theta_sigma'] for x in outputs]).cpu().numpy()
+        pickle.dump(theta_sigma, open(theta_path + '_sigma.p', 'wb'))

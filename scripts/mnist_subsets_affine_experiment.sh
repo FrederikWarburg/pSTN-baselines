@@ -1,5 +1,4 @@
 #!/bin/sh
-
 MODELS=("cnn" "stn" "pstn")
 PARAMS=(1 4 4)
 TEST_SAMPELS=(1 1 10)
@@ -12,7 +11,7 @@ do
     echo ${SUBSETS[$SUBSET]}
     for FOLD in {0..5}
     do
-        for MODEL in {0..2}
+        for MODEL in {2..2}
         do
             echo ${MODELS[$MODEL]}
             echo ${PARAMS[$MODEL]}
