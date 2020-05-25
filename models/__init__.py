@@ -137,7 +137,7 @@ class System(pl.LightningModule):
 
     def training_epoch_end(self, outputs):
         if self.opt.save_training_theta:
-            save_learned_thetas(self.opt, outputs)
+            save_learned_thetas(self.opt, outputs, mode='train', epoch=self.current_epoch)
         return OrderedDict({'last theta_mu': outputs[-1]['theta_mu']})
 
     def validation_step(self, batch, batch_idx):
@@ -235,7 +235,7 @@ class System(pl.LightningModule):
             tensorboard_logs = OrderedDict({'test_loss': avg_loss, 'test_acc': avg_acc})
 
             # write results to json file also
-            save_results(self.opt, avg_loss, avg_acc)
+            save_results(self.opt, avg_loss, avg_acc, mode='test')
 
         print('Done testing. Loss:', avg_loss.item(), 'Accuracy:', avg_acc.item())
 

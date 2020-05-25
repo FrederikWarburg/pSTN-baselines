@@ -103,16 +103,20 @@ def save_generating_thetas(self, dataloader):
     pickle.dump(dataloader.samples, open(theta_path + 'generating_thetas.p', 'wb'))
 
 
-def save_learned_thetas(opt, outputs):
+def save_learned_thetas(opt, outputs, mode='train', epoch=None):
     modelname = get_exp_name(opt)
+    if mode == 'train':
+        mode_and_epoch = 'train_epoch_' + epoch
+    if mode == 'test':
+        mode_and_epoch = 'test'
     # concatenate and save thetas
-    theta_path = 'theta_stats/%s/' % modelname
+    theta_path = 'theta_stats/%s/%s' % (modelname, mode_and_epoch)
     if not exists(theta_path):
         mkdir(theta_path)
 
     if 'stn' in opt.model.lower():
         theta_mu = torch.stack([x['theta_mu'] for x in outputs]).cpu().numpy()
-        pickle.dump(theta_mu, open(theta_path + '_test_mu.p', 'wb'))
+        pickle.dump(theta_mu, open(theta_path + '_mu.p', 'wb'))
     if opt.model.lower() == 'pstn':
         theta_sigma = torch.stack([x['theta_sigma'] for x in outputs]).cpu().numpy()
-        pickle.dump(theta_sigma, open(theta_path + '_test_sigma.p', 'wb'))
+        pickle.dump(theta_sigma, open(theta_path + '_sigma.p', 'wb'))
