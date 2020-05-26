@@ -69,9 +69,11 @@ class MnistXKmnist(Dataset):
 
     def __init__(self, opt, mode):
         self.datasets = []
-
-        self.samples = []
-
+        self.mode = mode
+        if self.mode == 'test':
+            print('creating test set')
+            self.samples = []
+        
         # False (test) or True (train,val)
         trainingset = mode in ['train', 'val']
 
@@ -113,8 +115,9 @@ class MnistXKmnist(Dataset):
 
             im[:, y:y + h, x:x + w] = im1.type(torch.float)
             target += str(target1)
-
-            self.samples.append((x, y))
+            
+            if self.mode == 'test':
+                self.samples.append((x, y))
 
         im = self.transform(im)
 

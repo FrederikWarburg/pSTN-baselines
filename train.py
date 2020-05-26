@@ -81,5 +81,6 @@ if __name__ == '__main__':
 
     trainer.test(lightning_system, test_dataloaders=test_dataloader)
 
-    if opt.dataset == 'mnistxkmnist':
-        save_generating_thetas(opt, test_dataloader)
+    #if opt.dataset == 'mnistxkmnist':
+    #    print(test_dataloader.samples)
+    #    save_generating_thetas(opt, test_dataloader)

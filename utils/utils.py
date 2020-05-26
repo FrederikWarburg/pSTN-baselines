@@ -99,7 +99,7 @@ def save_generating_thetas(opt, dataloader):
     if not exists(theta_path):
         mkdir(theta_path)
 
-    pickle.dump(dataloader.samples, open(theta_path + 'generating_thetas.p', 'wb'))
+    pickle.dump(dataloader.dataset.samples, open(theta_path + 'generating_thetas.p', 'wb'))
 
 
 def save_learned_thetas(opt, outputs, mode='train', epoch=None):
