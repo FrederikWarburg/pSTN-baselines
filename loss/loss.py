@@ -16,6 +16,8 @@ def initialize_mu_prior(opt, moving_mean):
     elif opt.transformer_type == 'affine':
         if opt.num_param == 4:
             mu_p = torch.Tensor([0, 1, 0, 0]).to(device)
+        if opt.num_param == 2:
+            mu_p = torch.Tensor([0, 0]).to(device)
         # TODO?
 
     else:
