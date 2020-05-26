@@ -5,13 +5,10 @@ import pickle
 
 
 def find_closest_ix(mu, mu_p):
-    #print('0 -- mu', mu)
-    #print('0 -- mu_p', mu_p)
     mu = mu.repeat(8, 1, 1)  # repeat along nr_components, TODO: remove hard coding
     diff = mu - mu_p
-    #print('0 -- diff', diff)
     abs_diff = torch.norm(diff, dim=(2))
-    #print('0 -- abs diff', abs_diff)
+    print('0 -- abs diff', abs_diff.shape)
     ix = torch.argmin(abs_diff, dim=0)
     return ix
 
@@ -40,13 +37,9 @@ def kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', prior_type='zero_mean_gau
     elif prior_type == 'mixture_of_gaussians_closest_approximation':
         kl_loss = 0
         mu_p = mu_p.unsqueeze(1).repeat(1, 256, 1)
-        # print('1 -- mu_p', mu_p.shape)
         ix = find_closest_ix(mu, mu_p)
-        # print('1.1 -- ix', ix)
         mu_prior = mu_p[ix, 0, :]
-        # print('2 -- mu_p', mu_prior)
         sigma_prior = sigma_p[ix, 0, :]
-        # print('3 -- sigma_p', sigma_prior)
         sigma_prior = torch.diag_embed(sigma_prior)
         p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_prior)
 

@@ -35,7 +35,7 @@ do
                     --dropout_rate 0 \
         	        --optimizer 'sgd' \
          	        --trainval_split True \
-                    --prior_type 'mixture_of_gaussians_closest_approximation'\
+                    --prior_type 'mixture_of_gaussians'\
                     --save_results True \
                     --theta_path 'theta_stats' \
                     --download True \

@@ -46,6 +46,7 @@ class Elbo(nn.Module):
         self.prior_type = opt.prior_type
 
         self.sigma_p = initialize_sigma_prior(opt, self.prior_type)
+        print(sigma_p)
         self.mu_p = initialize_mu_prior(opt, self.prior_type)
 
         self.iter = 0.0
