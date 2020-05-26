@@ -5,10 +5,12 @@ import pickle
 
 
 def initialize_sigma_prior(opt, prior_type):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     if prior_type in ['moving_mean', 'mean_zero_gaussian']:
         sigma_p = opt.sigma_p
     elif prior_type == 'mixture_of_gaussians':
-        sigma_p = pickle.load(open('priors/mog_covariances.p', 'rb'))
+        sigma_p = pickle.load(open('priors/mog_covariances.p', 'rb')).to(device)
     return sigma_p
 
 
@@ -19,7 +21,7 @@ def initialize_mu_prior(opt, prior_type):
         mu_p = None  # in this case it will get updated on the fly
 
     if prior_type == 'mixture_of_gaussians':
-        mu_p = pickle.load(open('priors/mog_means.p', 'rb'))
+        mu_p = pickle.load(open('priors/mog_means.p', 'rb')).to(device)
 
     elif opt.transformer_type == 'diffeomorphic':
         theta_dim = opt.num_param * opt.N
