@@ -1,20 +1,29 @@
 import torch
 import torch.nn.functional as F
 from torch.distributions import MultivariateNormal, kl
+import pickle
 
 
-def kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', moving_mean=False):
+def kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', prior_type='zero_mean_gaussian', weights=None):
     batch_size, params = mu.shape
 
     sigma = torch.diag_embed(sigma)
-    mu_prior = mu if moving_mean else mu_p.repeat(batch_size, 1) # am I missing an N here?
-
+    mu_prior = mu if (prior_type == 'moving_mean') else mu_p.repeat(batch_size, 1)  # am I missing an N here?
     sigma_p = sigma_p * torch.eye(params, device=mu.device).unsqueeze(0).repeat(batch_size, 1, 1)
 
-    p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_p)
     q = MultivariateNormal(loc=mu, scale_tril=sigma)
 
-    kl_loss = kl.kl_divergence(q, p)
+    if prior_type in ['zero_mean_gaussian', 'moving_mean']:
+        p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_p)
+        kl_loss = kl.kl_divergence(q, p)
+
+    elif prior_type == 'mixture_of_gaussians':
+        weights = pickle.load(open('../priors/mog_weights.p', 'rb'))
+        kl_loss = 0
+        for component in range(8):  # TODO: make nr_components a variable
+            p = MultivariateNormal(loc=mu_p[component], scale_tril=sigma_p[component])
+            print(kl.kl_divergence(q, p))
+            kl_loss += weights[component] * kl.kl_divergence(q, p)
 
     if reduction == 'mean':
         return kl_loss.mean()
@@ -22,12 +31,12 @@ def kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', moving_mean=False):
         return kl_loss.sum()
 
 
-def elbo(x, mu, sigma, label, mu_p, sigma_p=0.1, moving_mean=False):
+def elbo(x, mu, sigma, label, mu_p, sigma_p=0.1, prior_type='mean_zero_gaussian'):
     # NLL LOSS
     nll_loss = F.nll_loss(x, label, reduction='mean')
 
     # KL LOSS
-    kl_loss = kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', moving_mean=moving_mean)
+    kl_loss = kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', prior_type=prior_type)
 
     # RECONSTRUCTION LOSS
     reconstruction_loss = 0

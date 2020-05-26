@@ -1,13 +1,25 @@
 import torch.nn as nn
 from .functional import elbo
 import torch
+import pickle
 
 
-def initialize_mu_prior(opt, moving_mean):
+def initialize_sigma_prior(opt, prior_type):
+    if prior_type in ['moving_mean', 'zero_mean_gaussian']:
+        sigma_p = opt.sigma_p
+    elif prior_type == 'mixture_of_gaussians':
+        sigma_p = pickle.load(open('../priors/mog_covariances.p', 'rb'))
+    return sigma_p
+
+
+def initialize_mu_prior(opt, prior_type):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    if moving_mean:
+    if prior_type == 'moving_mean':
         mu_p = None  # in this case it will get updated on the fly
+
+    if prior_type == 'mixture_of_gaussians':
+        mu_p = pickle.load(open('../priors/mog_means.p', 'rb'))
 
     elif opt.transformer_type == 'diffeomorphic':
         theta_dim = opt.num_param * opt.N
@@ -18,7 +30,6 @@ def initialize_mu_prior(opt, moving_mean):
             mu_p = torch.Tensor([0, 1, 0, 0]).to(device)
         if opt.num_param == 2:
             mu_p = torch.Tensor([0, 0]).to(device)
-        # TODO?
 
     else:
         raise NotImplementedError
@@ -30,9 +41,11 @@ class Elbo(nn.Module):
 
     def __init__(self, opt, annealing='reduce_kl'):
         super(Elbo, self).__init__()
-        self.moving_mean = (opt.prior_type == 'moving_mean')
-        self.sigma_p = opt.sigma_p
-        self.mu_p = initialize_mu_prior(opt, self.moving_mean)
+        self.prior_type = opt.prior_type
+
+        self.sigma_p = initialize_sigma_prior(opt, self.prior_type)
+        self.mu_p = initialize_mu_prior(opt, self.prior_type)
+
         self.iter = 0.0
 
         # number of batches in epoch (only used for cyclic kl weighting)
@@ -57,7 +70,7 @@ class Elbo(nn.Module):
         mu, sigma = theta
 
         # calculate terms of elbo
-        self.nll, self.kl, self.rec = elbo(x, mu, sigma, label, mu_p=self.mu_p, sigma_p=self.sigma_p, moving_mean=self.moving_mean)
+        self.nll, self.kl, self.rec = elbo(x, mu, sigma, label, mu_p=self.mu_p, sigma_p=self.sigma_p, prior_type=self.prior_type)
 
         # increment counter for each update
         self.iter += 1.0
