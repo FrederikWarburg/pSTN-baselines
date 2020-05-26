@@ -91,9 +91,8 @@ def check_learnable_parameters(model, architecture):
     print('Number of trainable parameters for %s:' %architecture, pytorch_total_params)
 
 
-def save_generating_thetas(self, dataloader):
-    if self.opt.save_training_theta:
-        modelname = get_exp_name(self.opt)
+def save_generating_thetas(opt, dataloader):
+    modelname = get_exp_name(opt)
 
     # concatenate and save thetas
     theta_path = 'theta_stats/%s/' % modelname

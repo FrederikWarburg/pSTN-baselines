@@ -222,7 +222,7 @@ class System(pl.LightningModule):
             # correct_predictions = torch.stack([x['correct_prediction'] for x in outputs]).cpu().numpy()
             # correct = torch.stack([x['correct'] for x in outputs]).cpu().numpy()
 
-            save_learned_thetas(self.opt, outputs)
+            save_learned_thetas(self.opt, outputs, mode='test')
 
             # save UQ results
             # UQ_path = 'UQ/' + modelname
@@ -234,7 +234,7 @@ class System(pl.LightningModule):
             tensorboard_logs = OrderedDict({'test_loss': avg_loss, 'test_acc': avg_acc})
 
             # write results to json file also
-            save_results(self.opt, avg_loss, avg_acc, mode='test')
+            save_results(self.opt, avg_loss, avg_acc)
 
         print('Done testing. Loss:', avg_loss.item(), 'Accuracy:', avg_acc.item())
 
