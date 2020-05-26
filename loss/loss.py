@@ -3,10 +3,10 @@ from .functional import elbo
 import torch
 
 
-def initialize_mu_prior(opt):
+def initialize_mu_prior(opt, moving_mean):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    if opt.moving_mean:
+    if moving_mean:
         mu_p = None  # in this case it will get updated on the fly
 
     elif opt.transformer_type == 'diffeomorphic':
@@ -28,9 +28,9 @@ class Elbo(nn.Module):
 
     def __init__(self, opt, annealing='reduce_kl'):
         super(Elbo, self).__init__()
-        self.moving_mean = opt.moving_mean
+        self.moving_mean = (opt.prior_type == 'moving_mean')
         self.sigma_p = opt.sigma_p
-        self.mu_p = initialize_mu_prior(opt)
+        self.mu_p = initialize_mu_prior(opt, self.moving_mean)
         self.iter = 0.0
 
         # number of batches in epoch (only used for cyclic kl weighting)

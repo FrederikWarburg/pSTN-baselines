@@ -18,6 +18,7 @@ def get_exp_name(opt):
 
     if opt.model.lower() == 'pstn':
         modelname += '-kl=' + opt.annealing
+        modelname += '-prior=' + opt.prior_type
     else:
         modelname += '-kl=None'
 
