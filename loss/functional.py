@@ -13,7 +13,7 @@ def kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', prior_type='zero_mean_gau
 
     q = MultivariateNormal(loc=mu, scale_tril=sigma)
 
-    if prior_type in ['zero_mean_gaussian', 'moving_mean']:
+    if prior_type in ['mean_zero_gaussian', 'moving_mean']:
         p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_p)
         kl_loss = kl.kl_divergence(q, p)
 

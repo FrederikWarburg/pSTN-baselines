@@ -37,7 +37,7 @@ do
          	        --trainval_split True \
                     --prior_type 'mean_zero_gaussian' \
                     --save_results True \
-                    --theta_path 'random_placement_mnist' \
+                    --theta_path 'mixture_of_gaussians' \
                     --download True \
                     --lr_loc 0.01 \
 		            --save_training_theta True \

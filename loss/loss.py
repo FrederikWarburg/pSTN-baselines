@@ -5,7 +5,7 @@ import pickle
 
 
 def initialize_sigma_prior(opt, prior_type):
-    if prior_type in ['moving_mean', 'zero_mean_gaussian']:
+    if prior_type in ['moving_mean', 'mean_zero_gaussian']:
         sigma_p = opt.sigma_p
     elif prior_type == 'mixture_of_gaussians':
         sigma_p = pickle.load(open('../priors/mog_covariances.p', 'rb'))
