@@ -15,7 +15,7 @@ do
     echo $MODEL
     echo ${MODELS[$MODEL]}
     echo ${TRAIN_SAMPELS[$MODEL]}
-    OMP_NUM_THREADS=1 CUDA_VISIBLE_DEVICES=7 python train.py --dataroot $DATAPATH \
+    OMP_NUM_THREADS=1 CUDA_VISIBLE_DEVICES=1 python train.py --dataroot $DATAPATH \
                     --dataset "mnistxkmnist" \
                     --batch_size 256 \
                     --num_classes 10 \
@@ -33,14 +33,14 @@ do
                     --lr 0.1 \
                     --digits 1 \
                     --dropout_rate 0 \
-        	        --optimizer 'sgd' \
-         	        --trainval_split True \
-                    --prior_type 'mixture_of_gaussians_closest_approximation'\
+        	    --optimizer 'sgd' \
+         	    --trainval_split True \
+                    --prior_type 'mean_zero_gaussian'\
                     --save_results True \
                     --theta_path 'theta_stats' \
                     --download True \
                     --lr_loc 0.01 \
-		            --save_training_theta True \
-    		        --sigma_p 0.05 \
-                    --annealing 'increase_kl'
+		    --save_training_theta True \
+    		     --sigma_p 0.1
+                   # --annealing 'increase_kl'
 done

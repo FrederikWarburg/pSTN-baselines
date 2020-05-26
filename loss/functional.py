@@ -78,7 +78,7 @@ def no_kl(iter, M = None):
     return 0
 
 def reduce_kl(iter, M = None):
-    return 1.0 / (1 + iter // 100)
+    return 1.0 / (1 + iter / 500)
 
 def increase_kl(iter, M = None):
     return 1 - reduce_kl(iter)
