@@ -4,13 +4,12 @@ from torch.distributions import MultivariateNormal, kl
 import pickle
 
 
-def find_closest_ix(mu, mu_p):
-    mu = mu.repeat(8, 1, 1)  # repeat along nr_components, TODO: remove hard coding
-    diff = mu - mu_p
-    abs_diff = torch.norm(diff, dim=(2))
-    print('0 -- abs diff', abs_diff.shape)
-    ix = torch.argmin(abs_diff, dim=0)
-    return ix
+# def find_closest_ix(mu, mu_p):
+#     mu = mu.repeat(8, 1, 1)  # repeat along nr_components, TODO: remove hard coding
+#     diff = mu - mu_p
+#     abs_diff = torch.norm(diff, dim=(2))
+#     ix = torch.argmin(abs_diff, dim=0)
+#     return ix
 
 
 def kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', prior_type='zero_mean_gaussian', weights=None):
@@ -34,16 +33,16 @@ def kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', prior_type='zero_mean_gau
             p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_prior)
             kl_loss += weights[component] * kl.kl_divergence(q, p)
 
-    elif prior_type == 'mixture_of_gaussians_closest_approximation':
-        kl_loss = 0
-        mu_p = mu_p.unsqueeze(1).repeat(1, 256, 1)
-        ix = find_closest_ix(mu, mu_p)
-        mu_prior = mu_p[ix, 0, :]
-        sigma_prior = sigma_p[ix, 0, :]
-        sigma_prior = torch.diag_embed(sigma_prior)
-        p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_prior)
+    # elif prior_type == 'mixture_of_gaussians_closest_approximation':
+    #     kl_loss = 0
+    #     mu_p = mu_p.unsqueeze(1).repeat(1, 256, 1)
+    #     ix = find_closest_ix(mu, mu_p)
+    #     mu_prior = mu_p[ix, 0, :]
+    #     sigma_prior = sigma_p[ix, 0, :]
+    #     sigma_prior = torch.diag_embed(sigma_prior)
+    #     p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_prior)
 
-        kl_loss = kl.kl_divergence(q, p)
+    #     kl_loss = kl.kl_divergence(q, p)
 
     if reduction == 'mean':
         return kl_loss.mean()
@@ -64,21 +63,30 @@ def elbo(x, mu, sigma, label, mu_p, sigma_p=0.1, prior_type='mean_zero_gaussian'
     return nll_loss, kl_loss, reconstruction_loss
 
 
-def no_annealing(iter, M=None):
+def no_annealing(iter, M=None, base_kl=None):
     return 1
 
-def no_kl(iter, M = None):
+
+def no_kl(iter, M=None, base_kl=None):
     return 0
 
-def reduce_kl(iter, M = None):
+
+def reduce_kl(iter, M=None, base_kl=None):
     return 1.0 / (1 + iter / 500)
 
-def increase_kl(iter, M = None):
+
+def increase_kl(iter, M=None, base_kl=None):
     return 1 - reduce_kl(iter)
 
-def cyclic_kl(iter, M):
+
+def cyclic_kl(iter, M, base_kl=None):
     # https://arxiv.org/pdf/1505.05424.pdf
 
     iter = (iter - 1.0) % M
-
     return 2.0**(M - iter) / (2.0**M - 1.0)
+
+
+def scaled_kl(iter, M=None, base_kl=None):
+    scaling_factor = 1 / base_kl
+    print('scaling kl by', scaling_factor)
+    return scaling_factor

@@ -46,10 +46,10 @@ class Elbo(nn.Module):
         self.prior_type = opt.prior_type
 
         self.sigma_p = initialize_sigma_prior(opt, self.prior_type)
-        print(sigma_p)
         self.mu_p = initialize_mu_prior(opt, self.prior_type)
 
         self.iter = 0.0
+        self.base_kl = torch.zeros(1, requires_grad=False)  #
 
         # number of batches in epoch (only used for cyclic kl weighting)
         self.M = None
@@ -64,6 +64,8 @@ class Elbo(nn.Module):
             from .functional import increase_kl as annealing
         elif annealing == 'cyclic_kl':
             from .functional import cyclic_kl as annealing
+        elif annealing == 'scaled_kl':
+            from . functional import scaled_kl as annealing
         else:
             raise NotImplemented
 
@@ -73,12 +75,17 @@ class Elbo(nn.Module):
         mu, sigma = theta
 
         # calculate terms of elbo
-        self.nll, self.kl, self.rec = elbo(x, mu, sigma, label, mu_p=self.mu_p, sigma_p=self.sigma_p, prior_type=self.prior_type)
+        self.nll, kl, self.rec = elbo(x, mu, sigma, label, mu_p=self.mu_p, sigma_p=self.sigma_p, prior_type=self.prior_type)
+        self.kl = kl
+
+        with torch.no_grad():
+            if self.iter == 0.0:
+                self.base_kl += kl
 
         # increment counter for each update
         self.iter += 1.0
 
         # weighting of kl term
-        alpha = self.annealing(self.iter, self.M)
+        alpha = self.annealing(self.iter, self.M, base_kl=self.base_kl)
 
         return self.nll + alpha * self.kl + self.rec
