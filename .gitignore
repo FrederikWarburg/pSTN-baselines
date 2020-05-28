@@ -12,5 +12,7 @@ experiments/
 *.pyc
 utils/train_val_indices_MNIST_CV_recreate_val.py
 scripts/.*
+notebooks
+.DS_Store
 *.ipynb
 .ipynb*
