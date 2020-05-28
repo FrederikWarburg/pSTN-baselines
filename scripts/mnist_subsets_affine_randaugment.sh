@@ -51,7 +51,7 @@ do
                                     --step_size 600 \
                                     --val_check_interval 600 \
                                     --optimize_temperature False \
-                                    --data_augmentation 'AffineRandAugment' \
+                                    --data_augmentation 'RandAugment' \
                                     --rand_augment_N $N \
                                     --rand_augment_M $M \
                                     --test_on 'val' \

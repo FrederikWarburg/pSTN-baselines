@@ -4,6 +4,7 @@ lightning_logs
 d=*
 data/TIMESERIES_DATA_PARSED
 data/MNIST
+data/KMNIST
 data/indices
 UQ/
 theta_stats/
@@ -13,3 +14,5 @@ utils/train_val_indices_MNIST_CV_recreate_val.py
 scripts/.*
 notebooks
 .DS_Store
+*.ipynb
+.ipynb*
