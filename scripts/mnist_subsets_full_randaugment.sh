@@ -6,7 +6,9 @@ TEST_SAMPELS=(1 1 10)
 TRAIN_SAMPELS=(1 1 1)
 CRITERION=("nll" "nll" "elbo")
 SUBSETS=(10 30 100 1000 3000)
-M_RANGE=(2 4 6 8)
+N_RANGE=(2 4 6 8 10 12 14 16)
+N_RANGE=(2 4 6 8)
+
 
 for SUBSET in {0..4}
 do
@@ -15,7 +17,7 @@ do
     do
         for MODEL in {0..1} # run pstn later when we have optimal sigma vals
         do
-            for N in {1..3}
+            for N in {0..7}
             do
                 for M in {0..3}
                 do
@@ -52,11 +54,11 @@ do
                                     --step_size 600 \
                                     --val_check_interval 600 \
                                     --optimize_temperature False \
-                                    --data_augmentation 'AffineRandAugment' \
-                                    --rand_augment_N $N \
-                                    --rand_augment_M ${M_RANGE[$M]} \
+                                    --data_augmentation 'RandAugment' \
+                                    --rand_augment_N ${N_RANGE[$N]} \
+                                    --rand_augment_M ${M_RANGE[$M]}  \
                                     --test_on 'val' \
-                                    --results_folder 'mnist_affine_randaugment_results'
+                                    --results_folder 'mnist_full_randaugment_results'
                 done
             done
         done
