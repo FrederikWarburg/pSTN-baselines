@@ -49,7 +49,7 @@ class Elbo(nn.Module):
         self.mu_p = initialize_mu_prior(opt, self.prior_type)
 
         self.iter = 0.0
-        self.base_kl = torch.zeros(1, requires_grad=False)  #
+        self.base_kl = torch.zeros(1, requires_grad=False, device=self.mu_p.device)  #
 
         # number of batches in epoch (only used for cyclic kl weighting)
         self.M = None
