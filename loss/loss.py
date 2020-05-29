@@ -6,11 +6,13 @@ import pickle
 
 def initialize_sigma_prior(opt, prior_type):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    require_grad = opt.learnable_prior
 
     if prior_type in ['moving_mean', 'mean_zero_gaussian']:
-        sigma_p = opt.sigma_p
+        sigma_p = torch.tensor(opt.sigma_p, requires_grad=require_grad)
     elif 'mixture_of_gaussians' in prior_type:
         sigma_p = pickle.load(open('priors/mog_covariances.p', 'rb')).to(device)
+        sigma_p = torch.tensor(sigma_p, requires_grad=require_grad)
     return sigma_p
 
 
@@ -20,18 +22,20 @@ def initialize_mu_prior(opt, prior_type):
     if prior_type == 'moving_mean':
         mu_p = None  # in this case it will get updated on the fly
 
-    if 'mixture_of_gaussians' in prior_type:
+    elif 'mixture_of_gaussians' in prior_type:
         mu_p = pickle.load(open('priors/mog_means.p', 'rb')).to(device)
 
-    elif opt.transformer_type == 'diffeomorphic':
-        theta_dim = opt.num_param * opt.N
-        mu_p = torch.zeros((1, theta_dim)).to(device)
+    elif prior_type == 'mean_zero_gaussian':
+        require_grad = opt.learnable_prior
+        if opt.transformer_type == 'diffeomorphic':
+            theta_dim = opt.num_param * opt.N
+            mu_p = torch.zeros((1, theta_dim), requires_grad=require_grad).to(device)
 
-    elif opt.transformer_type == 'affine':
-        if opt.num_param == 4:
-            mu_p = torch.Tensor([0, 1, 0, 0]).to(device)
-        if opt.num_param == 2:
-            mu_p = torch.Tensor([0, 0]).to(device)
+        if opt.transformer_type == 'affine':
+            if opt.num_param == 4:
+                mu_p = torch.tensor([0.0, 1.0, 0.0, 0.0], requires_grad=require_grad).to(device)
+            if opt.num_param == 2:
+                mu_p = torch.tensor([0.0, 0.0], requires_grad=require_grad).to(device)
 
     else:
         raise NotImplementedError

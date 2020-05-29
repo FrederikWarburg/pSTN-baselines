@@ -19,6 +19,7 @@ def get_exp_name(opt):
     if opt.model.lower() == 'pstn':
         modelname += '-kl=' + opt.annealing
         modelname += '-prior=' + opt.prior_type
+
     else:
         modelname += '-kl=None'
 
@@ -30,6 +31,9 @@ def get_exp_name(opt):
         modelname += '-lrloc=' + str(opt.lr_loc)
     else:
         modelname += '-lrloc=None'
+
+    if opt.learnable_prior:
+        modelname += '-learnable_prior'
 
     return modelname
 
