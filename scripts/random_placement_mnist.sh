@@ -44,5 +44,6 @@ do
     		        --sigma_p 0.1 \
                     --learnable_prior True \
                     --annealing  'scaled_kl' \
+                    --val_check_interval 15
 
 done
