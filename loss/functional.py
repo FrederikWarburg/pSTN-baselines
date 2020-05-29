@@ -88,5 +88,5 @@ def cyclic_kl(iter, M, base_kl=None):
 
 def scaled_kl(iter, M=None, base_kl=None):
     scaling_factor = 1 / base_kl
-    print('scaling kl by', scaling_factor)
+    # print('scaling kl by', scaling_factor)
     return scaling_factor
