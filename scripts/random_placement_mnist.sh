@@ -42,5 +42,8 @@ do
                     --lr_loc 0.01 \
 		            --save_training_theta True \
     		        --sigma_p 0.1 \
-                    --annealing 'scaled_kl'
+                    --learnable_prior True \
+                    --annealing  'scaled_kl' \
+                    --val_check_interval 15
+
 done

@@ -17,7 +17,6 @@ def kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', prior_type='zero_mean_gau
 
     sigma = torch.diag_embed(sigma)
     q = MultivariateNormal(loc=mu, scale_tril=sigma)
-
     if prior_type in ['mean_zero_gaussian', 'moving_mean']:
         mu_prior = mu if (prior_type == 'moving_mean') else mu_p.repeat(batch_size, 1)  # am I missing an N here?
         sigma_p = sigma_p * torch.eye(params, device=mu.device).unsqueeze(0).repeat(batch_size, 1, 1)
