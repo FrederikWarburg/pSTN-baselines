@@ -15,7 +15,7 @@ do
     echo $MODEL
     echo ${MODELS[$MODEL]}
     echo ${TRAIN_SAMPELS[$MODEL]}
-    OMP_NUM_THREADS=1 CUDA_VISIBLE_DEVICES=1 python train.py --dataroot $DATAPATH \
+    OMP_NUM_THREADS=1 CUDA_VISIBLE_DEVICES=0 python train.py --dataroot $DATAPATH \
                     --dataset "mnistxkmnist" \
                     --batch_size 256 \
                     --num_classes 10 \

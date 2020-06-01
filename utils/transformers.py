@@ -79,8 +79,10 @@ class AffineTransformer(nn.Module):
             eps = _standard_normal(
                 mean_params.shape, dtype=mean_params.dtype, device=mean_params.device)
             mean_params = eps * std_params + mean_params
-
-        mean_params = f_map(mean_params)
+        
+       # print('mean params before:', mean_params)
+       # mean_params = f_map(mean_params)
+       # print('mean params after:', mean_params)
 
         if mean_params.shape[1] == 2:  # only perform crop - fix scale and rotation.
             theta = torch.zeros(mean_params.shape[0], device=mean_params.device)
