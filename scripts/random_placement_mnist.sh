@@ -33,14 +33,18 @@ do
                     --lr 0.1 \
                     --digits 1 \
                     --dropout_rate 0 \
-        	    --optimizer 'sgd' \
-         	    --trainval_split True \
+        	        --optimizer 'sgd' \
+         	        --trainval_split True \
                     --prior_type 'mean_zero_gaussian'\
                     --save_results True \
                     --theta_path 'theta_stats' \
                     --download True \
                     --lr_loc 0.01 \
-		    --save_training_theta True \
-    		     --sigma_p 0.1
-                   # --annealing 'increase_kl'
+		            --save_training_theta True \
+    		        --sigma_p 0.1 \
+                    --learnable_prior False \
+                    --val_check_interval 15
+                    #--annealing  None \
+
+
 done

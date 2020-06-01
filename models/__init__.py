@@ -33,7 +33,8 @@ def create_model(opt):
     return model
 
 
-def create_optimizer(model, opt):
+def create_optimizer(model, opt, criterion):
+    print('CREATING OPTIMIZER')
     """
     Returns an optimizer and scheduler based on chosen criteria
     """
@@ -44,10 +45,10 @@ def create_optimizer(model, opt):
     else:
         if opt.optimizer.lower() == 'sgd':
             from torch.optim import SGD as Optimizer
-            opt_param = {'momentum' : opt.momentum, 'weight_decay' : opt.weightDecay}
+            opt_param = {'momentum': opt.momentum, 'weight_decay' : opt.weightDecay}
         elif opt.optimizer.lower() == 'adam':
             from torch.optim import Adam as Optimizer
-            opt_param = {'weight_decay' : opt.weightDecay}
+            opt_param = {'weight_decay': opt.weightDecay}
         else:
             print("{} is not implemented yet".format(opt.optimizer.lower()))
             raise NotImplemented
@@ -59,11 +60,20 @@ def create_optimizer(model, opt):
                 {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
             ], **opt_param)
 
-        elif opt.model.lower() == 'pstn' :
+        elif opt.model.lower() == 'pstn':
             # enables the lr for the localizer to be lower than for the classifier
+            print('criterion', criterion)
+            print('criterion mu + sigma', criterion.sigma_p, criterion.mu_p)
+            print('criterion mu + sigma require grad:', criterion.sigma_p.requires_grad, criterion.mu_p.requires_grad)
+            print('criterion params:', list(criterion.parameters()))
+            print('passing to optimizer:',
+                {'params': list(filter(lambda p: p.requires_grad, criterion.parameters())), 'lr': opt.lr})
+            # exit()
             optimizer = Optimizer([
                 {'params': filter(lambda p: p.requires_grad, model.pstn.parameters()), 'lr': opt.lr_loc * opt.lr},
                 {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
+                {'params': [criterion.sigma_p, criterion.mu_p], 'lr': opt.lr},
+
             ], **opt_param)
 
         else:
@@ -129,7 +139,18 @@ class System(pl.LightningModule):
             T = self.model.classifier.T
         if self.opt.model == "cnn":
             T = self.model.cnn.T
-        tensorboard_logs = OrderedDict({'train_loss': loss, 'train_acc': acc, 'train_nll': F.nll_loss(y_hat, y, reduction='mean'), 'T': T})
+
+        if self.opt.criterion == 'elbo':
+            mu_p_x = self.criterion.mu_p[0].item()
+            mu_p_y = self.criterion.mu_p[1].item()
+            sigma_p = self.criterion.sigma_p.item()
+
+        tensorboard_logs = OrderedDict({
+            'train_loss': loss, 'train_acc': acc,
+            'train_nll': F.nll_loss(y_hat, y, reduction='mean'),
+            'T': T,
+            'mu_p_x': mu_p_x, 'mu_p_y': mu_p_y,
+            'sigma_p': sigma_p})
 
         return OrderedDict({
             'loss': loss, 'acc': acc, 'log': tensorboard_logs,
@@ -243,7 +264,7 @@ class System(pl.LightningModule):
     def configure_optimizers(self):
 
         # configure optimizer and scheduler
-        optimizer, scheduler = create_optimizer(self.model, self.opt)
+        optimizer, scheduler = create_optimizer(self.model, self.opt, self.criterion)
 
         return [optimizer], [scheduler]
 
