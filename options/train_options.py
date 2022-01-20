@@ -36,7 +36,6 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--data_augmentation', type=str, default='None')
 
         # Evaluation related
-        self.parser.add_argument('--val_percent_check', type=float, default=1.0, help='percentage of validation set to check')
         self.parser.add_argument('--val_check_interval', type=float, default=1.0, help='the rate for checking')
         self.parser.add_argument('--trainval_split', type=str2bool, nargs='?', const=True, default=False)
         self.parser.add_argument('--save_dir', type=str, default='', help='path for saving models')

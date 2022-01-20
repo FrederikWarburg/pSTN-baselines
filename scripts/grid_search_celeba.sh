@@ -48,7 +48,7 @@ do
                             --trainval_split True \
                             --annealing "${ANNEALING[$ANNEAL]}" \
                             --save_results True \
-                            --savepath celeba_experiment \
+                            --results_folder celeba_experiment \
 
         done
     done

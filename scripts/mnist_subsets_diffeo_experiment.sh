@@ -6,19 +6,19 @@ TRAIN_SAMPELS=(1 1 1)
 CRITERION=("nll" "nll" "elbo")
 SUBSETS=(10 30 100 1000 3000 10000)
 
-for SUBSET in {4..5}
+for SUBSET in {0..4}
 do
     echo ${SUBSETS[$SUBSET]}
-    for FOLD in {0..0}
+    for FOLD in {0..4}
     do
-        for MODEL in {2..2}
+        for MODEL in {1..2}
         do
             echo ${MODELS[$MODEL]}
             echo ${PARAMS[$MODEL]}
             echo ${TEST_SAMPELS[$MODEL]}
             echo ${TRAIN_SAMPELS[$MODEL]}
             echo ${CRITERION[$MODEL]}
-            CUDA_VISIBLE_DEVICES=7 python train.py --dataroot 'data' \
+            CUDA_VISIBLE_DEVICES=0 python train.py --dataroot 'data' \
                             --dataset "MNIST" \
                             --subset ${SUBSETS[$SUBSET]} \
                             --fold ${FOLD} \
@@ -40,14 +40,12 @@ do
                             --num_param 0 \
                             --trainval_split True \
                             --save_results True \
-                            --savepath "test" \
                             --optimizer "adam" \
                             --weightDecay 0.01 \
                             --transformer_type "diffeomorphic" \
                             --step_size 600 \
                             --val_check_interval 600 \
-			    --results_folder 'mnist_results' \
-                            --optimize_temperature False
+			                --results_folder "18_01_MNIST_diffeo_repro"
         done
     done
 done

@@ -42,7 +42,6 @@ class MnistClassifier(nn.Module):
         self.parameter_dict = self.load_specifications(opt)
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.T = torch.ones(1, requires_grad=False, device=device)  # softmax temperature parameter
         self.CNN = nn.Sequential(
             # first conv layer
             nn.Conv2d(
@@ -74,7 +73,7 @@ class MnistClassifier(nn.Module):
 
     def forward(self, x):
         x = self.classifier(x)
-        probs = F.log_softmax(x / self.T, dim=1)
+        probs = F.log_softmax(x , dim=1)
         return probs
 
     def load_specifications(self, opt):

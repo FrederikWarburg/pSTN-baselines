@@ -10,7 +10,7 @@ from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from loss import create_criterion
 from utils.evaluate import accuracy
-from utils.utils import get_exp_name, save_results, mkdir, save_learned_thetas
+from utils.utils import get_exp_name, save_UQ_results, save_results, mkdir, save_learned_thetas, save_UQ_results
 from utils.visualizations import visualize_stn
 from collections import OrderedDict
 from data import create_dataset
@@ -38,47 +38,42 @@ def create_optimizer(model, opt, criterion):
     """
     Returns an optimizer and scheduler based on chosen criteria
     """
-    if opt.optimize_temperature:
+    if opt.optimizer.lower() == 'sgd':
         from torch.optim import SGD as Optimizer
-        optimizer = Optimizer([model.model.T], lr=1e-3)
+        opt_param = {'momentum': opt.momentum, 'weight_decay' : opt.weightDecay}
+    elif opt.optimizer.lower() == 'adam':
+        from torch.optim import Adam as Optimizer
+        opt_param = {'weight_decay': opt.weightDecay}
+    else:
+        print("{} is not implemented yet".format(opt.optimizer.lower()))
+        raise NotImplemented
+
+    if opt.model.lower() == 'stn':
+        # enables the lr for the localizer to be lower than for the classifier
+        optimizer = Optimizer([
+            {'params': filter(lambda p: p.requires_grad, model.stn.parameters()), 'lr': opt.lr_loc * opt.lr},
+            {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
+        ], **opt_param)
+
+    elif opt.model.lower() == 'pstn':
+        # enables the lr for the localizer to be lower than for the classifier
+        print('criterion', criterion)
+        print('criterion mu + sigma', criterion.sigma_p, criterion.mu_p)
+        print('criterion mu + sigma require grad:', criterion.sigma_p.requires_grad, criterion.mu_p.requires_grad)
+        print('criterion params:', list(criterion.parameters()))
+        print('passing to optimizer:',
+            {'params': list(filter(lambda p: p.requires_grad, criterion.parameters())), 'lr': opt.lr})
+        # exit()
+        optimizer = Optimizer([
+            {'params': filter(lambda p: p.requires_grad, model.pstn.parameters()), 'lr': opt.lr_loc * opt.lr},
+            {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
+            {'params': [criterion.sigma_p, criterion.mu_p], 'lr': opt.lr},
+
+        ], **opt_param)
 
     else:
-        if opt.optimizer.lower() == 'sgd':
-            from torch.optim import SGD as Optimizer
-            opt_param = {'momentum': opt.momentum, 'weight_decay' : opt.weightDecay}
-        elif opt.optimizer.lower() == 'adam':
-            from torch.optim import Adam as Optimizer
-            opt_param = {'weight_decay': opt.weightDecay}
-        else:
-            print("{} is not implemented yet".format(opt.optimizer.lower()))
-            raise NotImplemented
 
-        if opt.model.lower() == 'stn':
-            # enables the lr for the localizer to be lower than for the classifier
-            optimizer = Optimizer([
-                {'params': filter(lambda p: p.requires_grad, model.stn.parameters()), 'lr': opt.lr_loc * opt.lr},
-                {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
-            ], **opt_param)
-
-        elif opt.model.lower() == 'pstn':
-            # enables the lr for the localizer to be lower than for the classifier
-            print('criterion', criterion)
-            print('criterion mu + sigma', criterion.sigma_p, criterion.mu_p)
-            print('criterion mu + sigma require grad:', criterion.sigma_p.requires_grad, criterion.mu_p.requires_grad)
-            print('criterion params:', list(criterion.parameters()))
-            print('passing to optimizer:',
-                {'params': list(filter(lambda p: p.requires_grad, criterion.parameters())), 'lr': opt.lr})
-            # exit()
-            optimizer = Optimizer([
-                {'params': filter(lambda p: p.requires_grad, model.pstn.parameters()), 'lr': opt.lr_loc * opt.lr},
-                {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
-                {'params': [criterion.sigma_p, criterion.mu_p], 'lr': opt.lr},
-
-            ], **opt_param)
-
-        else:
-
-            optimizer = Optimizer(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr, **opt_param)
+        optimizer = Optimizer(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr, **opt_param)
 
     # create scheduler
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opt.step_size, gamma=0.1)
@@ -91,118 +86,98 @@ class System(pl.LightningModule):
     def __init__(self, opt):
         super(System, self).__init__()
         print('system opt', opt)
-
-        # hyper parameters
-        self.hparams = opt
-
         self.opt = opt
         self.batch_size = opt.batch_size
-
         # initalize model
         self.model = create_model(opt)
-
         # initialize criterion
         self.criterion = create_criterion(opt)
 
     def forward(self, x):
-        x, theta = self.model.forward(x)
-        return x, theta
+        return self.model.forward(x)
 
     def training_step(self, batch, batch_idx, hidden=0):
         # unpack batch
         x, y = batch
-
-        # forward and calculate loss
-        y_hat, theta = self.forward(x)
-
-        if self.opt.model.lower() == 'pstn':
-            # the output is packaged a bit differently for pstn during training
-            loss = self.criterion(y_hat, theta, y)
-        else:
+        theta_mu, theta_var = None, None
+        # forward and calculate loss, the output is packaged a bit differently for all models
+        if self.opt.model.lower() == 'cnn':
+            y_hat = self.forward(x)
             loss = self.criterion(y_hat, y)
-
+        if self.opt.model.lower() == 'stn':
+            y_hat, theta_mu = self.forward(x)
+            loss = self.criterion(y_hat, y)
+        if self.opt.model.lower() == 'pstn':
+            y_hat, theta_samples, theta_params = self.forward(x)
+            loss = self.criterion(y_hat, theta_params, y)
+            theta_mu, theta_var = theta_params
         # calculate the accuracy
         acc = accuracy(y_hat, y)
 
-        # logging
-        theta_mu = None
-        theta_sigma = None
-        if self.opt.model.lower() == 'stn':
-            theta_mu = theta
-        if self.opt.model.lower() == 'pstn':
-            theta_mu = theta[0]
-            theta_sigma = theta[1]
+        # Logging
+        self.log("train_%s" %self.opt.criterion, loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        if not self.opt.criterion == 'nll':
+            batch_nll = F.nll_loss(y_hat, y, reduction='mean')
+            self.log("train_nll", batch_nll, on_step=True, on_epoch=True, prog_bar=False, logger=True)
 
-        if self.opt.model == "pstn":
-            T = self.model.classifier.T
-        if self.opt.model == "stn":
-            T = self.model.classifier.T
-        if self.opt.model == "cnn":
-            T = self.model.cnn.T
+        self.log("train_acc", acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        return {"loss": loss, "theta_mu": theta_mu, "theta_var": theta_var} 
 
-        if self.opt.criterion == 'elbo':
-            mu_p_x = self.criterion.mu_p[0].item()
-            mu_p_y = self.criterion.mu_p[1].item()
-            sigma_p = self.criterion.sigma_p.item()
-
-        tensorboard_logs = OrderedDict({
-            'train_loss': loss, 'train_acc': acc,
-            'train_nll': F.nll_loss(y_hat, y, reduction='mean'),
-            'T': T,
-            'mu_p_x': mu_p_x, 'mu_p_y': mu_p_y,
-            'sigma_p': sigma_p})
-
-        return OrderedDict({
-            'loss': loss, 'acc': acc, 'log': tensorboard_logs,
-            'theta_mu': theta_mu, 'theta_sigma': theta_sigma})
-
+    # this might override on_epoch above?
     def training_epoch_end(self, outputs):
         if self.opt.save_training_theta:
             save_learned_thetas(self.opt, outputs, mode='train', epoch=self.current_epoch)
-        return OrderedDict({'last theta_mu': outputs[-1]['theta_mu']})
+        if self.opt.model.lower() in ['stn', 'pstn']: # log mean trafos
+            theta_mu = torch.stack([x['theta_mu'] for x in outputs])
+            # log theta samples
+            for i in range(self.opt.num_param):
+                self.logger.experiment.add_histogram("train_theta_mu_%s" %i, theta_mu[:, :, i], self.current_epoch) # shape = [batches, batch_size, param]
+        if self.opt.model.lower() ==  'pstn': # log trafo variance 
+            theta_var = torch.stack([x['theta_var'] for x in outputs])
+            # log theta samples
+            for i in range(self.opt.num_param):
+                self.logger.experiment.add_histogram("train_theta_var_%s" %i, theta_var[:, :, i], self.current_epoch)
+
 
     def validation_step(self, batch, batch_idx):
-
         # unpack batch
         x, y = batch
-
         # forward
-        y_hat, _ = self.forward(x)
-
+        if self.opt.model.lower() == 'cnn':
+            y_hat = self.forward(x)
+        else:
+            y_hat = self.forward(x)[0]
         # calculate nll and accuracy
         loss = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
-
         # for the first batch in an epoch visualize the predictions for better debugging
         if batch_idx == 0:
             # calculate different visualizations
-            grid_in, grid_out, theta, bbox_images = visualize_stn(self.model, x, self.opt)
+            grid_in, grid_out, _, bbox_images = visualize_stn(self.model, x, self.opt)
             # add these to tensorboard
             self.add_images(grid_in, grid_out, bbox_images)
-
-        return OrderedDict({'val_loss': loss, 'val_acc': acc})
-
-    def validation_end(self, outputs):
-
-        # calculate mean of nll and accuarcy
-        avg_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
-        avg_acc = torch.stack([x['val_acc'] for x in outputs]).mean()
-
-        # add to tensorboard
-        tensorboard_logs = OrderedDict({'val_loss': avg_loss, 'val_acc': avg_acc})
-
-        return OrderedDict({'val_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar': tensorboard_logs})
+        self.log('val_nll', loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log('val_acc', acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
 
     def test_step(self, batch, batch_idx):
-
         # unpack batch
         x, y = batch
 
+        theta_mu, theta_var = None, None
         # forward image
-        y_hat, theta = self.forward(x)
+        if self.opt.model.lower() == 'cnn':
+            y_hat = self.forward(x)
+            loss = self.criterion(y_hat, y)
+        if self.opt.model.lower() == 'stn':
+            y_hat, theta_mu = self.forward(x)
+            loss = self.criterion(y_hat, y)
+        if self.opt.model.lower() == 'pstn':
+            y_hat, theta_samples, theta_params = self.forward(x)
+            loss = self.criterion(y_hat, theta_params, y)
+            theta_mu, theta_var = theta_params
 
         # calculate nll and loss
-        loss = F.nll_loss(y_hat, y, reduction='mean')
+        batch_nll = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
 
         # for the first batch in an epoch visualize the predictions for better debugging
@@ -213,110 +188,71 @@ class System(pl.LightningModule):
             # add these to tensorboard
             self.add_images(grid_in, grid_out, bbox_images)
 
-        # unpack theta for logging
-        if 'stn' in self.opt.model.lower():
-            theta_mu = theta
-            theta_sigma = None
-        if self.opt.model.lower() == 'pstn':
-            theta_mu = theta[0]
-            theta_sigma = theta[1]
-
         # compute UQ statistics
         pred = y_hat.max(1, keepdim=True)[1]
         check_predictions = pred.eq(y.view_as(pred)).all(dim=1)
 
-        return OrderedDict({'test_loss': loss, 'test_acc': acc,
-                      'probabilities': y_hat.data,
-                      'correct_prediction': y.data,
-                      'correct': check_predictions.data,
-                      'theta_mu': theta_mu,
-                      'theta_sigma': theta_sigma})
+        return {'test_loss': batch_nll, 'test_acc': acc,
+                'probabilities': y_hat.data,
+                'correct_prediction': y.data,
+                'correct': check_predictions.data,
+                "theta_mu": theta_mu, 
+                "theta_var": theta_var}
 
-    def test_end(self, outputs):
-        # calculate mean of nll and accuarcy
+
+    def test_epoch_end(self, outputs):
+        # calculate mean of nll and accuarcy 
+        # we do some manual logging here in order to also save to file
         avg_loss = torch.stack([x['test_loss'] for x in outputs]).mean()
         avg_acc = torch.stack([x['test_acc'] for x in outputs]).mean()
+        self.log("test_nll", avg_loss)
+        self.log("test_acc", avg_acc)
 
         if self.opt.save_results:
-            # concatenate UQ results
-            # probabilities = torch.stack([x['probabilities'] for x in outputs]).cpu().numpy()
-            # correct_predictions = torch.stack([x['correct_prediction'] for x in outputs]).cpu().numpy()
-            # correct = torch.stack([x['correct'] for x in outputs]).cpu().numpy()
+            # concatenate UQ results manually (since we don't want to aggrehgate mean )
+            probabilities = torch.stack([x['probabilities'] for x in outputs]).cpu().numpy()
+            correct_predictions = torch.stack([x['correct_prediction'] for x in outputs]).cpu().numpy()
+            correct = torch.stack([x['correct'] for x in outputs]).cpu().numpy()
 
             save_learned_thetas(self.opt, outputs, mode='test')
 
             # save UQ results
-            # UQ_path = 'UQ/' + modelname
-            # results = {'probabilities': probabilities, 'correct_prediction': correct_predictions,
-            #          'correct': correct}
-            # pickle.dump(results, open(UQ_path + '_results.p', 'wb'))
-
-            # add to tensorboard
-            tensorboard_logs = OrderedDict({'test_loss': avg_loss, 'test_acc': avg_acc})
+            save_UQ_results(self.opt, probabilities, correct_predictions, correct)
 
             # write results to json file also
             save_results(self.opt, avg_loss, avg_acc)
 
-        print('Done testing. Loss:', avg_loss.item(), 'Accuracy:', avg_acc.item())
-
-        return OrderedDict({'test_loss': avg_loss, 'log': tensorboard_logs, 'progress_bar': tensorboard_logs})
-
     def configure_optimizers(self):
-
         # configure optimizer and scheduler
         optimizer, scheduler = create_optimizer(self.model, self.opt, self.criterion)
-
         return [optimizer], [scheduler]
 
-    @pl.data_loader
     def train_dataloader(self):
-
-        # initialize dataset
-        if self.opt.optimize_temperature:  # learn optimal temperature on the validation data
-            dataset = create_dataset(self.opt, mode='val')
-        else:
-            dataset = create_dataset(self.opt, mode='train')
-
+        dataset = create_dataset(self.opt, mode='train')
         # dataloader params
         opt = {"batch_size": self.opt.batch_size, "shuffle": True, "pin_memory": True, "num_workers": int(self.opt.num_threads), 'drop_last': True}
-
         # return data loader
         dataloader = DataLoader(dataset, **opt)
-
-        # if we use cyclic kl weigting we need to know how many batches for each epoch
-        if self.opt.annealing.lower() == 'cyclic_kl':
-            self.criterion.M = len(dataloader)
-
         return dataloader
 
-    @pl.data_loader
     def val_dataloader(self):
-
         # initialize dataset
         dataset = create_dataset(self.opt, mode='val')
-
         # dataloader params
         opt = {"batch_size": self.opt.batch_size, "shuffle": False, "pin_memory": True, "num_workers": int(self.opt.num_threads), 'drop_last': True}
-
         # return data loader
         return DataLoader(dataset, **opt)
 
-    @pl.data_loader
     def test_dataloader(self):
-
         # initialize dataset
         dataset = create_dataset(self.opt, mode='test')
-
         # dataloader params
         opt = {"batch_size": self.opt.batch_size, "shuffle": False, "pin_memory": True, "num_workers": int(self.opt.num_threads), 'drop_last': True}
-
         # return data loader
         return DataLoader(dataset, **opt)
 
     def add_images(self, grid_in, grid_out, bbox_images):
-
         # add different visualizations to tensorboard depending on the model
-
         # add input images
         self.logger.experiment.add_image('grid_in', grid_in, self.global_step)
 

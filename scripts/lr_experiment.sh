@@ -41,7 +41,7 @@ do
                         --digits 1 \
                         --trainval_split True \
                         --save_results True \
-                        --savepath 'lr_experiment'
+                        --results_folder 'lr_experiment'
     done
 done
 

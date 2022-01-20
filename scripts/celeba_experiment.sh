@@ -47,7 +47,7 @@ GPUS=(0 6 1 2 3 6 6 6)
                             --target_attr $ATTR \
                             --trainval_split True \
                             --save_results True \
-                            --savepath "celeba_experiment_data_augmentation" &
+                            --results_folder "celeba_experiment_data_augmentation" &
         done
     done
 #done

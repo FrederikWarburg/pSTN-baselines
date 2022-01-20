@@ -15,3 +15,5 @@ scripts/.*
 notebooks/
 *.ipynb
 .ipynp*
+p_stn.egg-info/
+.DS_Store

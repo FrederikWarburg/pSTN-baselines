@@ -17,31 +17,12 @@ def kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', prior_type='zero_mean_gau
 
     sigma = torch.diag_embed(sigma)
     q = MultivariateNormal(loc=mu, scale_tril=sigma)
+    
     if prior_type in ['mean_zero_gaussian', 'moving_mean']:
         mu_prior = mu if (prior_type == 'moving_mean') else mu_p.repeat(batch_size, 1)  # am I missing an N here?
         sigma_p = sigma_p * torch.eye(params, device=mu.device).unsqueeze(0).repeat(batch_size, 1, 1)
         p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_p)
         kl_loss = kl.kl_divergence(q, p)
-
-    elif prior_type == 'mixture_of_gaussians':
-        weights = pickle.load(open('priors/mog_weights.p', 'rb'))
-        kl_loss = 0
-        for component in range(8):  # TODO: make nr_components a variable
-            mu_prior = mu_p[component].repeat(batch_size, 1)  # am I missing an N here?
-            sigma_prior = sigma_p[component] * torch.eye(params, device=mu.device).unsqueeze(0).repeat(batch_size, 1, 1)
-            p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_prior)
-            kl_loss += weights[component] * kl.kl_divergence(q, p)
-
-    # elif prior_type == 'mixture_of_gaussians_closest_approximation':
-    #     kl_loss = 0
-    #     mu_p = mu_p.unsqueeze(1).repeat(1, 256, 1)
-    #     ix = find_closest_ix(mu, mu_p)
-    #     mu_prior = mu_p[ix, 0, :]
-    #     sigma_prior = sigma_p[ix, 0, :]
-    #     sigma_prior = torch.diag_embed(sigma_prior)
-    #     p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_prior)
-
-    #     kl_loss = kl.kl_divergence(q, p)
 
     if reduction == 'mean':
         return kl_loss.mean()

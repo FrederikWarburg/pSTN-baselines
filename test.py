@@ -4,7 +4,7 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 from options.test_options import TestOptions
 from pytorch_lightning import Trainer
-from pytorch_lightning.logging import TestTubeLogger
+from pytorch_lightning.loggers import TensorBoardLogger
 from models import System
 import torch
 from utils.utils import get_exp_name
@@ -18,11 +18,9 @@ if __name__ == '__main__':
     modelname = 'testing_' + opt.checkpoints_dir 
 
     # initialize a test logger for experiment
-    logger = TestTubeLogger(
-       save_dir=os.getcwd() + "/lightning_logs",
-       name=modelname,
-       debug=False,
-       create_git_tag=False
+    logger = TensorBoardLogger(
+       save_dir=os.getcwd() + "/lightning_logs/%s/" %opt.results_folder,
+       name=modelname
     )
 
     # initialize model
@@ -35,12 +33,12 @@ if __name__ == '__main__':
 
     # Initialize pytorch-lightning trainer with good defaults
     trainer = Trainer(gpus=num_gpus,
-                      logger=logger,
-                      distributed_backend='dp')
+                      logger=logger)
 
     if opt.resume_from_ckpt:
         print('Loading model.')
-        lightning_system = lightning_system.load_from_checkpoint(checkpoint_path=opt.checkpoints_dir)
+        lightning_system = lightning_system.load_from_checkpoint(
+            checkpoint_path="checkpoints/%s/%s.ckpt" % (opt.results_folder, modelname))
 
     # test model
     trainer.test()

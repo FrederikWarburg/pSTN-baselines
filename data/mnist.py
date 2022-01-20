@@ -5,6 +5,7 @@ from torch import distributions
 from torch.utils.data import Dataset, Subset
 from torchvision import transforms, datasets
 from utils import transformers
+from utils.transformers import make_affine_matrix
 
 
 def transform_image_affine(x, opt):
@@ -13,7 +14,7 @@ def transform_image_affine(x, opt):
     random_params = epsilon * opt.sigma_p
     random_params[1] += 1
     transformer = transformers.AffineTransformer()
-    theta = transformer.make_affine_matrix(*random_params)
+    theta = make_affine_matrix(*random_params)
     x = x.unsqueeze(0)
     grid = F.affine_grid(theta, x.size())  # makes the flow field on a grid
     x_transformed = F.grid_sample(x, grid)  # interpolates x on the grid

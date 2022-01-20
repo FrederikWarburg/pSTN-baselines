@@ -40,7 +40,6 @@ class TimeseriesClassifier(nn.Module):
         self.parameter_dict = self.load_specifications(opt)
         self.nr_classes = io.get_nr_classes_and_features(opt.dataset)[0]
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.T = torch.ones(1, requires_grad=False, device=device)  # softmax temperature parameter
 
         self.CNN = nn.Sequential(
             nn.Conv1d(1, self.parameter_dict['CNN_filters1'],
