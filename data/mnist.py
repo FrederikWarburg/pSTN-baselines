@@ -4,7 +4,6 @@ import torch.nn.functional as F
 from torch import distributions
 from torch.utils.data import Dataset, Subset
 from torchvision import transforms, datasets
-from utils import transformers
 from utils.transformers import make_affine_matrix
 
 
@@ -13,7 +12,6 @@ def transform_image_affine(x, opt):
     epsilon = gaussian.sample(sample_shape=torch.Size([4]))
     random_params = epsilon * opt.sigma_p
     random_params[1] += 1
-    transformer = transformers.AffineTransformer()
     theta = make_affine_matrix(*random_params)
     x = x.unsqueeze(0)
     grid = F.affine_grid(theta, x.size())  # makes the flow field on a grid

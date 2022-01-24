@@ -4,14 +4,6 @@ from torch.distributions import MultivariateNormal, kl
 import pickle
 
 
-# def find_closest_ix(mu, mu_p):
-#     mu = mu.repeat(8, 1, 1)  # repeat along nr_components, TODO: remove hard coding
-#     diff = mu - mu_p
-#     abs_diff = torch.norm(diff, dim=(2))
-#     ix = torch.argmin(abs_diff, dim=0)
-#     return ix
-
-
 def kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', prior_type='zero_mean_gaussian', weights=None):
     batch_size, params = mu.shape
 
