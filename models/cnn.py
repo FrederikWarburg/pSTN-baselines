@@ -21,4 +21,4 @@ class CNN(nn.Module):
 
     def forward(self, x):
 
-        return self.cnn(x), None
+        return self.cnn(x)

@@ -6,10 +6,10 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 from options.train_options import TrainOptions
 from pytorch_lightning import Trainer
-from pytorch_lightning.logging import TestTubeLogger
+from pytorch_lightning.loggers import TensorBoardLogger
 from models import System
 import torch
-from utils.utils import get_exp_name
+from utils.utils import get_exp_name, save_generating_thetas
 
 
 if __name__ == '__main__':
@@ -20,12 +20,10 @@ if __name__ == '__main__':
     # decide unique model name based on parameters
     modelname = get_exp_name(opt)
 
-    # initialize a test logger for experiment
-    logger = TestTubeLogger(
-       save_dir=os.getcwd() + "/lightning_logs",
-       name=modelname,
-       debug=False,
-       create_git_tag=True
+    # initialize a train logger for experiment
+    logger = TensorBoardLogger(
+       save_dir=os.getcwd() + "/lightning_logs/%s/" %opt.results_folder,
+       name=modelname
     )
 
     # initialize model
@@ -46,11 +44,8 @@ if __name__ == '__main__':
     trainer = Trainer(max_epochs=opt.epochs,
                       # accumulate_grad_batches=num_batches,
                       gpus=num_gpus,
-                      early_stop_callback=None,
                       logger=logger,
                       check_val_every_n_epoch=val_check_interval,
-                      val_percent_check=opt.val_percent_check,
-                      distributed_backend='dp',
                       checkpoint_callback=False)
 
     print('printing parameter check:')
@@ -58,19 +53,11 @@ if __name__ == '__main__':
 
     if opt.resume_from_ckpt:
         print('Loading model.')
-        lightning_system = lightning_system.load_from_checkpoint(checkpoint_path="checkpoints/%s.ckpt" % modelname)
 
-    elif opt.optimize_temperature:
-        print('Loading model.')
-        lightning_system = lightning_system.load_from_checkpoint(checkpoint_path="checkpoints/%s.ckpt" % modelname)
-        lightning_system.opt.optimize_temperature = True
-        lightning_system.model.model.T.requires_grad = True
-        lightning_system.configure_optimizers()
-        trainer.fit(lightning_system)  # only fit temperature parameter here
     else:
         # train model
         trainer.fit(lightning_system)
-        trainer.save_checkpoint("checkpoints/%s.ckpt" % modelname)
+        trainer.save_checkpoint("checkpoints/%s/%s.ckpt" % (opt.results_folder, modelname))
 
     # test model
     if opt.test_on == 'test':

@@ -14,14 +14,14 @@ do
     echo ${DATASETS[$DATASET]}
     for FOLD in {0..5}
     do
-        for MODEL in {2..2}
+        for MODEL in {0..2}
         do
         echo ${MODELS[$MODEL]}
         echo ${PARAMS[$MODEL]}
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        CUDA_VISIBLE_DEVICES=5 python train.py --dataroot 'data' \
+        CUDA_VISIBLE_DEVICES=3 python train.py --dataroot 'data' \
                         --dataset ${DATASETS[$DATASET]} \
                         --fold ${FOLD} \
                         --batch_size 16 \
@@ -37,20 +37,16 @@ do
                         --criterion ${CRITERION[$MODEL]} \
                         --save_results True \
                         --lr 0.001 \
-                        --lr_loc 0.1 \
                         --sigma_p ${PRIORS[$DATASET]} \
                         --run_test_freq 200 \
                         --trainval_split True \
                         --save_results True \
-                        --savepath "test" \
                         --optimizer "adam" \
                         --weightDecay 0 \
                         --transformer_type "diffeomorphic" \
                         --step_size 200 \
                         --val_check_interval 200 \
-                        --optimize_temperature False \
-                        --results_folder "timeseries_results" \
-			--data_augmentation "False"
+                        --results_folder "20_01_timeseries_repros" 
         done
     done
 done

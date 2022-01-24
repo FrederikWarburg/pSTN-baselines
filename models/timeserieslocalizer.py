@@ -64,13 +64,13 @@ class TimeseriesPSTN(nn.Module):
         x = x.repeat(self.S, 1, 1)
         theta_mu_upsample = theta_mu_upsample.repeat(self.S, 1)
         theta_sigma_upsample = theta_sigma_upsample.repeat(self.S, 1)
-        x, params = self.transformer(x, theta_mu_upsample, theta_sigma_upsample)
+        x, theta_samples = self.transformer(x, theta_mu_upsample, theta_sigma_upsample)
         gaussian = distributions.normal.Normal(0, 1)
         epsilon = gaussian.sample(sample_shape=x.shape).to(x.device)
         x = x + self.sigma_n * epsilon
         # print('theta mu:', theta_mu, '\n theta_sigma:', theta_sigma)
 
-        return x, (theta_mu, theta_sigma), params
+        return x, theta_samples
 
 
 class TimeseriesSTN(TimeseriesPSTN):
@@ -94,5 +94,5 @@ class TimeseriesSTN(TimeseriesPSTN):
         # repeat for the number of samples
         x = x.repeat(self.S, 1, 1)
         theta_mu_upsample = theta_mu_upsample.repeat(self.S, 1)
-        x, params = self.transformer(x, theta_mu_upsample)
-        return x, (theta_mu_upsample), params
+        x, thetas = self.transformer(x, theta_mu_upsample)
+        return x, thetas

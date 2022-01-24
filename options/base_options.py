@@ -42,8 +42,6 @@ class BaseOptions:
         self.parser.add_argument('--transformer_type', type=str, default='affine', help='attribute to train for')
         self.parser.add_argument('--num_param', default=2, type=int,
                                  help='if we use a affine (s, r, tx, ty) or crop (0.5, 1, tx, ty) transformation')
-        self.parser.add_argument('--save_results', type=bool, default=False, help='should we save the results?')
-        self.parser.add_argument('--savepath', type=str, default='results', help='where should we save the results?')
         # data params - MNIST subset experiment
         self.parser.add_argument('--subset', type=str, default=None, help='using a subset of MNIST? What size?')
         self.parser.add_argument('--fold', type=str, default=None, help='using a subset of MNIST? Which fold?')
@@ -57,7 +55,6 @@ class BaseOptions:
         self.parser.add_argument('--batch_size', type=int, default=16, help='input batch size')
         #self.parser.add_argument('--resume_ckpt', type=str, default=None, help='path to pretrained model')
         self.parser.add_argument('--resume_from_ckpt', type=str2bool, nargs='?', const=True, default=False, help='Load pre-trained model?')
-        self.parser.add_argument('--optimize_temperature', type=str2bool, nargs='?', const=True, default=False, help='Optimize temperature on validation data.')
 
         self.parser.add_argument('--dropout_rate', type=float, default=0.5)
         self.parser.add_argument('--N', type=int, default=1, help='number of parallel tracks')
@@ -65,6 +62,11 @@ class BaseOptions:
         self.parser.add_argument('--train_samples', type=int, default=1, help='number of samples')
         self.parser.add_argument('--basenet', type=str, help='base network to use')
 
+        # logger params 
+        self.parser.add_argument('--save_results', type=bool, default=False, help='should we save the results?')
+        self.parser.add_argument('--save_training_theta', type=bool, default=False, help='should we save thetas during training?')
+        self.parser.add_argument('--results_folder', type=str, default='results', help='where should we save the results?')
+        
         # general params
         self.parser.add_argument('--num_threads', default=8, type=int, help='# threads for loading data')
         self.parser.add_argument('--seed', type=int, help='if specified, uses seed')
@@ -72,7 +74,6 @@ class BaseOptions:
                                  help='name of the experiment. It decides where to store samples and models')
         self.parser.add_argument('--checkpoints_dir', type=str, default='checkpoints', help='models are saved here')
         self.parser.add_argument('--test_on', type=str, default='test', help='evaluate on validation or test?')
-        self.parser.add_argument('--results_folder', type=str, default='mnist_results')
 
         # visualization params
         self.parser.add_argument('--export_folder', type=str, default='',

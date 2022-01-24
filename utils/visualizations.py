@@ -9,6 +9,7 @@ import io
 import matplotlib.pyplot as plt
 import PIL.Image
 from torchvision.transforms import ToTensor
+from .transformers import make_affine_parameters
 
 
 def convert_image_np(inp, dataset='mnist'):
@@ -81,10 +82,10 @@ def visualize_stn(model, data, opt):
         if opt.xdim == 2:
             data = data[:16]  # just visualize the first 16
             if opt.model.lower() == 'stn':
-                transformed_input_tensor, theta, affine_params = model.stn(data)
+                transformed_input_tensor, thetas = model.stn(data)
 
             elif opt.model.lower() == 'pstn':
-                transformed_input_tensor, theta, affine_params = model.pstn(data)
+                transformed_input_tensor, thetas, _ = model.pstn(data)
 
             in_grid = convert_image_np(torchvision.utils.make_grid(data.cpu()), opt.dataset.lower())
             in_grid = (in_grid * 255).astype(np.uint8)
@@ -97,9 +98,14 @@ def visualize_stn(model, data, opt):
                                         opt.dataset.lower())
             out_grid = (out_grid * 255).astype(np.uint8)
             out_grid = np.transpose(out_grid, (2, 0, 1))
-            bbox_images = visualize_bbox(data.cpu(), affine_params, opt)
 
-            return in_grid, out_grid, theta, bbox_images
+            bbox_images = None
+            if opt.num_param == 2:
+                affine_params = make_affine_parameters(thetas)
+                bbox_images = visualize_bbox(data.cpu(), affine_params, opt)
+            # TODO: implement bounding boxed for 4 param trafos
+
+            return in_grid, out_grid, thetas, bbox_images
 
         # TIMESERIES VISUALIZATIONS
         if opt.xdim == 1:

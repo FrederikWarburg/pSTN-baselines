@@ -32,13 +32,11 @@ do
                                 --num_param 4 \
                                 --trainval_split True \
                                 --save_results True \
-                                --savepath "test" \
                                 --optimizer "adam" \
                                 --weightDecay 0.01 \
                                 --transformer_type "affine" \
                                 --step_size 600 \
                                 --val_check_interval 600 \
-                                --optimize_temperature False \
                                 --results_folder "grid_search_mnist_diffeo" \
                                 --test_on "val"
         done

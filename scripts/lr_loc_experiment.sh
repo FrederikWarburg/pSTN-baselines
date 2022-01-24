@@ -42,7 +42,7 @@ do
                         --digits 1 \
                         --trainval_split True \
                         --save_results True \
-                        --savepath 'lr_loc_experiment'
+                        --results_folder 'lr_loc_experiment'
     done
 done
 

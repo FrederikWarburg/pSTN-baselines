@@ -4,18 +4,16 @@ import torch.nn.functional as F
 from torch import distributions
 from torch.utils.data import Dataset, Subset
 from torchvision import transforms, datasets
-from RandAugment import RandAugment
-
-from utils import transformers
-
+from utils.transformers import make_affine_matrix
+# from RandAugment import RandAugment
+# this is now native in torch, use that implementation if we want to use it again
 
 def transform_image_affine(x, opt):
     gaussian = distributions.normal.Normal(0, 1)  # split up the multivariate Gaussian into 1d Gaussians
     epsilon = gaussian.sample(sample_shape=torch.Size([4]))
     random_params = epsilon * opt.sigma_p
     random_params[1] += 1
-    transformer = transformers.AffineTransformer()
-    theta = transformer.make_affine_matrix(*random_params)
+    theta = make_affine_matrix(*random_params)
     x = x.unsqueeze(0)
     grid = F.affine_grid(theta, x.size())  # makes the flow field on a grid
     x_transformed = F.grid_sample(x, grid)  # interpolates x on the grid
@@ -36,13 +34,13 @@ def get_trafo(opt):
              transforms.Normalize((0.1307,), (0.3081,)),
              lambda x: transform_image_affine(x, opt)])
 
-    elif opt.data_augmentation == 'RandAugment':
-        train_trafo = train_trafo_no_DA
-        train_trafo.transforms.insert(0, RandAugment(opt.rand_augment_N, opt.rand_augment_M, 'full'))
+    # elif opt.data_augmentation == 'RandAugment':
+    #     train_trafo = train_trafo_no_DA
+    #     train_trafo.transforms.insert(0, RandAugment(opt.rand_augment_N, opt.rand_augment_M, 'full'))
 
-    elif opt.data_augmentation == 'AffineRandAugment':
-        train_trafo = train_trafo_no_DA
-        train_trafo.transforms.insert(0, RandAugment(opt.rand_augment_N, opt.rand_augment_M, 'affine'))
+    # elif opt.data_augmentation == 'AffineRandAugment':
+    #     train_trafo = train_trafo_no_DA
+    #     train_trafo.transforms.insert(0, RandAugment(opt.rand_augment_N, opt.rand_augment_M, 'affine'))
 
     else:
         print('Please pass valid DA method!')
@@ -76,6 +74,10 @@ class MnistXKmnist(Dataset):
 
     def __init__(self, opt, mode):
         self.datasets = []
+        self.mode = mode
+        if self.mode == 'test':
+            print('creating test set')
+            self.samples = []
 
         # False (test) or True (train,val)
         trainingset = mode in ['train', 'val']
@@ -114,10 +116,13 @@ class MnistXKmnist(Dataset):
 
             c, w, h = im1.shape
 
-            x = i * w + i * 8  # np.random.randint(0,32-w)
+            x = np.random.randint(0, 32)
 
             im[:, y:y + h, x:x + w] = im1.type(torch.float)
             target += str(target1)
+
+            if self.mode == 'test':
+                self.samples.append((x, y))
 
         im = self.transform(im)
 
@@ -174,6 +179,8 @@ class MnistRandomPlacement(Dataset):
             c, w, h = im1.shape
 
             im[:, y:y + h, x:x + w] = im1.type(torch.float)
+            # print('created image', im.shape, 'x:', x, 'y:', y)
+
             target += str(target1)
 
         transform = transforms.Compose(

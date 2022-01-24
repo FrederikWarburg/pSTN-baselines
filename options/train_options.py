@@ -19,7 +19,10 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--step_size', type=float, default=50, help='Scheduler update every n (default 50) epochs')
 
         # loss related
-        self.parser.add_argument('--moving_mean', type=str2bool, nargs='?', const=False, default=False)
+        # self.parser.add_argument('--moving_mean', type=str2bool, nargs='?', const=False, default=False)
+        self.parser.add_argument('--prior_type', type=str, default='mean_zero_gaussian')  # mean_zero_gaussian, moving_mean, mixture_of_gaussians
+        self.parser.add_argument('--learnable_prior', type=str2bool, nargs='?', const=True, default=False)  # mean_zero_gaussian, moving_mean, mixture_of_gaussians
+
         self.parser.add_argument('--criterion', type=str, default='nll')
         self.parser.add_argument('--annealing', type=str, default='no_annealing')
 
@@ -35,7 +38,6 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--rand_augment_M', type=int, default=0)
 
         # Evaluation related
-        self.parser.add_argument('--val_percent_check', type=float, default=1.0, help='percentage of validation set to check')
         self.parser.add_argument('--val_check_interval', type=float, default=1.0, help='the rate for checking')
         self.parser.add_argument('--trainval_split', type=str2bool, nargs='?', const=True, default=False)
         self.parser.add_argument('--save_dir', type=str, default='', help='path for saving models')

@@ -80,7 +80,7 @@ class PSTN(nn.Module):
         # get input shape
         batch_size = x.shape[0]
         # get output for pstn module
-        x, theta, _ = self.pstn(x)
+        x, thetas, (theta_mu, theta_sigma) = self.pstn(x)
         # make classification based on pstn output
         x = self.classifier(x)
         # format according to number of samples
@@ -88,17 +88,12 @@ class PSTN(nn.Module):
         x = x.view(self.pstn.S, batch_size * self.num_classes)
 
         if self.training:
-            # unpack theta
-            mu, sigma = theta
-
             # calculate mean across samples
             x = x.mean(dim=0)
             x = x.view(batch_size, self.num_classes)
 
-            # during training we want to return the mean as well as mu and sigma as the elbo uses all for optimization
-            # return (x, mu, sigma)
         else:
             x = torch.log(torch.tensor(1.0 / float(self.pstn.S))) + torch.logsumexp(x, dim=0)
             x = x.view(batch_size, self.num_classes)
 
-        return x, theta
+        return x, thetas, (theta_mu, theta_sigma)

@@ -65,7 +65,7 @@ class STN(nn.Module):
     def forward(self, x):
 
         # zoom in on relevant areas with stn
-        x, theta, _ = self.stn(x)
+        x, theta = self.stn(x)
 
         # make classification based on these areas
         x = self.classifier(x)

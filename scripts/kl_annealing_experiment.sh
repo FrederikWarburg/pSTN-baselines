@@ -34,6 +34,6 @@ do
                         --annealing "${ANNEALING[$MODEL]}" \
                         --sigma "${SIGMAS[$SIGMA]}" \
                         --save_results True \
-                        --savepath 'kl_annealing_experiment_2'
+                        --results_folder 'kl_annealing_experiment_2'
     done
 done

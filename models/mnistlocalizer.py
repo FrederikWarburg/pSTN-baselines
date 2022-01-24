@@ -97,11 +97,11 @@ class MnistPSTN(nn.Module):
         x = x.repeat(self.S, 1, 1, 1)
         theta_mu_upsample = theta_mu_upsample.repeat(self.S, 1)
         theta_sigma_upsample = theta_sigma_upsample.repeat(self.S, 1)
-        x, params = self.transformer(x, theta_mu_upsample, theta_sigma_upsample)
+        x, theta_samples = self.transformer(x, theta_mu_upsample, theta_sigma_upsample)
         gaussian = distributions.normal.Normal(0, 1)
         epsilon = gaussian.sample(sample_shape=x.shape).to(x.device)
         x = x + self.sigma_n * epsilon
-        return x, (theta_mu, theta_sigma), params
+        return x, theta_samples, (theta_mu, theta_sigma)
 
 
 class MnistSTN(nn.Module):
@@ -148,6 +148,5 @@ class MnistSTN(nn.Module):
         # repeat x in the batch dim so we avoid for loop
         x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
         theta_upsample = theta.view(batch_size * self.N, self.theta_dim)
-        x, params = self.transformer(x, theta_upsample)
-
-        return x, theta, params
+        x, theta = self.transformer(x, theta_upsample)
+        return x, theta

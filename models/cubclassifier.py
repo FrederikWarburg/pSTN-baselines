@@ -22,7 +22,6 @@ class CubClassifier(nn.Module):
         self.test_samples = opt.test_samples
         self.feature_size = FEATURE_SIZES[opt.basenet.lower()]
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.T = torch.ones(1, requires_grad=False, device=device)  # softmax temperature parameter
 
         # initialize a classifier for each branch
         self.model = nn.Module()
@@ -99,4 +98,4 @@ class CubClassifier(nn.Module):
 
         x = self.fc1(x)
 
-        return F.log_softmax(x / self.T, dim=1)
+        return F.log_softmax(x, dim=1)

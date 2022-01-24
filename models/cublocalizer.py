@@ -114,14 +114,14 @@ class CubPSTN(nn.Module):
         theta_sigma_upsample = theta_sigma_upsample.repeat(self.S, 1)
 
         # transform x for each sample
-        x, params = self.transformer(x, theta_mu_upsample, theta_sigma_upsample)
+        x, thetas = self.transformer(x, theta_mu_upsample, theta_sigma_upsample)
 
         # add color space noise to all samples
         gaussian = distributions.normal.Normal(0, 1)
         epsilon = gaussian.sample(sample_shape=x.shape).to(x.device)
         x = x + self.sigma_n * epsilon
 
-        return x, (theta_mu, theta_sigma), params
+        return x, thetas
 
 
 class CubSTN(nn.Module):
@@ -203,6 +203,6 @@ class CubSTN(nn.Module):
         theta_upsample = theta.view(batch_size * self.N, self.num_param)
 
         # transform x
-        x, params = self.transformer(x, theta_upsample)
+        x, thetas = self.transformer(x, theta_upsample)
 
-        return x, theta, params
+        return x, thetas
