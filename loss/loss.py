@@ -7,12 +7,8 @@ import pickle
 def initialize_sigma_prior(opt, prior_type):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     require_grad = opt.learnable_prior
-
-    if prior_type in ['moving_mean', 'mean_zero_gaussian']:
-        sigma_p = torch.tensor(opt.sigma_p, requires_grad=require_grad)
-    elif 'mixture_of_gaussians' in prior_type:
-        sigma_p = pickle.load(open('priors/mog_covariances.p', 'rb')).to(device)
-        sigma_p = torch.tensor(sigma_p, requires_grad=require_grad)
+    # prior_type is 'moving_mean' or  'mean_zero_gaussian'
+    sigma_p = torch.tensor(opt.sigma_p, requires_grad=require_grad)
     return sigma_p
 
 
