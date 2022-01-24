@@ -57,18 +57,12 @@ def create_optimizer(model, opt, criterion):
 
     elif opt.model.lower() == 'pstn':
         # enables the lr for the localizer to be lower than for the classifier
-        print('criterion', criterion)
-        print('criterion mu + sigma', criterion.sigma_p, criterion.mu_p)
-        print('criterion mu + sigma require grad:', criterion.sigma_p.requires_grad, criterion.mu_p.requires_grad)
-        print('criterion params:', list(criterion.parameters()))
         print('passing to optimizer:',
             {'params': list(filter(lambda p: p.requires_grad, criterion.parameters())), 'lr': opt.lr})
         # exit()
         optimizer = Optimizer([
             {'params': filter(lambda p: p.requires_grad, model.pstn.parameters()), 'lr': opt.lr_loc * opt.lr},
             {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
-            {'params': [criterion.sigma_p, criterion.mu_p], 'lr': opt.lr},
-
         ], **opt_param)
 
     else:
@@ -99,7 +93,7 @@ class System(pl.LightningModule):
     def training_step(self, batch, batch_idx, hidden=0):
         # unpack batch
         x, y = batch
-        theta_mu, theta_var = None, None
+        theta_mu, beta = None, None
         # forward and calculate loss, the output is packaged a bit differently for all models
         if self.opt.model.lower() == 'cnn':
             y_hat = self.forward(x)
@@ -109,8 +103,8 @@ class System(pl.LightningModule):
             loss = self.criterion(y_hat, y)
         if self.opt.model.lower() == 'pstn':
             y_hat, theta_samples, theta_params = self.forward(x)
-            loss = self.criterion(y_hat, theta_params, y)
-            theta_mu, theta_var = theta_params
+            theta_mu, beta = theta_params
+            loss = self.criterion(y_hat, beta, y)
         # calculate the accuracy
         acc = accuracy(y_hat, y)
 
@@ -121,7 +115,7 @@ class System(pl.LightningModule):
             self.log("train_nll", batch_nll, on_step=True, on_epoch=True, prog_bar=False, logger=True)
 
         self.log("train_acc", acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
-        return {"loss": loss, "theta_mu": theta_mu, "theta_var": theta_var} 
+        return {"loss": loss, "theta_mu": theta_mu, "beta": beta} 
 
     # this might override on_epoch above?
     def training_epoch_end(self, outputs):
@@ -132,11 +126,11 @@ class System(pl.LightningModule):
             # log theta samples
             for i in range(self.opt.num_param):
                 self.logger.experiment.add_histogram("train_theta_mu_%s" %i, theta_mu[:, :, i], self.current_epoch) # shape = [batches, batch_size, param]
-        if self.opt.model.lower() ==  'pstn': # log trafo variance 
-            theta_var = torch.stack([x['theta_var'] for x in outputs])
+        if self.opt.model.lower() ==  'pstn': # log beta
+            beta = torch.stack([x['beta'] for x in outputs])
             # log theta samples
             for i in range(self.opt.num_param):
-                self.logger.experiment.add_histogram("train_theta_var_%s" %i, theta_var[:, :, i], self.current_epoch)
+                self.logger.experiment.add_histogram("train_beta_%s" %i, beta[:, :, i], self.current_epoch)
 
 
     def validation_step(self, batch, batch_idx):
@@ -163,7 +157,7 @@ class System(pl.LightningModule):
         # unpack batch
         x, y = batch
 
-        theta_mu, theta_var = None, None
+        theta_mu, beta = None, None
         # forward image
         if self.opt.model.lower() == 'cnn':
             y_hat = self.forward(x)
@@ -173,8 +167,8 @@ class System(pl.LightningModule):
             loss = self.criterion(y_hat, y)
         if self.opt.model.lower() == 'pstn':
             y_hat, theta_samples, theta_params = self.forward(x)
-            loss = self.criterion(y_hat, theta_params, y)
-            theta_mu, theta_var = theta_params
+            theta_mu, beta = theta_params
+            loss = self.criterion(y_hat, beta, y)
 
         # calculate nll and loss
         batch_nll = F.nll_loss(y_hat, y, reduction='mean')
@@ -197,7 +191,7 @@ class System(pl.LightningModule):
                 'correct_prediction': y.data,
                 'correct': check_predictions.data,
                 "theta_mu": theta_mu, 
-                "theta_var": theta_var}
+                "beta": beta}
 
 
     def test_epoch_end(self, outputs):

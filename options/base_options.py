@@ -47,8 +47,8 @@ class BaseOptions:
         self.parser.add_argument('--fold', type=str, default=None, help='using a subset of MNIST? Which fold?')
 
         # model params
-        self.parser.add_argument('--sigma_p', type=float, default=0.1, help='prior variance')
-        self.parser.add_argument('--sigma_n', type=float, default=1e-5, help='color space noise variance')
+        self.parser.add_argument('--alpha_p', type=float, default=0.1, help='prior alpha (posterior when fixed)')
+        self.parser.add_argument('--beta_p', type=float, default=1e-5, help='prior beta')
 
         # network params
         self.parser.add_argument('--model', type=str, default='cnn', help='model name')

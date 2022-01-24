@@ -4,56 +4,17 @@ import torch
 import pickle
 
 
-def initialize_sigma_prior(opt, prior_type):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    require_grad = opt.learnable_prior
-
-    if prior_type in ['moving_mean', 'mean_zero_gaussian']:
-        sigma_p = torch.tensor(opt.sigma_p, requires_grad=require_grad)
-    elif 'mixture_of_gaussians' in prior_type:
-        sigma_p = pickle.load(open('priors/mog_covariances.p', 'rb')).to(device)
-        sigma_p = torch.tensor(sigma_p, requires_grad=require_grad)
-    return sigma_p
-
-
-def initialize_mu_prior(opt, prior_type):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    if prior_type == 'moving_mean':
-        mu_p = None  # in this case it will get updated on the fly
-
-    elif 'mixture_of_gaussians' in prior_type:
-        mu_p = pickle.load(open('priors/mog_means.p', 'rb')).to(device)
-
-    elif prior_type == 'mean_zero_gaussian':
-        require_grad = opt.learnable_prior
-        if opt.transformer_type == 'diffeomorphic':
-            theta_dim = opt.num_param * opt.N
-            mu_p = torch.zeros((1, theta_dim), requires_grad=require_grad).to(device)
-
-        if opt.transformer_type == 'affine':
-            if opt.num_param == 4:
-                mu_p = torch.tensor([0.0, 1.0, 0.0, 0.0], requires_grad=require_grad).to(device)
-            if opt.num_param == 2:
-                mu_p = torch.tensor([0.0, 0.0], requires_grad=require_grad).to(device)
-
-    else:
-        raise NotImplementedError
-
-    return mu_p
-
-
 class Elbo(nn.Module):
 
     def __init__(self, opt, annealing='reduce_kl'):
         super(Elbo, self).__init__()
-        self.prior_type = opt.prior_type
+        # self.prior_type = opt.prior_type
 
-        self.sigma_p = initialize_sigma_prior(opt, self.prior_type)
-        self.mu_p = initialize_mu_prior(opt, self.prior_type)
+        self.alpha_p = opt.alpha_p #torch.tensor(opt.alpha_p, requires_grad=False)
+        self.beta_p = opt.beta_p #torch.tensor(opt.beta_p, requires_grad=False)
 
         self.iter = 0.0
-        self.base_kl = torch.zeros(1, requires_grad=False, device=self.mu_p.device)  #
+        self.base_kl = 0.0 #, requires_grad=False, device=self.alpha_p.device)  #
 
         # number of batches in epoch (only used for cyclic kl weighting)
         self.M = None
@@ -75,11 +36,10 @@ class Elbo(nn.Module):
 
         self.annealing = annealing
 
-    def forward(self, x, theta, label):
-        mu, sigma = theta
+    def forward(self, x, beta, label):
 
         # calculate terms of elbo
-        self.nll, kl, self.rec = elbo(x, mu, sigma, label, mu_p=self.mu_p, sigma_p=self.sigma_p, prior_type=self.prior_type)
+        self.nll, kl = elbo(x, beta, label, alpha_p=self.alpha_p, beta_p=self.beta_p)
         self.kl = kl
 
         with torch.no_grad():
@@ -92,4 +52,4 @@ class Elbo(nn.Module):
         # weighting of kl term
         alpha = self.annealing(self.iter, self.M, base_kl=self.base_kl)
 
-        return self.nll + alpha * self.kl + self.rec
+        return self.nll + alpha * self.kl

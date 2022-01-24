@@ -1,6 +1,6 @@
 import torch
 import torch.nn.functional as F
-from torch.distributions import MultivariateNormal, kl
+from torch.distributions import MultivariateNormal, kl, gamma
 import pickle
 
 
@@ -12,17 +12,13 @@ import pickle
 #     return ix
 
 
-def kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', prior_type='zero_mean_gaussian', weights=None):
-    batch_size, params = mu.shape
+def kl_div(x, beta,  alpha_p, beta_p, reduction='mean', weights=None):
+    q = gamma.Gamma(alpha_p, beta)
+    p = gamma.Gamma(alpha_p, beta_p)
+    # print('alpha_p', alpha_p.device, 'beta_p', beta_p.device, 'beta', beta.device)
+    # exit()
 
-    sigma = torch.diag_embed(sigma)
-    q = MultivariateNormal(loc=mu, scale_tril=sigma)
-    
-    if prior_type in ['mean_zero_gaussian', 'moving_mean']:
-        mu_prior = mu if (prior_type == 'moving_mean') else mu_p.repeat(batch_size, 1)  # am I missing an N here?
-        sigma_p = sigma_p * torch.eye(params, device=mu.device).unsqueeze(0).repeat(batch_size, 1, 1)
-        p = MultivariateNormal(loc=mu_prior, scale_tril=sigma_p)
-        kl_loss = kl.kl_divergence(q, p)
+    kl_loss = kl.kl_divergence(q, p)
 
     if reduction == 'mean':
         return kl_loss.mean()
@@ -30,17 +26,14 @@ def kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', prior_type='zero_mean_gau
         return kl_loss.sum()
 
 
-def elbo(x, mu, sigma, label, mu_p, sigma_p=0.1, prior_type='mean_zero_gaussian'):
+def elbo(x, beta, label, alpha_p, beta_p):
     # NLL LOSS
     nll_loss = F.nll_loss(x, label, reduction='mean')
 
     # KL LOSS
-    kl_loss = kl_div(mu, sigma, mu_p, sigma_p, reduction='mean', prior_type=prior_type)
+    kl_loss = kl_div(x, beta, alpha_p, beta_p, reduction='mean')
 
-    # RECONSTRUCTION LOSS
-    reconstruction_loss = 0
-
-    return nll_loss, kl_loss, reconstruction_loss
+    return nll_loss, kl_loss
 
 
 def no_annealing(iter, M=None, base_kl=None):

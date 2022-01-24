@@ -23,7 +23,7 @@ def get_exp_name(opt):
     else:
         modelname += '-kl=None'
 
-    modelname += '-sigmaP=' + str(opt.sigma_p)
+    modelname += '-betaP=' + str(opt.beta_p)
     modelname += '-lr=' + str(opt.lr)
 
     if opt.model.lower() in ['stn', 'pstn']:
@@ -53,16 +53,16 @@ def save_results(opt, avg_loss, avg_acc):
 
 def save_timeseries(opt, avg_loss, avg_acc):
     mkdir('experiments/%s' % opt.results_folder)
-    RESULTS_PATH = 'experiments/%s/%s_%s_%s_fold_%s_DA=%s_' % (
-        opt.results_folder, opt.model, opt.dataset, opt.sigma_p, opt.fold, opt.data_augmentation)
+    RESULTS_PATH = 'experiments/%s/%s_%s_betaP=%s_fold_%s_DA=%s_' % (
+        opt.results_folder, opt.model, opt.dataset, opt.beta_p, opt.fold, opt.data_augmentation)
     pickle.dump(avg_acc.cpu().numpy(), open(RESULTS_PATH + 'test_accuracy.p', 'wb'))
     pickle.dump(avg_loss.cpu().numpy(), open(RESULTS_PATH + 'test_loss.p', 'wb'))
 
 
 def save_mnist(opt, avg_loss, avg_acc):
     mkdir('experiments/%s' % opt.results_folder)
-    RESULTS_PATH = 'experiments/%s/%s_mnist%s_%s_fold_%s_DA=%s_%s_' % (
-        opt.results_folder, opt.model, opt.subset, opt.sigma_p, opt.fold, opt.data_augmentation, opt.transformer_type)
+    RESULTS_PATH = 'experiments/%s/%s_mnist%s_betaP=%s_fold_%s_DA=%s_%s_' % (
+        opt.results_folder, opt.model, opt.subset, opt.beta_p, opt.fold, opt.data_augmentation, opt.transformer_type)
     pickle.dump(avg_acc.cpu().numpy(), open(RESULTS_PATH + 'test_accuracy.p', 'wb'))
     pickle.dump(avg_loss.cpu().numpy(), open(RESULTS_PATH + 'test_loss.p', 'wb'))
 
@@ -118,8 +118,8 @@ def save_learned_thetas(opt, outputs, mode='train', epoch=None):
         theta_mu = torch.stack([x['theta_mu'] for x in outputs]).cpu().numpy()
         pickle.dump(theta_mu, open(theta_path + '_mu.p', 'wb'))
     if opt.model.lower() == 'pstn':
-        theta_sigma = torch.stack([x['theta_var'] for x in outputs]).cpu().numpy()
-        pickle.dump(theta_sigma, open(theta_path + '_sigma.p', 'wb'))
+        beta = torch.stack([x['beta'] for x in outputs]).cpu().numpy()
+        pickle.dump(beta, open(theta_path + '_beta.p', 'wb'))
 
 
 def save_UQ_results(opt, probabilities, correct_predictions, correct):

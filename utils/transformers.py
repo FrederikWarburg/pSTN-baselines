@@ -28,21 +28,9 @@ class DiffeomorphicTransformer(nn.Module):
         else:
             raise NotImplementedError
 
-        self.sigma_p = opt.sigma_p
-
-    def forward(self, x, mean_params, std_params=None):
-        diffeo_params = self.make_diffeomorphic_parameters(mean_params, std_params)
-        x = self.T.transform_data(x, diffeo_params, outsize=x.shape[2:])
-        return x, diffeo_params
-
-    def make_diffeomorphic_parameters(self, mean_params, std_params=None):
-        if std_params is not None:
-            eps = _standard_normal(mean_params.shape, dtype=mean_params.dtype, device=mean_params.device)
-            eps *= self.sigma_p
-            params = eps * std_params + mean_params
-        else:
-            params = mean_params
-        return params
+    def forward(self, x, params):
+        x = self.T.transform_data(x, params, outsize=x.shape[2:])
+        return x
 
 
 class AffineTransformer(nn.Module):
@@ -50,25 +38,11 @@ class AffineTransformer(nn.Module):
         super().__init__()
         print("Use affine transformer")
 
-    def forward(self, x, mean_params, std_params=None):
-        # 1. sample parameters from mean + std 
-        params = self.sample_parameters(mean_params, std_params)
-        # 2. convert to affine matrix
+    def forward(self, x, params):
         affine_params = make_affine_parameters(params)
-
         grid = F.affine_grid(affine_params, x.size())
         x = F.grid_sample(x, grid)
-
-        return x, params
-
-    def sample_parameters(self, mean_params, std_params=None):
-        if std_params is None:
-            params = mean_params
-        else:
-            eps = _standard_normal(
-                mean_params.shape, dtype=mean_params.dtype, device=mean_params.device)
-            params = eps * std_params + mean_params
-        return params
+        return x
 
 
 def make_affine_matrix(theta, scale, translation_x, translation_y):
@@ -87,21 +61,21 @@ def make_affine_matrix(theta, scale, translation_x, translation_y):
     return affine_matrix
 
 def make_affine_parameters(params):
-    if params.shape[1] == 2:  # only perform crop - fix scale and rotation.
-        theta = torch.zeros(params.shape[0], device=params.device)
-        scale = 0.5 * torch.ones(params.shape[0], device=params.device)
+    if params.shape[-1] == 2:  # only perform crop - fix scale and rotation.
+        theta = torch.zeros([params.shape[0], params.shape[1]], device=params.device)
+        scale = 0.5 * torch.ones([params.shape[0], params.shape[1]], device=params.device)
         translation_x = params[:, 0]
         translation_y = params[:, 1]
         affine_matrix = make_affine_matrix(theta, scale, translation_x, translation_y)
 
-    elif params.shape[1] == 4:
+    elif params.shape[-1] == 4:
         theta = params[:, 0]
         scale = params[:, 1]
         translation_x = params[:, 2]
         translation_y = params[:, 3]
         affine_matrix = make_affine_matrix(theta, scale, translation_x, translation_y)
 
-    elif params.shape[1] == 6:
+    elif params.shape[-1] == 6:
         affine_matrix = params.view([-1, 2, 3])
 
-    return affine_matrix
+    return affine_matrix # [S * bs, 2, 3]

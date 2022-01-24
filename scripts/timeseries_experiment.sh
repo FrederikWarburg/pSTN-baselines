@@ -21,7 +21,7 @@ do
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        CUDA_VISIBLE_DEVICES=3 python train.py --dataroot 'data' \
+        CUDA_VISIBLE_DEVICES=5 python train.py --dataroot 'data' \
                         --dataset ${DATASETS[$DATASET]} \
                         --fold ${FOLD} \
                         --batch_size 16 \
@@ -37,6 +37,7 @@ do
                         --criterion ${CRITERION[$MODEL]} \
                         --save_results True \
                         --lr 0.001 \
+                        --lr_loc 0.1 \
                         --sigma_p ${PRIORS[$DATASET]} \
                         --run_test_freq 200 \
                         --trainval_split True \

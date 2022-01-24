@@ -60,10 +60,9 @@ class PSTN(nn.Module):
             elif self.num_param == 6:
                 self.pstn.fc_loc_mu[-1].bias.data.copy_(torch.tensor([1, 0, 0,
                                                                       0, 1, 0] * self.N, dtype=torch.float))
-
             # initialize variance network
-            self.pstn.fc_loc_std[-2].weight.data.zero_()
-            self.pstn.fc_loc_std[-2].bias.data.copy_(
+            self.pstn.fc_loc_beta[-2].weight.data.zero_() # TODO: check that this is still a good init
+            self.pstn.fc_loc_beta[-2].bias.data.copy_(
                 torch.tensor([-2], dtype=torch.float).repeat(self.num_param * self.N))
 
         elif opt.transformer_type == 'diffeomorphic':
@@ -73,14 +72,17 @@ class PSTN(nn.Module):
             self.pstn.fc_loc_std[-2].weight.data.zero_()
 
             if opt.dataset in opt.TIMESERIESDATASETS:
-                self.pstn.fc_loc_std[-2].bias.data.copy_(
+                self.pstn.fc_loc_beta[-2].bias.data.copy_(
                      torch.tensor([-2], dtype=torch.float).repeat(self.pstn.theta_dim))
 
     def forward(self, x):
         # get input shape
         batch_size = x.shape[0]
+
         # get output for pstn module
-        x, thetas, (theta_mu, theta_sigma) = self.pstn(x)
+        x, thetas, beta = self.pstn(x) # fix alpha for now 
+        # x, thetas, (theta_mu, theta_sigma) = self.pstn(x)
+
         # make classification based on pstn output
         x = self.classifier(x)
         # format according to number of samples
@@ -96,4 +98,4 @@ class PSTN(nn.Module):
             x = torch.log(torch.tensor(1.0 / float(self.pstn.S))) + torch.logsumexp(x, dim=0)
             x = x.view(batch_size, self.num_classes)
 
-        return x, thetas, (theta_mu, theta_sigma)
+        return x, thetas, beta
