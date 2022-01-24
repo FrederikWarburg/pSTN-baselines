@@ -41,7 +41,12 @@ if __name__ == '__main__':
 
     val_check_interval = opt.val_check_interval if opt.val_check_interval < 1 else int(opt.val_check_interval)
     # Initialize pytorch-lightning trainer with good defaults
+    if opt.subset in ['10', '20', '100']: # is the subsets are very small log every step
+        logger_steps = 1
+    else:
+        logger_steps = 10
     trainer = Trainer(max_epochs=opt.epochs,
+                    log_every_n_steps=logger_steps,
                       # accumulate_grad_batches=num_batches,
                       gpus=num_gpus,
                       logger=logger,

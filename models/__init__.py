@@ -104,16 +104,20 @@ class System(pl.LightningModule):
         if self.opt.model.lower() == 'pstn':
             y_hat, theta_samples, theta_params = self.forward(x)
             theta_mu, beta = theta_params
-            loss = self.criterion(y_hat, beta, y)
+            loss, (nll_term, kl_term) = self.criterion(y_hat, beta, y)
         # calculate the accuracy
         acc = accuracy(y_hat, y)
 
         # Logging
-        self.log("train_%s" %self.opt.criterion, loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        if not self.opt.criterion == 'nll':
-            batch_nll = F.nll_loss(y_hat, y, reduction='mean')
-            self.log("train_nll", batch_nll, on_step=True, on_epoch=True, prog_bar=False, logger=True)
-
+        # log classification loss // (expected) negative log likelihood for all models
+        if self.criterion == 'nll':
+            nll = loss
+        else:
+            nll = nll_term
+             # log KL loss if loss if applicable
+            self.log("kl", kl_term, on_step=True, on_epoch=False, prog_bar=True, logger=True)
+        self.log("train_nll", nll, on_step=True, on_epoch=False, prog_bar=True, logger=True)
+        
         self.log("train_acc", acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         return {"loss": loss, "theta_mu": theta_mu, "beta": beta} 
 

@@ -44,7 +44,7 @@ do
                             --step_size 600 \
                             --val_check_interval 1 \
                             --test_on 'test' \
-                            --results_folder "debugging"
+                            --results_folder "24_01_new_model_tests"
         done
     done
 done

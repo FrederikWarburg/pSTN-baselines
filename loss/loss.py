@@ -5,7 +5,7 @@ import pickle
 
 
 class Elbo(nn.Module):
-
+    
     def __init__(self, opt, annealing='reduce_kl'):
         super(Elbo, self).__init__()
         # self.prior_type = opt.prior_type
@@ -52,4 +52,4 @@ class Elbo(nn.Module):
         # weighting of kl term
         alpha = self.annealing(self.iter, self.M, base_kl=self.base_kl)
 
-        return self.nll + alpha * self.kl
+        return self.nll + alpha * self.kl, (self.nll, self.kl)
