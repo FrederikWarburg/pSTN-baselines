@@ -5,7 +5,8 @@ from torch import distributions
 from torch.utils.data import Dataset, Subset
 from torchvision import transforms, datasets
 from utils.transformers import make_affine_matrix
-
+# from RandAugment import RandAugment
+# this is now native in torch, use that implementation if we want to use it again
 
 def transform_image_affine(x, opt):
     gaussian = distributions.normal.Normal(0, 1)  # split up the multivariate Gaussian into 1d Gaussians
@@ -32,10 +33,15 @@ def get_trafo(opt):
             [transforms.ToTensor(),
              transforms.Normalize((0.1307,), (0.3081,)),
              lambda x: transform_image_affine(x, opt)])
-    elif opt.data_augmentation == 'RandAugment':
-        pass
-    elif opt.data_augmentation == 'AffineRandAugment':
-        pass
+
+    # elif opt.data_augmentation == 'RandAugment':
+    #     train_trafo = train_trafo_no_DA
+    #     train_trafo.transforms.insert(0, RandAugment(opt.rand_augment_N, opt.rand_augment_M, 'full'))
+
+    # elif opt.data_augmentation == 'AffineRandAugment':
+    #     train_trafo = train_trafo_no_DA
+    #     train_trafo.transforms.insert(0, RandAugment(opt.rand_augment_N, opt.rand_augment_M, 'affine'))
+
     else:
         print('Please pass valid DA method!')
     return train_trafo, test_trafo

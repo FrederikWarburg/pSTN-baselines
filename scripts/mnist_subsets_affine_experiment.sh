@@ -11,14 +11,14 @@ do
     echo ${SUBSETS[$SUBSET]}
     for FOLD in {0..4}
     do
-        for MODEL in {0..2}
+        for MODEL in {1..2}
         do
             echo ${MODELS[$MODEL]}
             echo ${PARAMS[$MODEL]}
             echo ${TEST_SAMPELS[$MODEL]}
             echo ${TRAIN_SAMPELS[$MODEL]}
             echo ${CRITERION[$MODEL]}
-            CUDA_VISIBLE_DEVICES=4 python train.py --dataroot 'data' \
+            CUDA_VISIBLE_DEVICES=1 python train.py --dataroot 'data' \
                             --dataset "MNIST" \
                             --subset ${SUBSETS[$SUBSET]} \
                             --fold ${FOLD} \
@@ -45,7 +45,7 @@ do
                             --step_size 600 \
                             --val_check_interval 1 \
                             --test_on 'test' \
-                            --results_folder "18_01_MNIST_affine_repro"
+                            --results_folder "debug"
         done
     done
 done

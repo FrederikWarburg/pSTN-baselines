@@ -13,6 +13,9 @@ def get_exp_name(opt):
     if opt.fold is not None:
         modelname += '-fold=' + str(opt.fold)
 
+    if 'RandAugment' in opt.data_augmentation:
+        modelname += '-randaug_N=%s-randaug_M=%s' % (opt.rand_augment_N, opt.rand_augment_M)
+
     if opt.dataset.lower() == 'celeba':
         modelname += '-a=' + str(opt.target_attr)
 
@@ -60,9 +63,10 @@ def save_timeseries(opt, avg_loss, avg_acc):
 
 
 def save_mnist(opt, avg_loss, avg_acc):
-    mkdir('experiments/%s' % opt.results_folder)
-    RESULTS_PATH = 'experiments/%s/%s_mnist%s_%s_fold_%s_DA=%s_%s_' % (
-        opt.results_folder, opt.model, opt.subset, opt.sigma_p, opt.fold, opt.data_augmentation, opt.transformer_type)
+    modelname = get_exp_name(opt)
+    if not os.path.exists('experiments/%s' % opt.results_folder):
+        mkdir('experiments/%s' % opt.results_folder)
+    RESULTS_PATH = 'experiments/%s/%s' % (opt.results_folder, modelname)
     pickle.dump(avg_acc.cpu().numpy(), open(RESULTS_PATH + 'test_accuracy.p', 'wb'))
     pickle.dump(avg_loss.cpu().numpy(), open(RESULTS_PATH + 'test_loss.p', 'wb'))
 
