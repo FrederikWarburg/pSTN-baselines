@@ -18,8 +18,8 @@ def get_exp_name(opt):
 
     if opt.model.lower() == 'pstn':
         modelname += '-kl=' + opt.annealing
-        modelname += '-prior=' + opt.prior_type
-
+        if opt.annealing == 'weight_kl':
+            modelname += '_' + str(opt.kl_weight)
     else:
         modelname += '-kl=None'
 
@@ -60,11 +60,12 @@ def save_timeseries(opt, avg_loss, avg_acc):
 
 
 def save_mnist(opt, avg_loss, avg_acc):
-    mkdir('experiments/%s' % opt.results_folder)
-    RESULTS_PATH = 'experiments/%s/%s_mnist%s_betaP=%s_fold_%s_DA=%s_%s_' % (
-        opt.results_folder, opt.model, opt.subset, opt.beta_p, opt.fold, opt.data_augmentation, opt.transformer_type)
-    pickle.dump(avg_acc.cpu().numpy(), open(RESULTS_PATH + 'test_accuracy.p', 'wb'))
-    pickle.dump(avg_loss.cpu().numpy(), open(RESULTS_PATH + 'test_loss.p', 'wb'))
+    results_dir = 'experiments/%s/' % opt.results_folder
+    mkdir(results_dir)
+    model_name = get_exp_name(opt)
+    RESULTS_PATH = results_dir + model_name
+    pickle.dump(avg_acc.cpu().numpy(), open(RESULTS_PATH + '_test_accuracy.p', 'wb'))
+    pickle.dump(avg_loss.cpu().numpy(), open(RESULTS_PATH + '_test_loss.p', 'wb'))
 
 
 def save_celeba(opt, avg_loss, avg_acc):

@@ -8,10 +8,10 @@ class Elbo(nn.Module):
     
     def __init__(self, opt, annealing='reduce_kl'):
         super(Elbo, self).__init__()
-        # self.prior_type = opt.prior_type
 
         self.alpha_p = opt.alpha_p #torch.tensor(opt.alpha_p, requires_grad=False)
         self.beta_p = opt.beta_p #torch.tensor(opt.beta_p, requires_grad=False)
+        self.w = opt.kl_weight
 
         self.iter = 0.0
         self.base_kl = 0.0 #, requires_grad=False, device=self.alpha_p.device)  #
@@ -21,6 +21,8 @@ class Elbo(nn.Module):
 
         if annealing == 'no_annealing':
             from .functional import no_annealing as annealing
+        elif annealing == 'weight_kl':
+            from .functional import weight_kl as annealing
         elif annealing == 'no_kl':
             from .functional import no_kl as annealing
         elif annealing == 'reduce_kl':
@@ -50,6 +52,6 @@ class Elbo(nn.Module):
         self.iter += 1.0
 
         # weighting of kl term
-        alpha = self.annealing(self.iter, self.M, base_kl=self.base_kl)
+        alpha = self.annealing(self.iter, self.M, base_kl=self.base_kl, weight=self.w)
 
-        return self.nll + alpha * self.kl, (self.nll, self.kl)
+        return self.nll + alpha * self.kl, (self.nll, alpha * self.kl)

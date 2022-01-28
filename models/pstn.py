@@ -60,10 +60,10 @@ class PSTN(nn.Module):
             elif self.num_param == 6:
                 self.pstn.fc_loc_mu[-1].bias.data.copy_(torch.tensor([1, 0, 0,
                                                                       0, 1, 0] * self.N, dtype=torch.float))
-            # initialize variance network
+            # initialize beta network
             self.pstn.fc_loc_beta[-2].weight.data.zero_() # TODO: check that this is still a good init
             self.pstn.fc_loc_beta[-2].bias.data.copy_(
-                torch.tensor([-2], dtype=torch.float).repeat(self.num_param * self.N))
+                torch.tensor([-5], dtype=torch.float).repeat(self.num_param * self.N))
 
         elif opt.transformer_type == 'diffeomorphic':
             # initialize param's as identity, default ok for variance in this case

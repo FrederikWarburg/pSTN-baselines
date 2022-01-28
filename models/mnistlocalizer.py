@@ -110,6 +110,8 @@ class MnistPSTN(nn.Module):
         x = self.transformer(x, theta_samples)
 
         # theta samples: [S, bs, nr_params]
+        # print('theta_samples:', theta_samples, '\ntheta_mu', theta_mu, '\nbeta', beta)
+        # exit()
         return x, theta_samples, (theta_mu, beta)
 
 
@@ -157,5 +159,5 @@ class MnistSTN(nn.Module):
         # repeat x in the batch dim so we avoid for loop
         x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
         theta_upsample = theta.view(batch_size * self.N, self.theta_dim)
-        x, theta = self.transformer(x, theta_upsample)
+        x = self.transformer(x, theta_upsample)
         return x, theta

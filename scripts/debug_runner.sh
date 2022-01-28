@@ -6,12 +6,12 @@ TRAIN_SAMPELS=(1 1 1)
 CRITERION=("nll" "nll" "elbo")
 SUBSETS=(10 30 100 1000 3000 10000)
 
-for SUBSET in {0..0}
+for SUBSET in {2..2}
 do
     echo ${SUBSETS[$SUBSET]}
-    for FOLD in {0..0}
+    for FOLD in {0..5}
     do
-        for MODEL in {2..2}
+        for MODEL in {0..2}
         do
             echo ${MODELS[$MODEL]}
             echo ${PARAMS[$MODEL]}
@@ -34,6 +34,7 @@ do
                             --train_samples ${TRAIN_SAMPELS[$MODEL]} \
                             --criterion ${CRITERION[$MODEL]} \
                             --lr 0.001 \
+                            --lr_loc 0.1 \
                             --beta_p 0.001 \
                             --num_param ${PARAMS[$MODEL]} \
                             --trainval_split True \
@@ -42,8 +43,8 @@ do
                             --weightDecay 0.01 \
                             --transformer_type "affine" \
                             --step_size 600 \
-                            --val_check_interval 1 \
-                            --test_on 'test' \
+                            --val_check_interval 600 \
+                            --test_on 'val' \
                             --results_folder "24_01_new_model_tests"
         done
     done

@@ -36,30 +36,32 @@ def elbo(x, beta, label, alpha_p, beta_p):
     return nll_loss, kl_loss
 
 
-def no_annealing(iter, M=None, base_kl=None):
-    return 1
+def no_annealing(iter, M=None, base_kl=None, weight=None):
+    return 1.
 
+def weight_kl(iter, M=None, base_kl=None, weight=1.):
+    return weight
 
-def no_kl(iter, M=None, base_kl=None):
+def no_kl(iter, M=None, base_kl=None, weight=None):
     return 0
 
 
-def reduce_kl(iter, M=None, base_kl=None):
+def reduce_kl(iter, M=None, base_kl=None, weight=None):
     return 1.0 / (1 + iter / 500)
 
 
-def increase_kl(iter, M=None, base_kl=None):
+def increase_kl(iter, M=None, base_kl=None, weight=None):
     return 1 - reduce_kl(iter)
 
 
-def cyclic_kl(iter, M, base_kl=None):
+def cyclic_kl(iter, M, base_kl=None, weight=None):
     # https://arxiv.org/pdf/1505.05424.pdf
 
     iter = (iter - 1.0) % M
     return 2.0**(M - iter) / (2.0**M - 1.0)
 
 
-def scaled_kl(iter, M=None, base_kl=None):
+def scaled_kl(iter, M=None, base_kl=None, weight=None):
     scaling_factor = 1 / base_kl
     # print('scaling kl by', scaling_factor)
     return scaling_factor
