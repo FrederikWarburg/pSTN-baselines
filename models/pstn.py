@@ -21,9 +21,9 @@ class PSTN(nn.Module):
         self.init_model_weights(opt)
 
     def init_localizer(self, opt):
-        if opt.dataset.lower() in ['celeba','cub']:
+        if opt.dataset.lower() in ['cub']:
             from .cublocalizer import CubPSTN as PSTN
-        elif opt.dataset.lower() in ['mnistxkmnist']:
+        elif opt.dataset.lower() in ['mnistxkmnist', 'celeba']:
             from .celebalocalizer import CelebaPSTN as PSTN
         elif opt.dataset.lower() in ['mnist', 'random_placement_mnist']:
             from .mnistlocalizer import MnistPSTN as PSTN
@@ -33,9 +33,9 @@ class PSTN(nn.Module):
         self.pstn = PSTN(opt)
 
     def init_classifier(self, opt):
-        if opt.dataset.lower() in ['celeba', 'cub']:
+        if opt.dataset.lower() in ['cub']:
             from .cubclassifier import CubClassifier as Classifier
-        elif opt.dataset.lower() in ['mnistxkmnist']:
+        elif opt.dataset.lower() in ['mnistxkmnist', 'celeba']:
             from .celebaclassifier import CelebaClassifier as Classifier
         elif opt.dataset.lower() in ['mnist', 'random_placement_mnist']:
             from .mnistclassifier import MnistClassifier as Classifier
