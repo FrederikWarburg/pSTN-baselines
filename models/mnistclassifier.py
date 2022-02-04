@@ -4,17 +4,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 
-parameter_dict_MNIST_CNN = {
+parameter_dict_classifier_MNIST_CNN = {
     'nr_target_classes': 10,
     'CNN_filters1': 12,
     'CNN_filters2': 24,
     'CNN_kernel_size': 5,
-    'resulting_size_classifier': 24 * 4 * 4,
+    'resulting_size_classifier': 24 * 4 * 4, # default is mnist; we override for random_placement_mnist below
     'hidden_layer_classifier': 52,
     'color_channels': 1
 }
 
-parameter_dict_MNIST_STN = {
+parameter_dict_classifier_MNIST_STN = {
     'nr_target_classes': 10,
     'CNN_filters1': 10,
     'CNN_filters2': 20,
@@ -24,7 +24,7 @@ parameter_dict_MNIST_STN = {
     'color_channels': 1
 }
 
-parameter_dict_MNIST_P_STN = {
+parameter_dict_classifier_MNIST_P_STN = {
     'nr_target_classes': 10,
     'CNN_filters1': 10,
     'CNN_filters2': 20,
@@ -34,7 +34,6 @@ parameter_dict_MNIST_P_STN = {
     'hidden_layer_classifier': 50,
     'color_channels': 1
 }
-
 
 class MnistClassifier(nn.Module):
     def __init__(self, opt):
@@ -78,11 +77,17 @@ class MnistClassifier(nn.Module):
 
     def load_specifications(self, opt):
         if opt.model.lower() == 'cnn':
-            parameter_dict = parameter_dict_MNIST_CNN
-        elif opt.model.lower() == 'stn':
-            parameter_dict = parameter_dict_MNIST_STN
+            parameter_dict = parameter_dict_classifier_MNIST_CNN
+            if opt.dataset.lower() == 'random_placement_mnist':
+                 parameter_dict['resulting_size_classifier'] = 24 * 21 * 21
+        elif opt.model.lower() in ['stn']:
+            parameter_dict = parameter_dict_classifier_MNIST_STN
+            if opt.dataset.lower() == 'random_placement_mnist':
+                parameter_dict['resulting_size_classifier'] = 20 * 21 * 21
         elif opt.model.lower() == 'pstn':
-            parameter_dict = parameter_dict_MNIST_P_STN
+            parameter_dict = parameter_dict_classifier_MNIST_P_STN
+            if opt.dataset.lower() == 'random_placement_mnist':
+                parameter_dict['resulting_size_classifier'] = 20 * 21 * 21
         else:
             print('Pass valid model!')
         return parameter_dict

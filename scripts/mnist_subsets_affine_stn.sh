@@ -2,12 +2,12 @@
 
 SUBSETS=(10 30 100 1000 3000 10000)
 
-for SUBSET in {2..2}
+for SUBSET in {0..5}
 do
     echo ${SUBSETS[$SUBSET]}
     for FOLD in {0..4} # only do 2 folds for the grid search to limit computation time
     do
-        CUDA_VISIBLE_DEVICES=2 python train.py --dataroot 'data' \
+        CUDA_VISIBLE_DEVICES=3 python train.py --dataroot 'data' \
                             --dataset "MNIST" \
                             --subset ${SUBSETS[$SUBSET]} \
                             --fold ${FOLD} \
@@ -16,7 +16,7 @@ do
                             --num_threads 1 \
                             --epochs 600 \
                             --seed 42 \
-                            --model "stn" \
+                            --model "cnn" \
                             --num_param 4 \
                             --N 1 \
                             --criterion  "nll" \

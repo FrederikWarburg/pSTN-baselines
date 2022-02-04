@@ -12,7 +12,7 @@ class CNN(nn.Module):
             from .cubclassifier import CubClassifier as Classifier
         elif opt.dataset.lower() in ['celeba', 'mnistxkmnist']:
             from .celebaclassifier import CelebaClassifier as Classifier
-        elif opt.dataset.lower() == 'mnist':
+        elif opt.dataset.lower() in ['mnist', 'random_placement_mnist']:
             from .mnistclassifier import MnistClassifier as Classifier
         elif opt.dataset in opt.TIMESERIESDATASETS:
             from .timeseriesclassifier import TimeseriesClassifier as Classifier

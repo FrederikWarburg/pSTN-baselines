@@ -22,9 +22,9 @@ class STN(nn.Module):
     def init_localizer(self, opt):
         if opt.dataset.lower() in ['cub']:
             from .cublocalizer import CubSTN as STN
-        elif opt.dataset.lower() in ['celeba', 'mnistxkmnist', 'random_placement_mnist']:
+        elif opt.dataset.lower() in ['celeba', 'mnistxkmnist']:
             from .celebalocalizer import CelebaSTN as STN
-        elif opt.dataset.lower() in ['mnist']:
+        elif opt.dataset.lower() in ['mnist', 'random_placement_mnist']:
             from .mnistlocalizer import MnistSTN as STN
         elif opt.dataset in opt.TIMESERIESDATASETS:
             from .timeserieslocalizer import TimeseriesSTN as STN
@@ -34,9 +34,9 @@ class STN(nn.Module):
     def init_classifier(self, opt):
         if opt.dataset.lower() in ['cub']:
             from .cubclassifier import CubClassifier as Classifier
-        elif opt.dataset.lower() in ['celeba', 'mnistxkmnist', 'random_placement_mnist']:
+        elif opt.dataset.lower() in ['celeba', 'mnistxkmnist']:
             from .celebaclassifier import CelebaClassifier as Classifier
-        elif opt.dataset.lower() in ['mnist']:
+        elif opt.dataset.lower() in ['mnist', 'random_placement_mnist']:
             from .mnistclassifier import MnistClassifier as Classifier
         elif opt.dataset in opt.TIMESERIESDATASETS:
             from .timeseriesclassifier import TimeseriesClassifier as Classifier
@@ -63,7 +63,7 @@ class STN(nn.Module):
                 torch.tensor([1e-5], dtype=torch.float).repeat(self.stn.theta_dim))
 
     def forward(self, x):
-        print(x.shape)
+        # print(x.shape)
         # zoom in on relevant areas with stn
         x, theta = self.stn(x)
 

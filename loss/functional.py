@@ -4,19 +4,9 @@ from torch.distributions import MultivariateNormal, kl, gamma
 import pickle
 
 
-# def find_closest_ix(mu, mu_p):
-#     mu = mu.repeat(8, 1, 1)  # repeat along nr_components, TODO: remove hard coding
-#     diff = mu - mu_p
-#     abs_diff = torch.norm(diff, dim=(2))
-#     ix = torch.argmin(abs_diff, dim=0)
-#     return ix
-
-
 def kl_div(x, beta,  alpha_p, beta_p, reduction='mean', weights=None):
     q = gamma.Gamma(alpha_p, beta)
     p = gamma.Gamma(alpha_p, beta_p)
-    # print('alpha_p', alpha_p.device, 'beta_p', beta_p.device, 'beta', beta.device)
-    # exit()
 
     kl_loss = kl.kl_divergence(q, p)
 

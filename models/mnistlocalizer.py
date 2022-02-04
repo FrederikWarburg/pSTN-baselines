@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 from torch import distributions
-
 from utils.transformers import init_transformer
 
 parameter_dict_P_STN = {
@@ -24,7 +23,6 @@ parameter_dict_STN = {
     'color_channels': 1
 }
 
-
 class MnistPSTN(nn.Module):
     def __init__(self, opt):
         super().__init__()
@@ -37,6 +35,8 @@ class MnistPSTN(nn.Module):
         self.channels = 1
         self.transformer, self.theta_dim = init_transformer(opt)
         self.parameter_dict = parameter_dict_P_STN
+        if opt.dataset.lower() == 'random_placement_mnist':
+            self.parameter_dict['resulting_size_localizer'] = 6174
 
         # Spatial transformer localization-network
         self.localization = nn.Sequential(
@@ -123,6 +123,8 @@ class MnistSTN(nn.Module):
         self.channels = 1
         self.transformer, self.theta_dim = init_transformer(opt)
         self.parameter_dict = parameter_dict_STN
+        if opt.dataset.lower() == 'random_placement_mnist':
+            self.parameter_dict['resulting_size_localizer'] = 7938
 
         # Spatial transformer localization-network
         self.localization = nn.Sequential(

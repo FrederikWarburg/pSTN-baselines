@@ -2,14 +2,13 @@
 
 DATAPATH="data/"
 MODELS=("cnn" "stn" "pstn")
-CRITERION=("nll" "nll" "nll" "nll" "elbo")
-DATAAUGMENTATION=("None" "standard" "None" "standard" "None")
+CRITERION=("nll" "nll" "elbo")
 
-for MODEL in {1..1}
+for MODEL in {0..2}
 do
     echo $MODEL
     echo ${MODELS[$MODEL]}
-    OMP_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=0 python train.py --dataroot $DATAPATH \
+    OMP_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=3 python train.py --dataroot $DATAPATH \
                     --dataset "random_placement_mnist" \
                     --crop_size  96 \
                     --batch_size 256 \
@@ -35,7 +34,7 @@ do
                     --download True \
                     --lr_loc 0.01 \
                     --val_check_interval 15 \
-                    --results_folder "28_01_investigate_betas" \
+                    --results_folder "03_02_investigate_betas" \
                     --test_on "val" \
                     --annealing "weight_kl" \
                     --kl_weight 0.0003

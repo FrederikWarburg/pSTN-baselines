@@ -25,7 +25,7 @@ class PSTN(nn.Module):
             from .cublocalizer import CubPSTN as PSTN
         elif opt.dataset.lower() in ['mnistxkmnist']:
             from .celebalocalizer import CelebaPSTN as PSTN
-        elif opt.dataset.lower() in ['mnist']:
+        elif opt.dataset.lower() in ['mnist', 'random_placement_mnist']:
             from .mnistlocalizer import MnistPSTN as PSTN
         elif opt.dataset in opt.TIMESERIESDATASETS:
             from .timeserieslocalizer import TimeseriesPSTN as PSTN
@@ -37,7 +37,7 @@ class PSTN(nn.Module):
             from .cubclassifier import CubClassifier as Classifier
         elif opt.dataset.lower() in ['mnistxkmnist']:
             from .celebaclassifier import CelebaClassifier as Classifier
-        elif opt.dataset.lower() in ['mnist']:
+        elif opt.dataset.lower() in ['mnist', 'random_placement_mnist']:
             from .mnistclassifier import MnistClassifier as Classifier
         elif opt.dataset in opt.TIMESERIESDATASETS:
             from .timeseriesclassifier import TimeseriesClassifier as Classifier
