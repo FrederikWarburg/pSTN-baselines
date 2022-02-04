@@ -132,32 +132,22 @@ class MnistXKmnist(Dataset):
 class MnistRandomPlacement(Dataset):
 
     def __init__(self, opt, mode):
-
-        self.datasets = []
         self.cropsize = opt.crop_size
+        self.num_images = opt.digits
 
         # False (test) or True (train,val)
         trainingset = mode in ['train', 'val']
 
-        self.datasets.append(datasets.MNIST(opt.dataroot,
+        self.dataset = datasets.MNIST(opt.dataroot,
                                             transform=transforms.Compose([
                                                 transforms.ToTensor()
                                             ]),
                                             train=trainingset,
-                                            download=opt.download))
-
-        self.datasets.append(datasets.KMNIST(opt.dataroot,
-                                             transform=transforms.Compose([
-                                                 transforms.ToTensor()
-                                             ]),
-                                             train=trainingset,
-                                             download=opt.download))
-
-        self.num_images = opt.digits
+                                            download=opt.download)
 
     def __len__(self):
 
-        return min([self.datasets[i].__len__() for i in range(self.num_images)])
+        return min([self.dataset.__len__() for i in range(self.num_images)])
 
     def __getitem__(self, idx):
 
@@ -174,18 +164,15 @@ class MnistRandomPlacement(Dataset):
                 if len(used_positions) == 0 or abs(used_positions[0][1] - y) > 32:
                     break
 
-            im1, target1 = self.datasets[i].__getitem__((idx) * (i + 1) % self.datasets[i].__len__())
+            im1, target1 = self.dataset.__getitem__((idx) * (i + 1) % self.dataset.__len__())
 
             c, w, h = im1.shape
 
             im[:, y:y + h, x:x + w] = im1.type(torch.float)
-            # print('created image', im.shape, 'x:', x, 'y:', y)
-
             target += str(target1)
 
         transform = transforms.Compose(
             [transforms.ToPILImage(), transforms.Resize(self.cropsize), transforms.ToTensor(),
              transforms.Normalize((0.1307,), (0.3081,))])
         im = transform(im)
-
         return im, int(target)

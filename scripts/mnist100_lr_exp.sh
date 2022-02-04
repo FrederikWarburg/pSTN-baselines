@@ -1,35 +1,38 @@
 #!/bin/sh
 
 SUBSETS=(10 30 100 1000 3000 10000)
-PRIORS=(0.01 0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4)
+MODELS=("cnn" "stn" "pstn")
+PARAMS=(1 4 4)
+TEST_SAMPELS=(1 1 10)
+TRAIN_SAMPELS=(1 1 1)
+CRITERION=("nll" "nll" "elbo")
+LRS=(0.1 0.05 0.01 0.005 0.001 0.0005 0.0001)
 
-for SUBSET in {0..5}
+for LR in {0..6}
 do
-    echo ${SUBSETS[$SUBSET]}
-    for PRIOR in {0..8}
+    for FOLD in {0..4} # only do 2 folds for the grid search to limit computation time
     do
-        for FOLD in {0..1} # only do 2 folds for the grid search to limit computation time
-        do
-            CUDA_VISIBLE_DEVICES=3 python train.py --dataroot 'data' \
+        for MODEL in {0..2}
+        do 
+            CUDA_VISIBLE_DEVICES=0 python train.py --dataroot 'data' \
                                 --dataset "MNIST" \
-                                --subset ${SUBSETS[$SUBSET]} \
+                                --subset 100 \
                                 --fold ${FOLD} \
                                 --batch_size 8 \
                                 --num_classes 10  \
                                 --num_threads 1 \
                                 --epochs 600 \
                                 --seed 42 \
-                                --model "pstn" \
-                                --num_param 4 \
+                                --model ${MODELS[$MODEL]} \
+                                --num_param ${PARAMS[$MODEL]} \
                                 --N 1 \
                                 --test_samples 10 \
                                 --train_samples 1 \
-                                --criterion  "elbo" \
+                                --criterion  ${CRITERION[$MODEL]} \
                                 --save_results True \
                                 --lr 0.001 \
-                                --lr_loc 1 \
-                                --sigma_p ${PRIORS[$PRIOR]} \
-                                --num_param 4 \
+                                --lr_loc 0.1 \
+                                --beta_p 1. \
                                 --trainval_split True \
                                 --save_results True \
                                 --optimizer "adam" \
@@ -37,8 +40,10 @@ do
                                 --transformer_type "affine" \
                                 --step_size 600 \
                                 --val_check_interval 600 \
-                                --results_folder "grid_search_mnist_affine" \
-                                --test_on "val"
+                                --results_folder "01_02_lr_exp" \
+                                --test_on "test" \
+                                --annealing "weight_kl" \
+                                --kl_weight 0.0003
         done
     done
 done

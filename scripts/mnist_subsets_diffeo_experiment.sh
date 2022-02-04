@@ -18,7 +18,7 @@ do
             echo ${TEST_SAMPELS[$MODEL]}
             echo ${TRAIN_SAMPELS[$MODEL]}
             echo ${CRITERION[$MODEL]}
-            CUDA_VISIBLE_DEVICES=0 python train.py --dataroot 'data' \
+            CUDA_VISIBLE_DEVICES=4 python train.py --dataroot 'data' \
                             --dataset "MNIST" \
                             --subset ${SUBSETS[$SUBSET]} \
                             --fold ${FOLD} \
@@ -35,8 +35,8 @@ do
                             --criterion ${CRITERION[$MODEL]} \
                             --save_results True \
                             --lr 0.001 \
-                            --lr_loc 1 \
-                            --sigma_p 0.5 \
+                            --lr_loc 0.1 \
+                            --sigma_p 1. \
                             --num_param 0 \
                             --trainval_split True \
                             --save_results True \
@@ -45,7 +45,7 @@ do
                             --transformer_type "diffeomorphic" \
                             --step_size 600 \
                             --val_check_interval 600 \
-			                --results_folder "18_01_MNIST_diffeo_repro"
+			                --results_folder "20_01_MNIST_diffeo_repro_mixed_lr_large_prior"
         done
     done
 done

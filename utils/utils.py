@@ -21,12 +21,12 @@ def get_exp_name(opt):
 
     if opt.model.lower() == 'pstn':
         modelname += '-kl=' + opt.annealing
-        modelname += '-prior=' + opt.prior_type
-
+        if opt.annealing == 'weight_kl':
+            modelname += '_' + str(opt.kl_weight)
     else:
         modelname += '-kl=None'
 
-    modelname += '-sigmaP=' + str(opt.sigma_p)
+    modelname += '-betaP=' + str(opt.beta_p)
     modelname += '-lr=' + str(opt.lr)
 
     if opt.model.lower() in ['stn', 'pstn']:
@@ -56,19 +56,19 @@ def save_results(opt, avg_loss, avg_acc):
 
 def save_timeseries(opt, avg_loss, avg_acc):
     mkdir('experiments/%s' % opt.results_folder)
-    RESULTS_PATH = 'experiments/%s/%s_%s_%s_fold_%s_DA=%s_' % (
-        opt.results_folder, opt.model, opt.dataset, opt.sigma_p, opt.fold, opt.data_augmentation)
+    RESULTS_PATH = 'experiments/%s/%s_%s_betaP=%s_fold_%s_DA=%s_' % (
+        opt.results_folder, opt.model, opt.dataset, opt.beta_p, opt.fold, opt.data_augmentation)
     pickle.dump(avg_acc.cpu().numpy(), open(RESULTS_PATH + 'test_accuracy.p', 'wb'))
     pickle.dump(avg_loss.cpu().numpy(), open(RESULTS_PATH + 'test_loss.p', 'wb'))
 
 
 def save_mnist(opt, avg_loss, avg_acc):
-    modelname = get_exp_name(opt)
-    if not os.path.exists('experiments/%s' % opt.results_folder):
-        mkdir('experiments/%s' % opt.results_folder)
-    RESULTS_PATH = 'experiments/%s/%s' % (opt.results_folder, modelname)
-    pickle.dump(avg_acc.cpu().numpy(), open(RESULTS_PATH + 'test_accuracy.p', 'wb'))
-    pickle.dump(avg_loss.cpu().numpy(), open(RESULTS_PATH + 'test_loss.p', 'wb'))
+    results_dir = 'experiments/%s/' % opt.results_folder
+    mkdir(results_dir)
+    model_name = get_exp_name(opt)
+    RESULTS_PATH = results_dir + model_name
+    pickle.dump(avg_acc.cpu().numpy(), open(RESULTS_PATH + '_test_accuracy.p', 'wb'))
+    pickle.dump(avg_loss.cpu().numpy(), open(RESULTS_PATH + '_test_loss.p', 'wb'))
 
 
 def save_celeba(opt, avg_loss, avg_acc):
@@ -122,8 +122,8 @@ def save_learned_thetas(opt, outputs, mode='train', epoch=None):
         theta_mu = torch.stack([x['theta_mu'] for x in outputs]).cpu().numpy()
         pickle.dump(theta_mu, open(theta_path + '_mu.p', 'wb'))
     if opt.model.lower() == 'pstn':
-        theta_sigma = torch.stack([x['theta_var'] for x in outputs]).cpu().numpy()
-        pickle.dump(theta_sigma, open(theta_path + '_sigma.p', 'wb'))
+        beta = torch.stack([x['beta'] for x in outputs]).cpu().numpy()
+        pickle.dump(beta, open(theta_path + '_beta.p', 'wb'))
 
 
 def save_UQ_results(opt, probabilities, correct_predictions, correct):
