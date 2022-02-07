@@ -3,40 +3,6 @@ from .functional import elbo
 import torch
 import pickle
 
-def initialize_sigma_prior(opt, prior_type):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    require_grad = opt.learnable_prior
-    # prior_type in ['moving_mean', 'mean_zero_gaussian']
-    sigma_p = torch.tensor(opt.sigma_p, requires_grad=require_grad)
-    return sigma_p
-
-
-def initialize_mu_prior(opt, prior_type):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    if prior_type == 'moving_mean':
-        mu_p = None  # in this case it will get updated on the fly
-
-    elif 'mixture_of_gaussians' in prior_type:
-        mu_p = pickle.load(open('priors/mog_means.p', 'rb')).to(device)
-
-    elif prior_type == 'mean_zero_gaussian':
-        require_grad = opt.learnable_prior
-        if opt.transformer_type == 'diffeomorphic':
-            theta_dim = opt.num_param * opt.N
-            mu_p = torch.zeros((1, theta_dim), requires_grad=require_grad).to(device)
-
-        if opt.transformer_type == 'affine':
-            if opt.num_param == 4:
-                mu_p = torch.tensor([0.0, 1.0, 0.0, 0.0], requires_grad=require_grad).to(device)
-            if opt.num_param == 2:
-                mu_p = torch.tensor([0.0, 0.0], requires_grad=require_grad).to(device)
-
-    else:
-        raise NotImplementedError
-
-    return mu_p
-
 
 class Elbo(nn.Module):
     

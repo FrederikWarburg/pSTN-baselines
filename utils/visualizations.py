@@ -1,3 +1,4 @@
+from builtins import breakpoint
 import cv2
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
@@ -100,7 +101,7 @@ def visualize_stn(model, data, opt):
             out_grid = np.transpose(out_grid, (2, 0, 1))
 
             bbox_images = None
-            if opt.num_param == 2:
+            if opt.num_param < 5:
                 affine_params = make_affine_parameters(thetas)
                 bbox_images = visualize_bbox(data.cpu(), affine_params, opt)
             # TODO: implement bounding boxed for 4 param trafos
@@ -202,10 +203,17 @@ def add_bounding_boxes(image, affine_params, num_branches, num_samples, mode_='c
             if mode_ == 'crop':
                 x = affine_params[j, i, 0, 2]
                 y = affine_params[j, i, 1, 2]
+                s_x = affine_params[j, i, 0, 0]
+                s_y = affine_params[j, i, 1, 1]
 
                 # define bbox by top left corner and define coordinates system with origo in top left corner
-                x = int(x * w // 2 + w // 4)
-                y = int(y * h // 2 + h // 4)
+                x = int((x + 1 - s_x) * w // 2)
+                y = int((y + 1 - s_y) * h // 2)
+
+                # 1. (x + 1) * w / 2
+                # 2. - s_x * w / 2
+
+                # => (x + 1 - s_x) * w / 2
 
                 if heatmap:
 
@@ -218,6 +226,6 @@ def add_bounding_boxes(image, affine_params, num_branches, num_samples, mode_='c
                     # Following line overlays transparent rectangle over the image
                     im = cv2.addWeighted(overlay, alpha, im, 1 - alpha, 0)
                 else:
-                    cv2.rectangle(im, (x, y), (x + w // 2, y + h // 2), color[i % len(color)], 1)
+                    cv2.rectangle(im, (x, y), (x + int(w * s_x), y + int(h * s_y)), color[i % len(color)], 1)
 
     return im

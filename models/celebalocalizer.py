@@ -16,31 +16,34 @@ class CelebaPSTN(BasePSTN):
 
         # Spatial transformer localization-network
         self.localization = nn.Sequential(
-            nn.Conv2d(self.channels, 8, kernel_size=7),
-            nn.MaxPool2d(2, stride=2),
-            nn.ReLU(True),
-            nn.Conv2d(8, 16, kernel_size=5),
-            #nn.Dropout2d(self.dropout_rate),
-            nn.MaxPool2d(2, stride=2),
-            nn.ReLU(True),
-            nn.Conv2d(16, 32, kernel_size=5),
-            #nn.Dropout2d(self.dropout_rate),
-            nn.MaxPool2d(2, stride=2),
-            nn.ReLU(True)
+            nn.Conv2d(self.channels, 32, kernel_size=3),
+            nn.MaxPool2d(2),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+
+            nn.Conv2d(32, 64, kernel_size=3),
+            nn.MaxPool2d(2),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+
+            nn.Conv2d(64, 128, kernel_size=3),
+            nn.MaxPool2d(2),
+            nn.BatchNorm2d(128),
+            nn.ReLU()
         )
 
         # Regressor for the 3 * 2 affine matrix
-        self.fc_loc_mu = nn.Sequential(
-            nn.Linear(512, 100),
+        self.fc_loc_mu =  nn.Sequential(
+            nn.Linear(128*6*6, 1024),
             nn.ReLU(True),
-            nn.Linear(100, self.theta_dim * self.N)
+            nn.Linear(1024, self.theta_dim * self.N)
         )
 
         # Regressor for the 3 * 2 affine matrix
         self.fc_loc_beta = nn.Sequential(
-            nn.Linear(512, 100),
+            nn.Linear(128*6*6, 1024),
             nn.ReLU(True),
-            nn.Linear(100, self.theta_dim * self.N),
+            nn.Linear(1024, self.theta_dim * self.N),
             nn.Softplus()
         )
 
@@ -54,20 +57,25 @@ class CelebaSTN(BaseSTN):
 
         # Spatial transformer localization-network
         self.localization = nn.Sequential(
-            nn.Conv2d(self.channels, 8, kernel_size=7),
-            nn.MaxPool2d(2, stride=2),
-            nn.ReLU(True),
-            nn.Conv2d(8, 16, kernel_size=5),
-            nn.MaxPool2d(2, stride=2),
-            nn.ReLU(True),
-            nn.Conv2d(16, 32, kernel_size=5),
-            nn.MaxPool2d(2, stride=2),
-            nn.ReLU(True)
+            nn.Conv2d(self.channels, 32, kernel_size=3),
+            nn.MaxPool2d(2),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+
+            nn.Conv2d(32, 64, kernel_size=3),
+            nn.MaxPool2d(2),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+
+            nn.Conv2d(64, 128, kernel_size=3),
+            nn.MaxPool2d(2),
+            nn.BatchNorm2d(128),
+            nn.ReLU()
         )
 
         # Regressor for the 3 * 2 affine matrix
         self.fc_loc = nn.Sequential(
-            nn.Linear(512, 100),
+            nn.Linear(128*6*6, 1024),
             nn.ReLU(True),
-            nn.Linear(100, self.theta_dim * self.N)
+            nn.Linear(1024, self.theta_dim * self.N)
         )

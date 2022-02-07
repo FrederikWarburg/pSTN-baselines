@@ -2,7 +2,7 @@ from random import sample
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from libcpab.cpab import Cpab
+#from libcpab.cpab import Cpab
 from torch.distributions.utils import _standard_normal
 
 def init_transformer(opt):
@@ -45,14 +45,14 @@ class AffineTransformer(nn.Module):
         return x
 
 
-def make_affine_matrix(theta, scale, translation_x, translation_y):
+def make_affine_matrix(theta, scale_x, scale_y, translation_x, translation_y):
     # theta is rotation angle in radians
-    a = scale * torch.cos(theta)
-    b = -scale * torch.sin(theta)
+    a = scale_x * torch.cos(theta)
+    b = - torch.sin(theta)
     c = translation_x
 
-    d = scale * torch.sin(theta)
-    e = scale * torch.cos(theta)
+    d = torch.sin(theta)
+    e = scale_y * torch.cos(theta)
     f = translation_y
 
     param_tensor = torch.stack([a, b, c, d, e, f], dim=-1)
@@ -63,17 +63,35 @@ def make_affine_matrix(theta, scale, translation_x, translation_y):
 def make_affine_parameters(params):
     if params.shape[-1] == 2:  # only perform crop - fix scale and rotation.
         theta = torch.zeros([params.shape[0]], device=params.device)
-        scale = 0.5 * torch.ones([params.shape[0]], device=params.device)
+        scale_x = 0.5 * torch.ones([params.shape[0]], device=params.device)
+        scale_y = 0.5 * torch.ones([params.shape[0]], device=params.device)
         translation_x = params[:, 0]
         translation_y = params[:, 1]
-        affine_matrix = make_affine_matrix(theta, scale, translation_x, translation_y)
+        affine_matrix = make_affine_matrix(theta, scale_x, scale_y, translation_x, translation_y)
 
-    elif params.shape[-1] == 4:
-        theta = params[:, 0]
-        scale = params[:, 1]
+    elif params.shape[-1] == 3:  # only perform crop - fix scale and rotation.
+        theta = torch.zeros([params.shape[0]], device=params.device)
+        scale_x = params[:, 0]
+        scale_y = params[:, 0]
+        translation_x = params[:, 1]
+        translation_y = params[:, 2]
+        affine_matrix = make_affine_matrix(theta, scale_x, scale_y, translation_x, translation_y)
+
+    elif params.shape[-1] == 4:  # only perform crop - fix scale and rotation.
+        theta = torch.zeros([params.shape[0]], device=params.device)
+        scale_x = params[:, 0]
+        scale_y = params[:, 1]
         translation_x = params[:, 2]
         translation_y = params[:, 3]
-        affine_matrix = make_affine_matrix(theta, scale, translation_x, translation_y)
+        affine_matrix = make_affine_matrix(theta, scale_x, scale_y, translation_x, translation_y)
+
+    elif params.shape[-1] == 5:
+        theta = params[:, 0]
+        scale_x = params[:, 1]
+        scale_y = params[:, 2]
+        translation_x = params[:, 3]
+        translation_y = params[:, 4]
+        affine_matrix = make_affine_matrix(theta, scale_x, scale_y, translation_x, translation_y)
 
     elif params.shape[-1] == 6:
         affine_matrix = params.view([-1, 2, 3])

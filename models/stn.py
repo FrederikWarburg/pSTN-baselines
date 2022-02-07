@@ -52,11 +52,15 @@ class STN(nn.Module):
                 # We initialize bounding boxes with tiling
                 bias = torch.tensor([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=torch.float) * 0.5
                 self.stn.fc_loc[-1].bias.data.copy_(bias[:self.N].view(-1))
+            elif self.num_param == 3:
+                self.stn.fc_loc[-1].bias.data.copy_(torch.tensor([1, 0, 0] * self.N, dtype=torch.float))
             elif self.num_param == 4:
-                self.stn.fc_loc[-1].bias.data.copy_(torch.tensor([0, 1, 0, 0] * self.N, dtype=torch.float))
+                self.stn.fc_loc[-1].bias.data.copy_(torch.tensor([1, 1, 0, 0] * self.N, dtype=torch.float))
+            elif self.num_param == 5:
+                self.stn.fc_loc[-1].bias.data.copy_(torch.tensor([0, 1, 1, 0, 0] * self.N, dtype=torch.float))
             elif self.num_param == 6:
                 self.stn.fc_loc[-1].bias.data.copy_(torch.tensor([1, 0, 0,
-                                                                      0, 1, 0] * self.N, dtype=torch.float))
+                                                                  0, 1, 0] * self.N, dtype=torch.float))
         elif opt.transformer_type == 'diffeomorphic':
             # initialize param's as identity, default ok for variance in this case
             self.stn.fc_loc[-1].bias.data.copy_(

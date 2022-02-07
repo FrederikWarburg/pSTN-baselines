@@ -55,8 +55,12 @@ class PSTN(nn.Module):
                 # We initialize bounding boxes with tiling
                 bias = torch.tensor([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=torch.float) * 0.5
                 self.pstn.fc_loc_mu[-1].bias.data.copy_(bias[:self.N].view(-1))
+            elif self.num_param == 3:
+                self.pstn.fc_loc_mu[-1].bias.data.copy_(torch.tensor([1, 0, 0] * self.N, dtype=torch.float))
             elif self.num_param == 4:
-                self.pstn.fc_loc_mu[-1].bias.data.copy_(torch.tensor([0, 1, 0, 0] * self.N, dtype=torch.float))
+                self.pstn.fc_loc_mu[-1].bias.data.copy_(torch.tensor([1, 1, 0, 0] * self.N, dtype=torch.float))
+            elif self.num_param == 5:
+                self.pstn.fc_loc_mu[-1].bias.data.copy_(torch.tensor([0, 1, 1, 0, 0] * self.N, dtype=torch.float))
             elif self.num_param == 6:
                 self.pstn.fc_loc_mu[-1].bias.data.copy_(torch.tensor([1, 0, 0,
                                                                       0, 1, 0] * self.N, dtype=torch.float))

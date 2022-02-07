@@ -87,6 +87,10 @@ class System(pl.LightningModule):
         # initialize criterion
         self.criterion = create_criterion(opt)
 
+        # for logging purposes
+        self.prev_epoch = 0
+        self.log_images_test = True
+
     def forward(self, x):
         return self.model.forward(x)
 
@@ -149,12 +153,16 @@ class System(pl.LightningModule):
         # calculate nll and accuracy
         loss = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
+
         # for the first batch in an epoch visualize the predictions for better debugging
-        if batch_idx == 0:
+        if  self.current_epoch > self.prev_epoch:
             # calculate different visualizations
             grid_in, grid_out, _, bbox_images = visualize_stn(self.model, x, self.opt)
             # add these to tensorboard
             self.add_images(grid_in, grid_out, bbox_images)
+
+            self.prev_epoch += 1
+
         self.log('val_nll', loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         self.log('val_acc', acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
 
@@ -179,13 +187,14 @@ class System(pl.LightningModule):
         batch_nll = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
 
-        # for the first batch in an epoch visualize the predictions for better debugging
-        if batch_idx == 0:
-            print("Visualize during test")
+        if self.log_images_test:
             # calculate different visualizations
             grid_in, grid_out, _, bbox_images = visualize_stn(self.model, x, self.opt)
             # add these to tensorboard
             self.add_images(grid_in, grid_out, bbox_images)
+
+            # only log first batch
+            self.log_images_test = False
 
         # compute UQ statistics
         pred = y_hat.max(1, keepdim=True)[1]
@@ -253,12 +262,12 @@ class System(pl.LightningModule):
     def add_images(self, grid_in, grid_out, bbox_images):
         # add different visualizations to tensorboard depending on the model
         # add input images
-        self.logger.experiment.add_image('grid_in', grid_in, self.global_step)
+        self.logger.experiment.add_image('grid_in', grid_in, self.current_epoch)
 
         if self.opt.model.lower() in ['stn', 'pstn']:
             # add output of localizer
-            self.logger.experiment.add_image('grid_out', grid_out, self.global_step)
+            self.logger.experiment.add_image('grid_out', grid_out, self.current_epoch)
 
             if bbox_images is not None:
                 # add bounding boxes visualizations
-                self.logger.experiment.add_image('bbox', bbox_images, self.global_step)
+                self.logger.experiment.add_image('bbox', bbox_images, self.current_epoch)
