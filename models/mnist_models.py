@@ -2,6 +2,10 @@ import torch
 import torch.nn as nn
 from torch import distributions
 from utils.transformers import init_transformer
+from stn import STN
+from pstn import PSTN
+import torch.nn.functional as F
+
 
 parameter_dict_P_STN = {
     'loc_kernel_size': 5,
@@ -20,6 +24,37 @@ parameter_dict_STN = {
     'hidden_layer_localizer': 50,
     'localizer_filters1': 12,
     'localizer_filters2': 18,
+    'color_channels': 1
+}
+
+parameter_dict_classifier_MNIST_CNN = {
+    'nr_target_classes': 10,
+    'CNN_filters1': 12,
+    'CNN_filters2': 24,
+    'CNN_kernel_size': 5,
+    'resulting_size_classifier': 24 * 4 * 4, # default is mnist; we override for random_placement_mnist below
+    'hidden_layer_classifier': 52,
+    'color_channels': 1
+}
+
+parameter_dict_classifier_MNIST_STN = {
+    'nr_target_classes': 10,
+    'CNN_filters1': 10,
+    'CNN_filters2': 20,
+    'CNN_kernel_size': 5,
+    'resulting_size_classifier': 320,
+    'hidden_layer_classifier': 50,
+    'color_channels': 1
+}
+
+parameter_dict_classifier_MNIST_P_STN = {
+    'nr_target_classes': 10,
+    'CNN_filters1': 10,
+    'CNN_filters2': 20,
+    'CNN_kernel_size': 5,
+    'loc_kernel_size': 5,
+    'resulting_size_classifier': 320,
+    'hidden_layer_classifier': 50,
     'color_channels': 1
 }
 
@@ -81,51 +116,18 @@ class MnistPSTN(PSTN):
                 # add activation function for positivity
                 nn.Softplus())
 
-    def forward(self, x):
-        self.S = self.train_samples if self.training else self.test_samples
-        batch_size, c, w, h = x.shape
-        # shared localizer
-        xs = self.localization(x)
-        xs = xs.view(batch_size, -1)
-        # estimate mean and variance regressor
-        theta_mu = self.fc_loc_mu(xs)
-        beta = self.fc_loc_beta(xs)
-
-        # repeat x in the batch dim so we avoid for loop
-        # (this doesn't do anything for N=1)
-        x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
-        theta_mu_upsample = theta_mu.view(batch_size * self.N, self.theta_dim) # mean is the same for all S: [bs * N, theta_dim]
-        beta_upsample = beta.view(batch_size * self.N, self.theta_dim) # variance is also the same, difference comes in through sampling
-        alpha_upsample = self.alpha_p * torch.ones_like(theta_mu_upsample) # upsample scalar alpha
-
-        # make the T-dist object and sample it here? 
-        # it's apparently ok to generate distribution anew in each forward pass (e.g. https://github.com/kampta/pytorch-distributions/blob/master/gaussian_vae.py
-        # maybe we could do this more efficiently because of the independence assumptions within theta? 
-        T_dist = distributions.studentT.StudentT(df= 2* alpha_upsample, loc=theta_mu_upsample, scale=torch.sqrt(beta_upsample / alpha_upsample))
-        theta_samples = T_dist.rsample([self.S]) # shape: [self.S, batch_size, self.theta_dim]
-        theta_samples = theta_samples.view([self.S * batch_size, self.theta_dim])
-
-        # repeat for the number of samples
-        x = x.repeat(self.S, 1, 1, 1)
-        x = x.view([self.S * batch_size, c, w, h])
-        x = self.transformer(x, theta_samples)
-
-        # theta samples: [S, bs, nr_params]
-        # print('theta_samples:', theta_samples, '\ntheta_mu', theta_mu, '\nbeta', beta)
-        # exit()
-        return x, theta_samples, (theta_mu, beta)
-
 
 class MnistSTN(nn.Module):
     def __init__(self, opt):
         super().__init__()
+        self.parameter_dict = self.load_specifications(opt)
         self.N = opt.N
         self.test_samples = opt.test_samples
         self.channels = 1
         self.transformer, self.theta_dim = init_transformer(opt)
-        self.parameter_dict = parameter_dict_STN
-        if opt.dataset.lower() == 'random_placement_mnist':
-            self.parameter_dict['resulting_size_localizer'] = 7938
+
+
+    def init_localization(self, opt):
 
         # Spatial transformer localization-network
         self.localization = nn.Sequential(
@@ -154,13 +156,67 @@ class MnistSTN(nn.Module):
                 nn.Linear(self.parameter_dict['hidden_layer_localizer'], self.theta_dim)
             )
 
+    def load_specifications(self, opt):
+
+        parameter_dict = parameter_dict_STN
+        if opt.dataset.lower() == 'random_placement_mnist':
+            parameter_dict['resulting_size_localizer'] = 7938
+
+        return parameter_dict
+
+
+class MnistClassifier(nn.Module):
+    def __init__(self, opt):
+        super(MnistClassifier, self).__init__()
+        self.parameter_dict = self.load_specifications(opt)
+
+        self.CNN = nn.Sequential(
+            # first conv layer
+            nn.Conv2d(
+                self.parameter_dict['color_channels'], self.parameter_dict['CNN_filters1'],
+                kernel_size=self.parameter_dict['CNN_kernel_size']),
+            nn.MaxPool2d(2, stride=2),  # 2 for 28 x 28 datasets
+            nn.ReLU(True),
+            # second conv layer
+            nn.Conv2d(
+                self.parameter_dict['CNN_filters1'], self.parameter_dict['CNN_filters2'],
+                kernel_size=self.parameter_dict['CNN_kernel_size']),
+            nn.MaxPool2d(2, stride=2),
+            nn.ReLU(True)
+        )
+
+        self.fully_connected = nn.Sequential(
+            # first fully connected layer
+            nn.Linear(self.parameter_dict['resulting_size_classifier'], self.parameter_dict['hidden_layer_classifier']),
+            nn.ReLU(True),
+            nn.Dropout(),
+            # second fully connected layer
+            nn.Linear(self.parameter_dict['hidden_layer_classifier'], self.parameter_dict['nr_target_classes']))
+
+    def classifier(self, x):
+        x = self.CNN(x)
+        x_flat = x.view(-1, self.parameter_dict['resulting_size_classifier'])
+        pred = self.fully_connected(x_flat)
+        return pred
+
     def forward(self, x):
-        batch_size, c, w, h = x.shape
-        xs = self.localization(x)
-        xs = xs.view(batch_size, -1)
-        theta = self.fc_loc(xs)
-        # repeat x in the batch dim so we avoid for loop
-        x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
-        theta_upsample = theta.view(batch_size * self.N, self.theta_dim)
-        x = self.transformer(x, theta_upsample)
-        return x, theta
+        x = self.classifier(x)
+        probs = F.log_softmax(x , dim=1)
+        return probs
+
+    def load_specifications(self, opt):
+        if opt.model.lower() == 'cnn':
+            parameter_dict = parameter_dict_classifier_MNIST_CNN
+            if opt.dataset.lower() == 'random_placement_mnist':
+                 parameter_dict['resulting_size_classifier'] = 24 * 21 * 21
+        elif opt.model.lower() in ['stn']:
+            parameter_dict = parameter_dict_classifier_MNIST_STN
+            if opt.dataset.lower() == 'random_placement_mnist':
+                parameter_dict['resulting_size_classifier'] = 20 * 21 * 21
+        elif opt.model.lower() == 'pstn':
+            parameter_dict = parameter_dict_classifier_MNIST_P_STN
+            if opt.dataset.lower() == 'random_placement_mnist':
+                parameter_dict['resulting_size_classifier'] = 20 * 21 * 21
+        else:
+            print('Pass valid model!')
+        return parameter_dict
