@@ -124,3 +124,21 @@ def save_UQ_results(opt, probabilities, correct_predictions, correct):
     if not exists(UQ_path):
         mkdir(UQ_path)
     pickle.dump(results, open(UQ_path + 'UQ_results.p', 'wb'))
+
+
+
+def get_feature_size(img_size, model):    
+    classifier_feature_sizes ={
+                32: 160,
+                64: 640,
+                96: 2560
+             }
+    localiser_feature_size ={
+                32: 128,
+                64: 512,
+                96: 2048
+             }
+    if model == 'classifier':
+        return classifier_feature_sizes[img_size]
+    if model == 'localiser':
+        return localiser_feature_size[img_size]

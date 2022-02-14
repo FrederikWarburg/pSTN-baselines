@@ -3,6 +3,7 @@ from __future__ import print_function
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from utils.utils import get_feature_size
 
 
 class CelebaClassifier(nn.Module):
@@ -15,41 +16,39 @@ class CelebaClassifier(nn.Module):
         self.dropout_rate = opt.dropout_rate
         self.train_samples = opt.train_samples
         self.test_samples = opt.test_samples
-        self.feature_size = 128 * 6 * 6
+        self.feature_size = 640
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.channels = 3
 
         # initialize a classifier for each branch
         self.CNN = nn.Sequential(
-            nn.Conv2d(self.channels, 32, kernel_size=3),
+            nn.Conv2d(self.channels, 10, kernel_size=5),
             nn.MaxPool2d(2),
-            nn.BatchNorm2d(32),
             nn.ReLU(),
-
-            nn.Conv2d(32, 64, kernel_size=3),
+            nn.Conv2d(10, 20, kernel_size=5),
+            nn.Dropout2d(self.dropout_rate),
             nn.MaxPool2d(2),
-            nn.BatchNorm2d(64),
             nn.ReLU(),
-
-            nn.Conv2d(64, 128, kernel_size=3),
+            nn.Conv2d(20, 40, kernel_size=5),
+            nn.Dropout2d(self.dropout_rate),
             nn.MaxPool2d(2),
-            nn.BatchNorm2d(128),
             nn.ReLU()
         )
-
-        # create final layers
-        self.fully_connected = nn.Sequential(
-            nn.Linear(self.feature_size * self.N, 1024 * self.N),
-            nn.Linear(1024 * self.N, opt.num_classes)
-        )
+        self.fc1 = nn.Linear(self.feature_size, 200)
+        self.fc2 = nn.Linear(200, self.num_classes)
 
     def classifier(self, x):
-        bs, c, h, w = x.shape
+        # get input dimensions
+        batch_size, C, W, H = x.shape
+        # print('classifier img shape:', x.shape)
         x = self.CNN(x)
-        x_flat = x.view(bs, -1)
-        pred = self.fully_connected(x_flat)
-        return pred
+        x = x.view(batch_size, self.feature_size)
+        x = F.relu(self.fc1(x))
+        # use drop out during training
+        x = F.dropout(x, p=self.dropout_rate, training=self.training)
+        x = self.fc2(x)
+        return x
 
     def forward(self, x):
         x = self.classifier(x)

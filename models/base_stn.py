@@ -19,6 +19,7 @@ class BaseSTN(nn.Module):
         batch_size, c, w, h = x.shape
         xs = self.localization(x)
         xs = xs.view(batch_size, -1)
+        # input size = xs.shape[1]
         theta = self.fc_loc(xs)
         # repeat x in the batch dim so we avoid for loop
         x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)

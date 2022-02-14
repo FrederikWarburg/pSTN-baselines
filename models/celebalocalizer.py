@@ -16,36 +16,29 @@ class CelebaPSTN(BasePSTN):
 
         # Spatial transformer localization-network
         self.localization = nn.Sequential(
-            nn.Conv2d(self.channels, 32, kernel_size=3),
-            nn.MaxPool2d(2),
-            nn.BatchNorm2d(32),
-            nn.ReLU(),
-
-            nn.Conv2d(32, 64, kernel_size=3),
-            nn.MaxPool2d(2),
-            nn.BatchNorm2d(64),
-            nn.ReLU(),
-
-            nn.Conv2d(64, 128, kernel_size=3),
-            nn.MaxPool2d(2),
-            nn.BatchNorm2d(128),
-            nn.ReLU()
-        )
+            nn.Conv2d(self.channels, 8, kernel_size=7),
+            nn.MaxPool2d(2, stride=2),
+            nn.ReLU(True),
+            nn.Conv2d(8, 16, kernel_size=5),
+            nn.MaxPool2d(2, stride=2),
+            nn.ReLU(True),
+            nn.Conv2d(16, 32, kernel_size=5),
+            nn.MaxPool2d(2, stride=2),
+            nn.ReLU(True)
 
         # Regressor for the 3 * 2 affine matrix
-        self.fc_loc_mu =  nn.Sequential(
-            nn.Linear(128*6*6, 1024),
-            nn.ReLU(True),
-            nn.Linear(1024, self.theta_dim * self.N)
-        )
+        self.fc_loc_mu = self.fc_loc_hidden = nn.Sequential(
+           nn.Linear(input_size, 100),
+           nn.ReLU(True),
+           nn.Linear(100, self.theta_dim))
+
 
         # Regressor for the 3 * 2 affine matrix
         self.fc_loc_beta = nn.Sequential(
-            nn.Linear(128*6*6, 1024),
-            nn.ReLU(True),
-            nn.Linear(1024, self.theta_dim * self.N),
-            nn.Softplus()
-        )
+           nn.Linear(input_size, 100),
+           nn.ReLU(True),
+           nn.Linear(100, self.theta_dim),
+           nn.Softplus())
 
 
 class CelebaSTN(BaseSTN):
@@ -75,7 +68,7 @@ class CelebaSTN(BaseSTN):
 
         # Regressor for the 3 * 2 affine matrix
         self.fc_loc = nn.Sequential(
-            nn.Linear(128*6*6, 1024),
+            nn.Linear(512, 1024),
             nn.ReLU(True),
             nn.Linear(1024, self.theta_dim * self.N)
         )
