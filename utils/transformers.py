@@ -60,6 +60,7 @@ def make_affine_matrix(theta, scale, translation_x, translation_y):
     affine_matrix = param_tensor.view([-1, 2, 3])
     return affine_matrix
 
+
 def make_affine_parameters(params):
     if params.shape[-1] == 2:  # only perform crop - fix scale and rotation.
         theta = torch.zeros([params.shape[0]], device=params.device)

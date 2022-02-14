@@ -19,6 +19,9 @@ def get_exp_name(opt):
     if opt.dataset.lower() == 'celeba':
         modelname += '-a=' + str(opt.target_attr)
 
+    if opt.add_kmnist_noise:
+        modelname += '-kmnist_noise_'
+
     if opt.model.lower() == 'pstn':
         modelname += '-kl=' + opt.annealing
         if opt.annealing == 'weight_kl':
@@ -125,6 +128,9 @@ def save_learned_thetas(opt, outputs, mode='train', epoch=None):
         beta = torch.stack([x['beta'] for x in outputs]).cpu().numpy()
         pickle.dump(beta, open(theta_path + '_beta.p', 'wb'))
 
+    if outputs[0]['ground_truth_trafo'] is not None:
+        target_trafo = torch.stack([x['ground_truth_trafo'] for x in outputs]).cpu().numpy()
+        pickle.dump(target_trafo, open(theta_path + '_ground_truth_trafo.p', 'wb'))
 
 def save_UQ_results(opt, probabilities, correct_predictions, correct):
     modelname = get_exp_name(opt)

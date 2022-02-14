@@ -45,3 +45,5 @@ class TrainOptions(BaseOptions):
 
         self.is_train = True
         self.no_shuffle = False  # shuffle
+
+        

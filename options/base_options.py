@@ -45,10 +45,11 @@ class BaseOptions:
         # data params - MNIST subset experiment
         self.parser.add_argument('--subset', type=str, default=None, help='using a subset of MNIST? What size?')
         self.parser.add_argument('--fold', type=str, default=None, help='using a subset of MNIST? Which fold?')
+        self.parser.add_argument('--add_kmnist_noise', type=bool, default=False, help='add kmnist noise')
 
         # model params
         self.parser.add_argument('--alpha_p', type=float, default=1, help='prior alpha (posterior when fixed)')
-        self.parser.add_argument('--beta_p', type=float, default=1e-5, help='prior beta')
+        self.parser.add_argument('--beta_p', type=float, default=1, help='prior beta')
 
         # network params
         self.parser.add_argument('--model', type=str, default='cnn', help='model name')
@@ -74,6 +75,8 @@ class BaseOptions:
                                  help='name of the experiment. It decides where to store samples and models')
         self.parser.add_argument('--checkpoints_dir', type=str, default='checkpoints', help='models are saved here')
         self.parser.add_argument('--test_on', type=str, default='test', help='evaluate on validation or test?')
+        self.parser.add_argument('--check_already_run', type=bool, default=False, help='check whether this config has already been run')
+
 
         # visualization params
         self.parser.add_argument('--export_folder', type=str, default='',

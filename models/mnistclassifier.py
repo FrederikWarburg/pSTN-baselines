@@ -79,7 +79,9 @@ class MnistClassifier(nn.Module):
         if opt.model.lower() == 'cnn':
             parameter_dict = parameter_dict_classifier_MNIST_CNN
             if opt.dataset.lower() == 'random_placement_mnist':
-                 parameter_dict['resulting_size_classifier'] = 24 * 21 * 21
+                parameter_dict['resulting_size_classifier'] = 20 * 21 * 21
+                parameter_dict['CNN_filters2'] = 20
+
         elif opt.model.lower() in ['stn']:
             parameter_dict = parameter_dict_classifier_MNIST_STN
             if opt.dataset.lower() == 'random_placement_mnist':

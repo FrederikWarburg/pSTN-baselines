@@ -49,8 +49,9 @@ class STN(nn.Module):
         # Initialize the weights/bias with identity transformation
         if opt.transformer_type == 'affine':
             if self.num_param == 2:
+                bias = torch.tensor([0, 0], dtype=torch.float) 
                 # We initialize bounding boxes with tiling
-                bias = torch.tensor([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=torch.float) * 0.5
+                # bias = torch.tensor([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=torch.float) * 0.5
                 self.stn.fc_loc[-1].bias.data.copy_(bias[:self.N].view(-1))
             elif self.num_param == 4:
                 self.stn.fc_loc[-1].bias.data.copy_(torch.tensor([0, 1, 0, 0] * self.N, dtype=torch.float))

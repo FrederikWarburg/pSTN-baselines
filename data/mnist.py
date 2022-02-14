@@ -1,3 +1,4 @@
+from audioop import add
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -130,10 +131,19 @@ class MnistXKmnist(Dataset):
 
 
 class MnistRandomPlacement(Dataset):
-
+    # hardcode num_images=1 for now 
     def __init__(self, opt, mode):
         self.cropsize = opt.crop_size
         self.num_images = opt.digits
+        self.add_kmnist_noise = opt.add_kmnist_noise
+        self.mode = mode
+
+        if self.mode == 'val':
+            print('Warning: using hacky validation set. Proper one not yet implemented.')
+
+        if opt.test_on == 'val':
+            print('RandomPlacementMNIST validation set not yet implemented.')
+            exit()
 
         # False (test) or True (train,val)
         trainingset = mode in ['train', 'val']
@@ -145,34 +155,62 @@ class MnistRandomPlacement(Dataset):
                                             train=trainingset,
                                             download=opt.download)
 
-    def __len__(self):
+        # make training set smaller if opt.subset is set
+        if opt.subset is not None and mode == 'train': 
+            train_indices = torch.randint(low=0, high=self.dataset.__len__(), size=(int(opt.subset), )) 
+            self.dataset = Subset(self.dataset, train_indices)
 
-        return min([self.dataset.__len__() for i in range(self.num_images)])
+
+        if self.add_kmnist_noise:
+            self.noise_dataset = datasets.KMNIST(opt.dataroot,
+                                             transform=transforms.Compose([
+                                                 transforms.ToTensor()
+                                             ]),
+                                             train=trainingset,
+                                             download=opt.download)
+
+    def __len__(self):
+        return self.dataset.__len__()
 
     def __getitem__(self, idx):
 
         im = torch.zeros((1, 96, 96), dtype=torch.float)
 
-        used_positions, target = [], ''
-        for i in range(self.num_images):
-            while True:
-                x = np.random.randint(0, 96 - 32)
-                if len(used_positions) == 0 or abs(used_positions[0][0] - x) > 32:
-                    break
-            while True:
-                y = np.random.randint(0, 96 - 32)
-                if len(used_positions) == 0 or abs(used_positions[0][1] - y) > 32:
-                    break
+        used_positions = []
 
-            im1, target1 = self.dataset.__getitem__((idx) * (i + 1) % self.dataset.__len__())
+        while True:
+            x = np.random.randint(0, 96 - 32)
+            if len(used_positions) == 0 or abs(used_positions[0][0] - x) > 32:
+                break
+        while True:
+            y = np.random.randint(0, 96 - 32)
+            if len(used_positions) == 0 or abs(used_positions[0][1] - y) > 32:
+                break
+        im1, target = self.dataset.__getitem__(idx)
+        c, w, h = im1.shape
+        im[:, y:y + h, x:x + w] = im1.type(torch.float)
+        ground_truth_trafo = torch.tensor([x, y], dtype=torch.float)
 
-            c, w, h = im1.shape
-
-            im[:, y:y + h, x:x + w] = im1.type(torch.float)
-            target += str(target1)
+        if self.add_kmnist_noise:
+            # add noise image in 50% of training cases and every second val/test image:
+            if self.mode == 'train':
+                add_noise = (torch.rand(size=[1]) > 0.5)
+            else: 
+                add_noise = (idx % 2 == 0)
+            
+            if add_noise:
+                rnd_ix = np.random.randint(low=0, high=self.noise_dataset.__len__(), size=None)
+                im2, _ = self.noise_dataset.__getitem__(rnd_ix)
+                noise_x = x
+                noise_y = y
+                while abs(noise_x - x) + abs(noise_y - y) < 30:
+                    noise_x = np.random.randint(0, 96 - 32)
+                    noise_y = np.random.randint(0, 96 - 32)
+                c, w, h = im2.shape
+                im[:, noise_y:noise_y + h, noise_x:noise_x + w] = im2.type(torch.float)
 
         transform = transforms.Compose(
             [transforms.ToPILImage(), transforms.Resize(self.cropsize), transforms.ToTensor(),
              transforms.Normalize((0.1307,), (0.3081,))])
         im = transform(im)
-        return im, int(target)
+        return im, [target, ground_truth_trafo] # also return around truth x and y

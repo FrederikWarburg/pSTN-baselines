@@ -12,13 +12,13 @@ for LR in {0..6}
 do
     for FOLD in {0..4} # only do 2 folds for the grid search to limit computation time
     do
-        for MODEL in {0..2}
+        for MODEL in {0..0}
         do 
-            CUDA_VISIBLE_DEVICES=0 python train.py --dataroot 'data' \
+            CUDA_VISIBLE_DEVICES=2 python train.py --dataroot 'data' \
                                 --dataset "MNIST" \
                                 --subset 100 \
                                 --fold ${FOLD} \
-                                --batch_size 8 \
+                                --batch_size 16 \
                                 --num_classes 10  \
                                 --num_threads 1 \
                                 --epochs 600 \
@@ -30,8 +30,8 @@ do
                                 --train_samples 1 \
                                 --criterion  ${CRITERION[$MODEL]} \
                                 --save_results True \
-                                --lr 0.001 \
-                                --lr_loc 0.1 \
+                                --lr ${LRS[$LR]} \
+                                --lr_loc 1 \
                                 --beta_p 1. \
                                 --trainval_split True \
                                 --save_results True \
@@ -40,7 +40,7 @@ do
                                 --transformer_type "affine" \
                                 --step_size 600 \
                                 --val_check_interval 600 \
-                                --results_folder "01_02_lr_exp" \
+                                --results_folder "07_02_single_lr_exp" \
                                 --test_on "test" \
                                 --annealing "weight_kl" \
                                 --kl_weight 0.0003

@@ -49,12 +49,13 @@ class PSTN(nn.Module):
 
         # Initialize the weights/bias with identity transformation
         if opt.transformer_type == 'affine':
-
             # initialize mean network
             if self.num_param == 2:
-                # We initialize bounding boxes with tiling
-                bias = torch.tensor([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=torch.float) * 0.5
-                self.pstn.fc_loc_mu[-1].bias.data.copy_(bias[:self.N].view(-1))
+                # N = 1 case
+                bias = torch.tensor([0, 0], dtype=torch.float) 
+                # multiple N case: we initialize bounding boxes with tiling
+                # torch.tensor([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=torch.float) * 0.5
+                self.pstn.fc_loc_mu[-1].bias.data.copy_(bias.view(-1))
             elif self.num_param == 4:
                 self.pstn.fc_loc_mu[-1].bias.data.copy_(torch.tensor([0, 1, 0, 0] * self.N, dtype=torch.float))
             elif self.num_param == 6:

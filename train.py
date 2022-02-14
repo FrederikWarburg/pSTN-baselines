@@ -20,6 +20,13 @@ if __name__ == '__main__':
     # decide unique model name based on parameters
     modelname = get_exp_name(opt)
 
+    if opt.check_already_run:
+        results_dir = 'experiments/%s/' % opt.results_folder
+        check_path = results_dir + modelname + '_test_accuracy.p'
+        if os.path.exists(check_path):
+            print('already ran this, exiting')
+            exit()
+
     # initialize a train logger for experiment
     logger = TensorBoardLogger(
        save_dir=os.getcwd() + "/lightning_logs/%s/" %opt.results_folder,

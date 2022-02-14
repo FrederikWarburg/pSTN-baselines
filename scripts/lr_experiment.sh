@@ -7,16 +7,16 @@ TRAIN_SAMPELS=(1 1)
 CRITERION=("nll" "elbo")
 LEARNING_RATES=(1e-1 1e-2 1e-3 1e-4 1e-5)
 
-for LR in {0..4}
+for LR in {2..4}
 do
-    for MODEL in {0..1}
+    for MODEL in {1..1}
     do
         echo ${MODELS[$MODEL]}
         echo $ATTR
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        CUDA_VISIBLE_DEVICES=2 python train2.py --dataroot $DATAPATH \
+        CUDA_VISIBLE_DEVICES=1 python train2.py --dataroot $DATAPATH \
                         --dataset "celeba" \
                         --attr 15 \
                         --batch_size 256 \

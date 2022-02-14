@@ -93,6 +93,10 @@ class System(pl.LightningModule):
     def training_step(self, batch, batch_idx, hidden=0):
         # unpack batch
         x, y = batch
+        if self.opt.dataset == 'random_placement_mnist':
+            # in this case we also return target_x and target_y
+            y = y[0]
+
         theta_mu, beta = None, None
         # forward and calculate loss, the output is packaged a bit differently for all models
         if self.opt.model.lower() == 'cnn':
@@ -141,6 +145,10 @@ class System(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         # unpack batch
         x, y = batch
+        if self.opt.dataset == 'random_placement_mnist':
+            # in this case we also return target_x and target_y
+            y = y[0]
+
         # forward
         if self.opt.model.lower() == 'cnn':
             y_hat = self.forward(x)
@@ -161,6 +169,12 @@ class System(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         # unpack batch
         x, y = batch
+        if self.opt.dataset == 'random_placement_mnist':
+            # in this case we also return target_x and target_y
+            target_trafo = y[1]
+            y = y[0]
+        else:
+            target_trafo = None
 
         theta_mu, beta = None, None
         # forward image
@@ -196,7 +210,8 @@ class System(pl.LightningModule):
                 'correct_prediction': y.data,
                 'correct': check_predictions.data,
                 "theta_mu": theta_mu, 
-                "beta": beta}
+                "beta": beta,
+                'ground_truth_trafo': target_trafo}
 
 
     def test_epoch_end(self, outputs):

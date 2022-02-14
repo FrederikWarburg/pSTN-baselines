@@ -8,7 +8,7 @@ do
     echo ${SUBSETS[$SUBSET]}
     for w in {0..7}
     do
-        for FOLD in {3..4} # only do 2 folds for the grid search to limit computation time
+        for FOLD in {0..4} # only do 2 folds for the grid search to limit computation time
         do
             CUDA_VISIBLE_DEVICES=1 python train.py --dataroot 'data' \
                                 --dataset "MNIST" \
@@ -40,7 +40,8 @@ do
                                 --results_folder "28_01_kl_weight_finer_grid_search" \
                                 --test_on "val" \
                                 --annealing "weight_kl" \
-                                --kl_weight ${W_s[$w]}
+                                --kl_weight ${W_s[$w]} \
+                                --check_already_run True
         done
     done
 done
