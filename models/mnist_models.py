@@ -23,7 +23,7 @@ parameter_dict_STN = {
     'color_channels': 1
 }
 
-class MnistPSTN(nn.Module):
+class MnistPSTN(PSTN):
     def __init__(self, opt):
         super().__init__()
         self.N = opt.N
@@ -38,6 +38,7 @@ class MnistPSTN(nn.Module):
         if opt.dataset.lower() == 'random_placement_mnist':
             self.parameter_dict['resulting_size_localizer'] = 6174
 
+    def init_localizer(self, opt):
         # Spatial transformer localization-network
         self.localization = nn.Sequential(
             nn.Conv2d(

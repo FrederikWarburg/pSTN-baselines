@@ -9,26 +9,41 @@ from torch.nn import functional as F
 
 from torch.utils.data import DataLoader
 from loss import create_criterion
+from models.celeba_models import CelebaPSTN
 from utils.evaluate import accuracy
 from utils.utils import get_exp_name, save_UQ_results, save_results, mkdir, save_learned_thetas, save_UQ_results
 from utils.visualizations import visualize_stn
 from collections import OrderedDict
 from data import create_dataset
 
+from models.celeba_models import CelebaPSTN, CelebaSTN, CelebaClassifier
+from models.mnist_models import 
+
+
+STN = {
+    'celeba': CelebaSTN,
+    'mnist': MnistSTN,
+    'random_placement_mnist':
+    'timeseries:'
+}
+
+PSTN = {}
+
+CNN = {"celeba": CelebaClassifier}
+
 
 def create_model(opt):
     # initalize model based on model type
-
     if opt.model.lower() == 'cnn':
-        from .cnn import CNN as Model
+        model = CNN[opt.dataset](opt)
     elif opt.model.lower() == 'stn':
-        from .stn import STN as Model
+        model = STN[opt.dataset](opt)
     elif opt.model.lower() == 'pstn':
-        from .pstn import PSTN as Model
+        model = PSTN[opt.dataset](opt)
+
     else:
         raise ValueError('Unsupported or model: {}!'.format(opt.model))
 
-    model = Model(opt)
 
     return model
 

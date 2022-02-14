@@ -1,7 +1,9 @@
 from __future__ import print_function
+from matplotlib.pyplot import thetagrids
 
 import torch.nn as nn
 import torch
+from utils.transformers import init_transformer
 
 
 class STN(nn.Module):
@@ -11,6 +13,7 @@ class STN(nn.Module):
         # hyper parameters
         self.num_param = opt.num_param
         self.N = opt.N
+        self.transformer, self.theta_dim = init_transformer(opt)
 
         # Spatial transformer localization-network
         self.init_localizer(opt)
@@ -20,58 +23,54 @@ class STN(nn.Module):
         self.init_model_weights(opt)
 
     def init_localizer(self, opt):
-        if opt.dataset.lower() in ['cub']:
-            from .cublocalizer import CubSTN as STN
-        elif opt.dataset.lower() in ['celeba']:
-            from .celebalocalizer import CelebaSTN as STN
-        elif opt.dataset.lower() in ['mnist', 'random_placement_mnist']:
-            from .mnistlocalizer import MnistSTN as STN
-        elif opt.dataset in opt.TIMESERIESDATASETS:
-            from .timeserieslocalizer import TimeseriesSTN as STN
-
-        self.stn = STN(opt)
+        raise NotImplementedError
 
     def init_classifier(self, opt):
-        if opt.dataset.lower() in ['cub']:
-            from .cubclassifier import CubClassifier as Classifier
-        elif opt.dataset.lower() in ['celeba']:
-            from .celebaclassifier import CelebaClassifier as Classifier
-        elif opt.dataset.lower() in ['mnist', 'random_placement_mnist']:
-            from .mnistclassifier import MnistClassifier as Classifier
-        elif opt.dataset in opt.TIMESERIESDATASETS:
-            from .timeseriesclassifier import TimeseriesClassifier as Classifier
-
-        self.classifier = Classifier(opt)
+        raise NotImplementedError
 
     def init_model_weights(self, opt):
-        self.stn.fc_loc[-1].weight.data.zero_()
+        self.fc_loc[-1].weight.data.zero_()
 
         # Initialize the weights/bias with identity transformation
         if opt.transformer_type == 'affine':
             if self.num_param == 2:
                 # We initialize bounding boxes with tiling
                 bias = torch.tensor([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=torch.float) * 0.5
-                self.stn.fc_loc[-1].bias.data.copy_(bias[:self.N].view(-1))
+                self.fc_loc[-1].bias.data.copy_(bias[:self.N].view(-1))
             elif self.num_param == 3:
-                self.stn.fc_loc[-1].bias.data.copy_(torch.tensor([1, 0, 0] * self.N, dtype=torch.float))
+                self.fc_loc[-1].bias.data.copy_(torch.tensor([1, 0, 0] * self.N, dtype=torch.float))
             elif self.num_param == 4:
-                self.stn.fc_loc[-1].bias.data.copy_(torch.tensor([1, 1, 0, 0] * self.N, dtype=torch.float))
+                self.fc_loc[-1].bias.data.copy_(torch.tensor([1, 1, 0, 0] * self.N, dtype=torch.float))
             elif self.num_param == 5:
-                self.stn.fc_loc[-1].bias.data.copy_(torch.tensor([0, 1, 1, 0, 0] * self.N, dtype=torch.float))
+                self.fc_loc[-1].bias.data.copy_(torch.tensor([0, 1, 1, 0, 0] * self.N, dtype=torch.float))
             elif self.num_param == 6:
-                self.stn.fc_loc[-1].bias.data.copy_(torch.tensor([1, 0, 0,
+                self.fc_loc[-1].bias.data.copy_(torch.tensor([1, 0, 0,
                                                                   0, 1, 0] * self.N, dtype=torch.float))
         elif opt.transformer_type == 'diffeomorphic':
             # initialize param's as identity, default ok for variance in this case
-            self.stn.fc_loc[-1].bias.data.copy_(
-                torch.tensor([1e-5], dtype=torch.float).repeat(self.stn.theta_dim))
+            self.fc_loc[-1].bias.data.copy_(
+                torch.tensor([1e-5], dtype=torch.float).repeat(self.theta_dim))
 
     def forward(self, x):
-        # print(x.shape)
         # zoom in on relevant areas with stn
-        x, theta = self.stn(x)
-
+        x, theta = self.forward_localizer(x)
         # make classification based on these areas
-        x = self.classifier(x)
-
+        x = self.forward_classifier(x)
         return x, theta
+
+    def forward_localizer(self, x):
+        batch_size, c, w, h = x.shape
+        xs = self.localization(x)
+        xs = xs.view(batch_size, -1)
+        # input size = xs.shape[1]
+        theta = self.fc_loc(xs)
+        # repeat x in the batch dim so we avoid for loop
+        x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
+        theta_upsample = theta.view(batch_size * self.N, self.theta_dim)
+        x = self.transformer(x, theta_upsample)
+        return x, theta
+
+
+    def forward_classifier(self, x):
+        return self.classifier(x)
+
