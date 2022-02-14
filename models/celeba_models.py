@@ -25,7 +25,7 @@ class CelebaPSTN(PSTN):
             nn.ReLU(True),
             nn.Conv2d(16, 32, kernel_size=5),
             nn.MaxPool2d(2, stride=2),
-            nn.ReLU(True)
+            nn.ReLU(True),
         )
 
         # Regressor for the 3 * 2 affine matrix
@@ -33,7 +33,6 @@ class CelebaPSTN(PSTN):
            nn.Linear(input_size, 100),
            nn.ReLU(True),
            nn.Linear(100, self.theta_dim))
-
 
         # Regressor for the 3 * 2 affine matrix
         self.fc_loc_beta = nn.Sequential(
