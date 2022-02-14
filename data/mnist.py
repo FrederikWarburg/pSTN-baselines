@@ -6,6 +6,7 @@ from torch import distributions
 from torch.utils.data import Dataset, Subset
 from torchvision import transforms, datasets
 from utils.transformers import make_affine_matrix
+import math
 # from RandAugment import RandAugment
 # this is now native in torch, use that implementation if we want to use it again
 
@@ -214,3 +215,57 @@ class MnistRandomPlacement(Dataset):
              transforms.Normalize((0.1307,), (0.3081,))])
         im = transform(im)
         return im, [target, ground_truth_trafo] # also return around truth x and y
+
+
+
+class MnistRandomRotation(Dataset):
+    # hardcode num_images=1 for now 
+    def __init__(self, opt, mode):
+        self.trafo = transforms.Compose([
+            transforms.Normalize((0.1307,), (0.3081,))])
+        self.mode = mode
+
+        if self.mode == 'val':
+            print('Warning: using hacky validation set. Proper one not yet implemented.')
+
+        if opt.test_on == 'val':
+            print('RandomPlacementMNIST validation set not yet implemented.')
+            exit()
+
+        # False (test) or True (train,val)
+        trainingset = mode in ['train', 'val']
+
+        self.dataset = datasets.MNIST(opt.dataroot,
+                                        train=trainingset,
+                                        transform=transforms.ToTensor(),
+                                        download=opt.download)
+
+    def __len__(self):
+        return self.dataset.__len__()
+
+    def __getitem__(self, idx):
+        im, target = self.dataset.__getitem__(idx)
+
+        # add rotation 'noise' in 20% of training cases and every second val/test image:
+        if self.mode == 'train':
+            add_noise = (torch.rand(size=[1]) > 0.8)
+        else: 
+            add_noise = (idx % 2 == 0)
+        
+        angle = torch.tensor([0.])
+        if add_noise:
+            angle = - torch.tensor(math.pi) + 2 * torch.tensor(math.pi) * torch.rand(size=[1])
+
+            def transform_image_affine(x):
+                random_params = torch.tensor([angle, 1., 0, 0])
+                theta = make_affine_matrix(*random_params)
+                x = x.unsqueeze(0)
+                grid = F.affine_grid(theta, x.size())  # makes the flow field on a grid
+                x_transformed = F.grid_sample(x, grid)  # interpolates x on the grid
+                return x_transformed.squeeze(0)
+
+            im = transform_image_affine(im)
+        
+        im = self.trafo(im)
+
+        return im, [target, angle] # also return ground truth angle

@@ -20,11 +20,9 @@ class STN(nn.Module):
         self.init_model_weights(opt)
 
     def init_localizer(self, opt):
-        if opt.dataset.lower() in ['cub']:
-            from .cublocalizer import CubSTN as STN
-        elif opt.dataset.lower() in ['celeba', 'mnistxkmnist']:
+        if opt.dataset.lower() in ['celeba']:
             from .celebalocalizer import CelebaSTN as STN
-        elif opt.dataset.lower() in ['mnist', 'random_placement_mnist']:
+        elif opt.dataset.lower() in ['mnist', 'random_placement_mnist', 'random_rotation_mnist']:
             from .mnistlocalizer import MnistSTN as STN
         elif opt.dataset in opt.TIMESERIESDATASETS:
             from .timeserieslocalizer import TimeseriesSTN as STN
@@ -32,11 +30,9 @@ class STN(nn.Module):
         self.stn = STN(opt)
 
     def init_classifier(self, opt):
-        if opt.dataset.lower() in ['cub']:
-            from .cubclassifier import CubClassifier as Classifier
-        elif opt.dataset.lower() in ['celeba', 'mnistxkmnist']:
+        if opt.dataset.lower() in ['celeba']:
             from .celebaclassifier import CelebaClassifier as Classifier
-        elif opt.dataset.lower() in ['mnist', 'random_placement_mnist']:
+        elif opt.dataset.lower() in ['mnist', 'random_placement_mnist', 'random_rotation_mnist']:
             from .mnistclassifier import MnistClassifier as Classifier
         elif opt.dataset in opt.TIMESERIESDATASETS:
             from .timeseriesclassifier import TimeseriesClassifier as Classifier
