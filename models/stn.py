@@ -22,7 +22,7 @@ class STN(nn.Module):
     def init_localizer(self, opt):
         if opt.dataset.lower() in ['cub']:
             from .cublocalizer import CubSTN as STN
-        elif opt.dataset.lower() in ['celeba', 'mnistxkmnist']:
+        elif opt.dataset.lower() in ['celeba']:
             from .celebalocalizer import CelebaSTN as STN
         elif opt.dataset.lower() in ['mnist', 'random_placement_mnist']:
             from .mnistlocalizer import MnistSTN as STN
@@ -34,7 +34,7 @@ class STN(nn.Module):
     def init_classifier(self, opt):
         if opt.dataset.lower() in ['cub']:
             from .cubclassifier import CubClassifier as Classifier
-        elif opt.dataset.lower() in ['celeba', 'mnistxkmnist']:
+        elif opt.dataset.lower() in ['celeba']:
             from .celebaclassifier import CelebaClassifier as Classifier
         elif opt.dataset.lower() in ['mnist', 'random_placement_mnist']:
             from .mnistclassifier import MnistClassifier as Classifier

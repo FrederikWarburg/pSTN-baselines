@@ -69,7 +69,7 @@ def make_affine_parameters(params):
         translation_y = params[:, 1]
         affine_matrix = make_affine_matrix(theta, scale_x, scale_y, translation_x, translation_y)
 
-    elif params.shape[-1] == 3:  # only perform crop - fix scale and rotation.
+    elif params.shape[-1] == 3:  # crop with learned scale, isotropic, and tx/tx
         theta = torch.zeros([params.shape[0]], device=params.device)
         scale_x = params[:, 0]
         scale_y = params[:, 0]
@@ -77,15 +77,15 @@ def make_affine_parameters(params):
         translation_y = params[:, 2]
         affine_matrix = make_affine_matrix(theta, scale_x, scale_y, translation_x, translation_y)
 
-    elif params.shape[-1] == 4:  # only perform crop - fix scale and rotation.
-        theta = torch.zeros([params.shape[0]], device=params.device)
-        scale_x = params[:, 0]
-        scale_y = params[:, 1]
+    elif params.shape[-1] == 4:  # "full afffine" with isotropic scale
+        theta = params[:, 0]
+        scale = params[:, 1]
+        scale_x, scale_y = scale, scale
         translation_x = params[:, 2]
         translation_y = params[:, 3]
         affine_matrix = make_affine_matrix(theta, scale_x, scale_y, translation_x, translation_y)
 
-    elif params.shape[-1] == 5:
+    elif params.shape[-1] == 5:  # "full afffine" with anisotropic scale
         theta = params[:, 0]
         scale_x = params[:, 1]
         scale_y = params[:, 2]
@@ -93,7 +93,7 @@ def make_affine_parameters(params):
         translation_y = params[:, 4]
         affine_matrix = make_affine_matrix(theta, scale_x, scale_y, translation_x, translation_y)
 
-    elif params.shape[-1] == 6:
+    elif params.shape[-1] == 6: # full affine, raw parameters
         affine_matrix = params.view([-1, 2, 3])
 
     return affine_matrix # [S * bs, 2, 3]
