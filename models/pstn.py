@@ -48,7 +48,7 @@ class PSTN(nn.Module):
             elif self.num_param == 3:
                 self.fc_loc_mu[-1].bias.data.copy_(torch.tensor([1, 0, 0] * self.N, dtype=torch.float))
             elif self.num_param == 4:
-                self.fc_loc_mu[-1].bias.data.copy_(torch.tensor([1, 1, 0, 0] * self.N, dtype=torch.float))
+                self.fc_loc_mu[-1].bias.data.copy_(torch.tensor([0, 1, 0, 0] * self.N, dtype=torch.float))
             elif self.num_param == 5:
                 self.fc_loc_mu[-1].bias.data.copy_(torch.tensor([0, 1, 1, 0, 0] * self.N, dtype=torch.float))
             elif self.num_param == 6:
