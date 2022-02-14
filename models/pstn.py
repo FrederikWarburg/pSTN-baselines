@@ -21,9 +21,9 @@ class PSTN(nn.Module):
         self.init_model_weights(opt)
 
     def init_localizer(self, opt):
-        if opt.dataset.lower() in ['celeba','cub']:
+        if opt.dataset.lower() in ['cub']:
             from .cublocalizer import CubPSTN as PSTN
-        elif opt.dataset.lower() in ['mnistxkmnist']:
+        elif opt.dataset.lower() in ['celeba']:
             from .celebalocalizer import CelebaPSTN as PSTN
         elif opt.dataset.lower() in ['mnist', 'random_placement_mnist']:
             from .mnistlocalizer import MnistPSTN as PSTN
@@ -33,9 +33,9 @@ class PSTN(nn.Module):
         self.pstn = PSTN(opt)
 
     def init_classifier(self, opt):
-        if opt.dataset.lower() in ['celeba', 'cub']:
+        if opt.dataset.lower() in ['cub']:
             from .cubclassifier import CubClassifier as Classifier
-        elif opt.dataset.lower() in ['mnistxkmnist']:
+        elif opt.dataset.lower() in ['celeba']:
             from .celebaclassifier import CelebaClassifier as Classifier
         elif opt.dataset.lower() in ['mnist', 'random_placement_mnist']:
             from .mnistclassifier import MnistClassifier as Classifier
@@ -55,8 +55,12 @@ class PSTN(nn.Module):
                 # We initialize bounding boxes with tiling
                 bias = torch.tensor([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=torch.float) * 0.5
                 self.pstn.fc_loc_mu[-1].bias.data.copy_(bias[:self.N].view(-1))
+            elif self.num_param == 3:
+                self.pstn.fc_loc_mu[-1].bias.data.copy_(torch.tensor([1, 0, 0] * self.N, dtype=torch.float))
             elif self.num_param == 4:
-                self.pstn.fc_loc_mu[-1].bias.data.copy_(torch.tensor([0, 1, 0, 0] * self.N, dtype=torch.float))
+                self.pstn.fc_loc_mu[-1].bias.data.copy_(torch.tensor([1, 1, 0, 0] * self.N, dtype=torch.float))
+            elif self.num_param == 5:
+                self.pstn.fc_loc_mu[-1].bias.data.copy_(torch.tensor([0, 1, 1, 0, 0] * self.N, dtype=torch.float))
             elif self.num_param == 6:
                 self.pstn.fc_loc_mu[-1].bias.data.copy_(torch.tensor([1, 0, 0,
                                                                       0, 1, 0] * self.N, dtype=torch.float))

@@ -72,22 +72,12 @@ def save_mnist(opt, avg_loss, avg_acc):
 
 
 def save_celeba(opt, avg_loss, avg_acc):
-
-    # get model name
-    modelname = get_exp_name(opt)
-
-    # remove attr from name and store it seperately
-    modelname = modelname.split('-')
-    attr = int(modelname[5].replace("a=", ""))
-    modelname.pop(5)
-    modelname = '-'.join(modelname)
-
-    # make sure results dir exists
-    mkdir('experiments/%s' % opt.results_folder)
-
-    # open file with given model name and append results from specific target attr
-    with open(join('experiments/%s/' % opt.results_folder, modelname + ".csv"), "a+") as f:
-        f.write("{},{},{}\n".format(attr, avg_loss, avg_acc))
+    results_dir = f'experiments/{opt.results_folder}/{opt.target_attr}'
+    mkdir(results_dir)
+    model_name = get_exp_name(opt)
+    RESULTS_PATH = results_dir + model_name
+    pickle.dump(avg_acc.cpu().numpy(), open(RESULTS_PATH + '_test_accuracy.p', 'wb'))
+    pickle.dump(avg_loss.cpu().numpy(), open(RESULTS_PATH + '_test_loss.p', 'wb'))
 
 
 def check_learnable_parameters(model, architecture):
