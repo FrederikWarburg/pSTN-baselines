@@ -1,12 +1,12 @@
 #!/bin/sh
 
-DATAPATH="/scratch/s153847/"
-MODELS=("pstn")
-PARAMS=(6)
-TEST_SAMPELS=(10)
-TRAIN_SAMPELS=(2)
-CRITERION=("elbo")
-ANNEALING=("no_annealing" "no_kl" "reduce_kl" "increase_kl")
+DATAPATH="/scratch/frwa/"
+MODELS=("cnn" "stn" "pstn")
+PARAMS=(0 4 4)
+TEST_SAMPELS=(1 1 10)
+TRAIN_SAMPELS=(1 1 1)
+CRITERION=("nll" "nll" "elbo")
+ANNEALING=("None" "None" "reduce_kl")
 
 for ANNEAL in {0..3}
 do

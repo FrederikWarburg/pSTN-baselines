@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 from torch import distributions
 from utils.transformers import init_transformer
-from stn import STN
-from pstn import PSTN
+from models.stn import STN
+from models.pstn import PSTN
 import torch.nn.functional as F
 
 
@@ -60,7 +60,8 @@ parameter_dict_classifier_MNIST_P_STN = {
 
 class MnistPSTN(PSTN):
     def __init__(self, opt):
-        super().__init__()
+        self.parameter_dict = self.load_specifications(opt)
+        super().__init__(opt)
         self.N = opt.N
         self.train_samples = opt.train_samples
         self.S = opt.test_samples
@@ -69,9 +70,6 @@ class MnistPSTN(PSTN):
         self.beta_p = opt.beta_p
         self.channels = 1
         self.transformer, self.theta_dim = init_transformer(opt)
-        self.parameter_dict = parameter_dict_P_STN
-        if opt.dataset.lower() == 'random_placement_mnist':
-            self.parameter_dict['resulting_size_localizer'] = 6174
 
     def init_localizer(self, opt):
         # Spatial transformer localization-network
@@ -116,18 +114,26 @@ class MnistPSTN(PSTN):
                 # add activation function for positivity
                 nn.Softplus())
 
+    def init_classifier(self, opt):
+        self.classifier = MnistClassifier(opt)
 
-class MnistSTN(nn.Module):
+    def load_specifications(self, opt):
+    
+        parameter_dict = parameter_dict_P_STN
+        if opt.dataset.lower() == 'random_placement_mnist':
+            parameter_dict['resulting_size_localizer'] = 6174
+        return parameter_dict
+
+
+class MnistSTN(STN):
     def __init__(self, opt):
-        super().__init__()
         self.parameter_dict = self.load_specifications(opt)
+        super().__init__(opt)
         self.N = opt.N
         self.test_samples = opt.test_samples
         self.channels = 1
-        self.transformer, self.theta_dim = init_transformer(opt)
 
-
-    def init_localization(self, opt):
+    def init_localizer(self, opt):
 
         # Spatial transformer localization-network
         self.localization = nn.Sequential(
@@ -155,6 +161,9 @@ class MnistSTN(nn.Module):
                 nn.ReLU(True),
                 nn.Linear(self.parameter_dict['hidden_layer_localizer'], self.theta_dim)
             )
+
+    def init_classifier(self, opt):
+        self.classifier = MnistClassifier(opt)
 
     def load_specifications(self, opt):
 

@@ -9,7 +9,6 @@ from torch.nn import functional as F
 
 from torch.utils.data import DataLoader
 from loss import create_criterion
-from models.celeba_models import CelebaPSTN
 from utils.evaluate import accuracy
 from utils.utils import get_exp_name, save_UQ_results, save_results, mkdir, save_learned_thetas, save_UQ_results
 from utils.visualizations import visualize_stn
@@ -17,29 +16,36 @@ from collections import OrderedDict
 from data import create_dataset
 
 from models.celeba_models import CelebaPSTN, CelebaSTN, CelebaClassifier
-from models.mnist_models import 
+from models.mnist_models import MnistPSTN, MnistSTN, MnistClassifier
 
 
 STN = {
     'celeba': CelebaSTN,
     'mnist': MnistSTN,
-    'random_placement_mnist':
-    'timeseries:'
+    'random_placement_mnist': MnistSTN,
 }
 
-PSTN = {}
+PSTN = {
+    'celeba': CelebaPSTN,
+    'mnist': MnistPSTN,
+    'random_placement_mnist': MnistPSTN,
+}
 
-CNN = {"celeba": CelebaClassifier}
+CNN = {
+    "celeba": CelebaClassifier,
+    "mnist": MnistClassifier,
+    "random_placement_mnist": MnistClassifier,
+}
 
 
 def create_model(opt):
     # initalize model based on model type
     if opt.model.lower() == 'cnn':
-        model = CNN[opt.dataset](opt)
+        model = CNN[opt.dataset.lower()](opt)
     elif opt.model.lower() == 'stn':
-        model = STN[opt.dataset](opt)
+        model = STN[opt.dataset.lower()](opt)
     elif opt.model.lower() == 'pstn':
-        model = PSTN[opt.dataset](opt)
+        model = PSTN[opt.dataset.lower()](opt)
 
     else:
         raise ValueError('Unsupported or model: {}!'.format(opt.model))
@@ -66,7 +72,8 @@ def create_optimizer(model, opt, criterion):
     if opt.model.lower() == 'stn':
         # enables the lr for the localizer to be lower than for the classifier
         optimizer = Optimizer([
-            {'params': filter(lambda p: p.requires_grad, model.stn.parameters()), 'lr': opt.lr_loc * opt.lr},
+            {'params': filter(lambda p: p.requires_grad, model.localization.parameters()), 'lr': opt.lr_loc * opt.lr},
+            {'params': filter(lambda p: p.requires_grad, model.fc_loc.parameters()), 'lr': opt.lr_loc * opt.lr},
             {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
         ], **opt_param)
 
@@ -76,7 +83,9 @@ def create_optimizer(model, opt, criterion):
             {'params': list(filter(lambda p: p.requires_grad, criterion.parameters())), 'lr': opt.lr})
         # exit()
         optimizer = Optimizer([
-            {'params': filter(lambda p: p.requires_grad, model.pstn.parameters()), 'lr': opt.lr_loc * opt.lr},
+            {'params': filter(lambda p: p.requires_grad, model.localization.parameters()), 'lr': opt.lr_loc * opt.lr},
+            {'params': filter(lambda p: p.requires_grad, model.fc_loc_mu.parameters()), 'lr': opt.lr_loc * opt.lr},
+            {'params': filter(lambda p: p.requires_grad, model.fc_loc_beta.parameters()), 'lr': opt.lr_loc * opt.lr},
             {'params': filter(lambda p: p.requires_grad, model.classifier.parameters()), 'lr': opt.lr},
         ], **opt_param)
 

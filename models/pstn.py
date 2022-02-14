@@ -35,7 +35,7 @@ class PSTN(nn.Module):
         raise NotImplementedError
 
     def init_model_weights(self, opt):
-        self.pstn.fc_loc_mu[-1].weight.data.zero_()
+        self.fc_loc_mu[-1].weight.data.zero_()
 
         # Initialize the weights/bias with identity transformation
         if opt.transformer_type == 'affine':
@@ -62,12 +62,12 @@ class PSTN(nn.Module):
         elif opt.transformer_type == 'diffeomorphic':
             # initialize param's as identity, default ok for variance in this case
             self.fc_loc_mu[-1].bias.data.copy_(
-                torch.tensor([1e-5], dtype=torch.float).repeat(self.pstn.theta_dim))
-            self.pstn.fc_loc_std[-2].weight.data.zero_()
+                torch.tensor([1e-5], dtype=torch.float).repeat(self.theta_dim))
+            self.fc_loc_beta[-2].weight.data.zero_()
 
             if opt.dataset in opt.TIMESERIESDATASETS:
-                self.pstn.fc_loc_beta[-2].bias.data.copy_(
-                     torch.tensor([-2], dtype=torch.float).repeat(self.pstn.theta_dim))
+                self.fc_loc_beta[-2].bias.data.copy_(
+                     torch.tensor([-2], dtype=torch.float).repeat(self.theta_dim))
 
     def forward(self, x):
         # get input shape
@@ -81,8 +81,8 @@ class PSTN(nn.Module):
         x = self.forward_classifier(x)
 
         # format according to number of samples
-        x = torch.stack(x.split([batch_size] * self.pstn.S))
-        x = x.view(self.pstn.S, batch_size * self.num_classes)
+        x = torch.stack(x.split([batch_size] * self.S))
+        x = x.view(self.S, batch_size * self.num_classes)
 
         if self.training:
             # calculate mean across samples
@@ -90,7 +90,7 @@ class PSTN(nn.Module):
             x = x.view(batch_size, self.num_classes)
 
         else:
-            x = torch.log(torch.tensor(1.0 / float(self.pstn.S))) + torch.logsumexp(x, dim=0)
+            x = torch.log(torch.tensor(1.0 / float(self.S))) + torch.logsumexp(x, dim=0)
             x = x.view(batch_size, self.num_classes)
 
         return x, thetas, beta

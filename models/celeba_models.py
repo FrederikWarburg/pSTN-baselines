@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 from torch import distributions
 from utils.transformers import init_transformer
-from stn import STN
-from pstn import PSTN
+from models.stn import STN
+from models.pstn import PSTN
 import torch.nn.functional as F
 
 class CelebaPSTN(PSTN):
