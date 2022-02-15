@@ -83,10 +83,10 @@ def visualize_stn(model, data, opt):
         if opt.xdim == 2:
             data = data[:16]  # just visualize the first 16
             if opt.model.lower() == 'stn':
-                transformed_input_tensor, thetas = model.stn(data)
+                transformed_input_tensor, thetas = model.forward_localizer(data)
 
             elif opt.model.lower() == 'pstn':
-                transformed_input_tensor, thetas, _ = model.pstn(data)
+                transformed_input_tensor, thetas, _ = model.forward_localizer(data)
 
             in_grid = convert_image_np(torchvision.utils.make_grid(data.cpu()), opt.dataset.lower())
             in_grid = (in_grid * 255).astype(np.uint8)
@@ -124,7 +124,7 @@ def visualize_stn(model, data, opt):
                 return image, None, None, None
 
             if opt.model.lower() == 'stn':
-                transformed_input, _, theta = model.stn(data)
+                transformed_input, _, theta = model.forward_localizer(data)
                 transformed_input = transformed_input.cpu().numpy()
                 # prepare the STN output plot
                 out_plot_buf = gen_plot_input(transformed_input, nr_plots)
@@ -133,7 +133,7 @@ def visualize_stn(model, data, opt):
                 return image, out_image, theta, None
 
             elif opt.model.lower() == 'pstn':
-                transformed_input, _, sampled_theta = model.pstn(data)
+                transformed_input, _, sampled_theta = model.forward_localizer(data)
                 transformed_input = transformed_input.cpu().numpy()
                 # prepare the P-STN output plot
                 out_plot_buf = gen_plot_output(transformed_input, nr_plots, batch_size)
