@@ -43,9 +43,12 @@ class AffineTransformer(nn.Module):
         
         affine_params = make_affine_parameters(params)
         big_grid = F.affine_grid(affine_params, x.size())
-        # smallgrid = biggrid(:,::2, ::2, :)
+        
         small_grid = F.interpolate(big_grid.permute(0,3,1,2), size=(64,64), mode="nearest").permute(0,2, 3, 1)
         x = F.grid_sample(x, small_grid)
+
+        # x = F.grid_sample(x, big_grid)
+        # x = F.interpolate(x, size=(64,64), mode="bilinear")
         return x
 
 
