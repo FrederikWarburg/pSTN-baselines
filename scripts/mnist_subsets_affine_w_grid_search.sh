@@ -29,7 +29,6 @@ do
                                 --lr 0.001 \
                                 --lr_loc 0.1 \
                                 --beta_p 1. \
-                                --num_param 4 \
                                 --trainval_split True \
                                 --save_results True \
                                 --optimizer "adam" \

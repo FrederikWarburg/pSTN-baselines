@@ -1,3 +1,4 @@
+from builtins import breakpoint
 from random import sample
 import torch
 import torch.nn as nn
@@ -39,9 +40,12 @@ class AffineTransformer(nn.Module):
         print("Use affine transformer")
 
     def forward(self, x, params):
+        
         affine_params = make_affine_parameters(params)
-        grid = F.affine_grid(affine_params, x.size())
-        x = F.grid_sample(x, grid)
+        big_grid = F.affine_grid(affine_params, x.size())
+        # smallgrid = biggrid(:,::2, ::2, :)
+        small_grid = F.interpolate(big_grid.permute(0,3,1,2), size=(64,64), mode="nearest").permute(0,2, 3, 1)
+        x = F.grid_sample(x, small_grid)
         return x
 
 

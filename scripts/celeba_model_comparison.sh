@@ -7,12 +7,12 @@ TEST_SAMPLES=(1 1 10)
 
 for NUMPARAM in 4
 do
-for ATTR in {0..40}
+for ATTR in 12
 do
-    for MODEL in 2
+    for MODEL in 1
     do
         echo $ATTR ${MODELS[$MODEL]}
-        OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES=2 python train.py --dataroot $DATAPATH \
+        OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES=1 python train.py --dataroot $DATAPATH \
                 --dataset "celeba" \
                 --target_attr $ATTR \
                 --batch_size 64 \
@@ -35,11 +35,12 @@ do
                 --save_results True \
                 --theta_path 'theta_stats' \
                 --val_check_interval 1 \
-                --results_folder "13_02_celeba" \
+                --results_folder "debug" \
                 --test_on "val" \
+                --weightDecay 0.01 \
                 --annealing "weight_kl" \
                 --kl_weight 0.0001 \
-                --beta_p 1 
+                --beta_p 1
     done
 done
 done

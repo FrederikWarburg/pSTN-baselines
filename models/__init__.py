@@ -115,22 +115,22 @@ class System(pl.LightningModule):
         self.prev_epoch = 0
         self.log_images_test = True
 
-    def forward(self, x):
-        return self.model.forward(x)
+    def forward(self, x, x_high_res):
+        return self.model.forward(x, x_high_res)
 
     def training_step(self, batch, batch_idx, hidden=0):
         # unpack batch
-        x, y = batch
+        x, x_high_res, y = batch
         theta_mu, beta = None, None
         # forward and calculate loss, the output is packaged a bit differently for all models
         if self.opt.model.lower() == 'cnn':
             y_hat = self.forward(x)
             loss = self.criterion(y_hat, y)
         if self.opt.model.lower() == 'stn':
-            y_hat, theta_mu = self.forward(x)
+            y_hat, theta_mu = self.forward(x, x_high_res)
             loss = self.criterion(y_hat, y)
         if self.opt.model.lower() == 'pstn':
-            y_hat, theta_samples, theta_params = self.forward(x)
+            y_hat, theta_samples, theta_params = self.forward(x, x_high_res)
             theta_mu, beta = theta_params
             loss, individual_terms = self.criterion(y_hat, beta, y)
             nll_term, kl_term = individual_terms
@@ -168,12 +168,12 @@ class System(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         # unpack batch
-        x, y = batch
+        x, x_high_res, y = batch
         # forward
         if self.opt.model.lower() == 'cnn':
-            y_hat = self.forward(x)
+            y_hat = self.forward(x, x_high_res)
         else:
-            y_hat = self.forward(x)[0]
+            y_hat = self.forward(x, x_high_res)[0]
         # calculate nll and accuracy
         loss = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
@@ -181,7 +181,7 @@ class System(pl.LightningModule):
         # for the first batch in an epoch visualize the predictions for better debugging
         if  self.current_epoch > self.prev_epoch:
             # calculate different visualizations
-            grid_in, grid_out, _, bbox_images = visualize_stn(self.model, x, self.opt)
+            grid_in, grid_out, _, bbox_images = visualize_stn(self.model, x, x_high_res, self.opt)
             # add these to tensorboard
             self.add_images(grid_in, grid_out, bbox_images)
 
@@ -200,10 +200,10 @@ class System(pl.LightningModule):
             y_hat = self.forward(x)
             loss = self.criterion(y_hat, y)
         if self.opt.model.lower() == 'stn':
-            y_hat, theta_mu = self.forward(x)
+            y_hat, theta_mu = self.forward(x, x_high_res)
             loss = self.criterion(y_hat, y)
         if self.opt.model.lower() == 'pstn':
-            y_hat, theta_samples, theta_params = self.forward(x)
+            y_hat, theta_samples, theta_params = self.forward(x, x_high_res)
             theta_mu, beta = theta_params
             loss = self.criterion(y_hat, beta, y)
 
@@ -213,7 +213,7 @@ class System(pl.LightningModule):
 
         if self.log_images_test:
             # calculate different visualizations
-            grid_in, grid_out, _, bbox_images = visualize_stn(self.model, x, self.opt)
+            grid_in, grid_out, _, bbox_images = visualize_stn(self.model, x, x_high_res, self.opt)
             # add these to tensorboard
             self.add_images(grid_in, grid_out, bbox_images)
 

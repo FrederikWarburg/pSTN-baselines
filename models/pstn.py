@@ -35,7 +35,7 @@ class PSTN(nn.Module):
         raise NotImplementedError
 
     def init_model_weights(self, opt):
-        self.fc_loc_mu[-1].weight.data.zero_()
+        # self.fc_loc_mu[-1].weight.data.zero_()
 
         # Initialize the weights/bias with identity transformation
         if opt.transformer_type == 'affine':
