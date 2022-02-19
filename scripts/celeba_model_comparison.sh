@@ -9,10 +9,10 @@ for NUMPARAM in 4
 do
 for ATTR in {0..40}
 do
-    for MODEL in 1
+    for MODEL in 2
     do
         echo $ATTR ${MODELS[$MODEL]}
-        OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES=2 python train.py --dataroot $DATAPATH \
+        OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES=5 python train.py --dataroot $DATAPATH \
                 --dataset "celeba" \
                 --target_attr $ATTR \
                 --batch_size 256 \
@@ -35,7 +35,7 @@ do
                 --save_results True \
                 --theta_path 'theta_stats' \
                 --val_check_interval 1 \
-                --results_folder "13_02_celeba" \
+                --results_folder "16_02_celeba" \
                 --test_on "val" \
                 --weightDecay 0.01 \
                 --annealing "weight_kl" \

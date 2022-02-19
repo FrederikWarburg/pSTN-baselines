@@ -17,24 +17,28 @@ from data import create_dataset
 
 from models.celeba_models import CelebaPSTN, CelebaSTN, CelebaClassifier
 from models.mnist_models import MnistPSTN, MnistSTN, MnistClassifier
+from models.mtsd_models import MtsdPSTN, MtsdSTN, MtsdClassifier
 
 
 STN = {
     'celeba': CelebaSTN,
     'mnist': MnistSTN,
     'random_placement_mnist': MnistSTN,
+    "mtsd": MtsdSTN,
 }
 
 PSTN = {
     'celeba': CelebaPSTN,
     'mnist': MnistPSTN,
     'random_placement_mnist': MnistPSTN,
+    "mtsd": MtsdPSTN,
 }
 
 CNN = {
     "celeba": CelebaClassifier,
     "mnist": MnistClassifier,
     "random_placement_mnist": MnistClassifier,
+    "mtsd": MtsdClassifier,
 }
 
 
@@ -112,7 +116,7 @@ class System(pl.LightningModule):
         self.criterion = create_criterion(opt)
 
         # for logging purposes
-        self.prev_epoch = 0
+        self.prev_epoch = -1
         self.log_images_test = True
 
     def forward(self, x, x_high_res):
@@ -192,7 +196,7 @@ class System(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         # unpack batch
-        x, y = batch
+        x, x_high_res, y = batch
 
         theta_mu, beta = None, None
         # forward image

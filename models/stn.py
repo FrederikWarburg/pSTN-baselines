@@ -62,16 +62,21 @@ class STN(nn.Module):
 
     def forward_localizer(self, x, x_high_res):
         batch_size, c, w, h = x.shape
-        xs = self.localization(x)
-        xs = xs.view(batch_size, -1)
-        # input size = xs.shape[1]
-        theta = self.fc_loc(xs)
+        theta = self.get_theta(x)
         # repeat x in the batch dim so we avoid for loop
         x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
         theta_upsample = theta.view(batch_size * self.N, self.theta_dim)
         x = self.transformer(x_high_res, theta_upsample)
         # x = F.interpolate(x, size=(64,64), mode="bilinear")
         return x, theta
+
+    def get_theta(self, x):
+        batch_size, c, w, h = x.shape
+        xs = self.localization(x)
+        xs = xs.view(batch_size, -1)
+        # input size = xs.shape[1]
+        theta = self.fc_loc(xs)
+        return theta
 
     def forward_classifier(self, x):
         return self.classifier(x)
