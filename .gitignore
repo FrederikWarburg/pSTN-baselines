@@ -5,6 +5,7 @@ d=*
 data/TIMESERIES_DATA_PARSED
 data/MNIST
 data/KMNIST
+data/FashionMNIST
 data/mnist_rotation
 data/indices
 UQ/

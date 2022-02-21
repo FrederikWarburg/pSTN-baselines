@@ -22,7 +22,7 @@ class STN(nn.Module):
     def init_localizer(self, opt):
         if opt.dataset.lower() in ['celeba']:
             from .celebalocalizer import CelebaSTN as STN
-        elif opt.dataset.lower() in ['mnist', 'random_placement_mnist', 'random_rotation_mnist']:
+        elif 'mnist' in opt.dataset.lower():
             from .mnistlocalizer import MnistSTN as STN
         elif opt.dataset in opt.TIMESERIESDATASETS:
             from .timeserieslocalizer import TimeseriesSTN as STN
@@ -32,7 +32,7 @@ class STN(nn.Module):
     def init_classifier(self, opt):
         if opt.dataset.lower() in ['celeba']:
             from .celebaclassifier import CelebaClassifier as Classifier
-        elif opt.dataset.lower() in ['mnist', 'random_placement_mnist', 'random_rotation_mnist']:
+        elif 'mnist' in opt.dataset.lower():
             from .mnistclassifier import MnistClassifier as Classifier
         elif opt.dataset in opt.TIMESERIESDATASETS:
             from .timeseriesclassifier import TimeseriesClassifier as Classifier
@@ -54,10 +54,12 @@ class STN(nn.Module):
             elif self.num_param == 6:
                 self.stn.fc_loc[-1].bias.data.copy_(torch.tensor([1, 0, 0,
                                                                       0, 1, 0] * self.N, dtype=torch.float))
+
         elif opt.transformer_type == 'diffeomorphic':
-            # initialize param's as identity, default ok for variance in this case
+            # initialize param's as identity 
             self.stn.fc_loc[-1].bias.data.copy_(
                 torch.tensor([1e-5], dtype=torch.float).repeat(self.stn.theta_dim))
+        # large loc case = default
 
     def forward(self, x):
         # print(x.shape)

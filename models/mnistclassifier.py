@@ -78,17 +78,17 @@ class MnistClassifier(nn.Module):
     def load_specifications(self, opt):
         if opt.model.lower() == 'cnn':
             parameter_dict = parameter_dict_classifier_MNIST_CNN
-            if opt.dataset.lower() == 'random_placement_mnist':
+            if 'random_placement' in opt.dataset.lower(): # random placement MNIST & random placement fashion MNIST
                 parameter_dict['resulting_size_classifier'] = 20 * 21 * 21
                 parameter_dict['CNN_filters2'] = 20
 
         elif opt.model.lower() in ['stn']:
             parameter_dict = parameter_dict_classifier_MNIST_STN
-            if opt.dataset.lower() == 'random_placement_mnist':
+            if  'random_placement' in  opt.dataset.lower():
                 parameter_dict['resulting_size_classifier'] = 20 * 21 * 21
         elif opt.model.lower() == 'pstn':
             parameter_dict = parameter_dict_classifier_MNIST_P_STN
-            if opt.dataset.lower() == 'random_placement_mnist':
+            if  'random_placement' in opt.dataset.lower():
                 parameter_dict['resulting_size_classifier'] = 20 * 21 * 21
         else:
             print('Pass valid model!')

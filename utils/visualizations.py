@@ -123,7 +123,7 @@ def visualize_stn(model, data, opt):
                 return image, None, None, None
 
             if opt.model.lower() == 'stn':
-                transformed_input, _, theta = model.stn(data)
+                transformed_input, theta = model.stn(data)
                 transformed_input = transformed_input.cpu().numpy()
                 # prepare the STN output plot
                 out_plot_buf = gen_plot_input(transformed_input, nr_plots)

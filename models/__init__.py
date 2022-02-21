@@ -93,7 +93,7 @@ class System(pl.LightningModule):
     def training_step(self, batch, batch_idx, hidden=0):
         # unpack batch
         x, y = batch
-        if self.opt.dataset in ['random_placement_mnist', 'random_rotation_mnist']:
+        if self.opt.dataset in ['random_placement_mnist', 'random_rotation_mnist', 'random_placement_fashion_mnist',  'random_rotation_fashion_mnist']:
             # in this case we also return trafo
             y = y[0]
 
@@ -145,7 +145,7 @@ class System(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         # unpack batch
         x, y = batch
-        if self.opt.dataset in ['random_placement_mnist', 'random_rotation_mnist']:
+        if self.opt.dataset in ['random_placement_mnist', 'random_rotation_mnist', 'random_placement_fashion_mnist',  'random_rotation_fashion_mnist']:
             # in this case we also return target trafo
             y = y[0]
 
@@ -169,7 +169,7 @@ class System(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         # unpack batch
         x, y = batch
-        if self.opt.dataset in ['random_placement_mnist', 'random_rotation_mnist']:
+        if self.opt.dataset in ['random_placement_mnist', 'random_rotation_mnist', 'random_placement_fashion_mnist', 'random_rotation_fashion_mnist']:
             # in this case we also return target trafo
             target_trafo = y[1]
             y = y[0]

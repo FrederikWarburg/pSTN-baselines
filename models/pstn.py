@@ -25,7 +25,7 @@ class PSTN(nn.Module):
             from .cublocalizer import CubPSTN as PSTN
         elif opt.dataset.lower() in ['mnistxkmnist']:
             from .celebalocalizer import CelebaPSTN as PSTN
-        elif opt.dataset.lower() in ['mnist', 'random_placement_mnist', 'random_rotation_mnist']:
+        elif 'mnist' in opt.dataset.lower():
             from .mnistlocalizer import MnistPSTN as PSTN
         elif opt.dataset in opt.TIMESERIESDATASETS:
             from .timeserieslocalizer import TimeseriesPSTN as PSTN
@@ -37,7 +37,7 @@ class PSTN(nn.Module):
             from .cubclassifier import CubClassifier as Classifier
         elif opt.dataset.lower() in ['mnistxkmnist']:
             from .celebaclassifier import CelebaClassifier as Classifier
-        elif opt.dataset.lower() in ['mnist', 'random_placement_mnist', 'random_rotation_mnist']:
+        elif 'mnist' in opt.dataset.lower():
             from .mnistclassifier import MnistClassifier as Classifier
         elif opt.dataset in opt.TIMESERIESDATASETS:
             from .timeseriesclassifier import TimeseriesClassifier as Classifier
@@ -66,7 +66,7 @@ class PSTN(nn.Module):
             self.pstn.fc_loc_beta[-2].bias.data.copy_(
                 torch.tensor([-5], dtype=torch.float).repeat(self.num_param * self.N))
 
-        elif opt.transformer_type == 'diffeomorphic':
+        if opt.transformer_type == 'diffeomorphic':
             # initialize param's as identity, default ok for variance in this case
             self.pstn.fc_loc_mu[-1].bias.data.copy_(
                 torch.tensor([1e-5], dtype=torch.float).repeat(self.pstn.theta_dim))
@@ -76,6 +76,16 @@ class PSTN(nn.Module):
                 self.pstn.fc_loc_beta[-2].bias.data.copy_(
                      torch.tensor([-2], dtype=torch.float).repeat(self.pstn.theta_dim))
 
+        if opt.modeltype == 'large_loc' or opt.transformer_type == 'diffeomorphic':
+            if opt.init_large_variance:
+                self.pstn.fc_loc_beta[-2].bias.data.copy_(
+                    torch.tensor([1], dtype=torch.float).repeat(self.pstn.theta_dim)) 
+                    # large variance for the frozen classifier experiment, mean init as default
+            else:               
+                self.pstn.fc_loc_beta[-2].bias.data.copy_(
+                    torch.tensor([-3], dtype=torch.float).repeat(self.pstn.theta_dim)) 
+        
+    
     def forward(self, x):
         # get input shape
         batch_size = x.shape[0]

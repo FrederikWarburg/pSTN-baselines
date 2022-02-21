@@ -13,8 +13,8 @@ def get_exp_name(opt):
     if opt.fold is not None:
         modelname += '-fold=' + str(opt.fold)
 
-    if 'RandAugment' in opt.data_augmentation:
-        modelname += '-randaug_N=%s-randaug_M=%s' % (opt.rand_augment_N, opt.rand_augment_M)
+    # if 'RandAugment' in opt.data_augmentation:
+    #     modelname += '-randaug_N=%s-randaug_M=%s' % (opt.rand_augment_N, opt.rand_augment_M)
 
     if opt.dataset.lower() == 'celeba':
         modelname += '-a=' + str(opt.target_attr)
@@ -37,8 +37,11 @@ def get_exp_name(opt):
     else:
         modelname += '-lrloc=None'
 
-    if opt.learnable_prior:
-        modelname += '-learnable_prior'
+    if opt.train_samples > 1:
+        modelname += '-trainS=' + str(opt.train_samples)
+
+    if opt.init_large_variance:
+        modelname += '-init_large_var'
 
     return modelname
 
@@ -58,9 +61,10 @@ def save_results(opt, avg_loss, avg_acc):
 
 
 def save_timeseries(opt, avg_loss, avg_acc):
-    mkdir('experiments/%s' % opt.results_folder)
-    RESULTS_PATH = 'experiments/%s/%s_%s_betaP=%s_fold_%s_DA=%s_' % (
-        opt.results_folder, opt.model, opt.dataset, opt.beta_p, opt.fold, opt.data_augmentation)
+    results_dir = 'experiments/%s/' % opt.results_folder
+    mkdir(results_dir)
+    model_name = get_exp_name(opt)
+    RESULTS_PATH = results_dir + model_name
     pickle.dump(avg_acc.cpu().numpy(), open(RESULTS_PATH + 'test_accuracy.p', 'wb'))
     pickle.dump(avg_loss.cpu().numpy(), open(RESULTS_PATH + 'test_loss.p', 'wb'))
 

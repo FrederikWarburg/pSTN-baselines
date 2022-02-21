@@ -3,7 +3,8 @@ import torch.nn as nn
 from torch import distributions
 from utils.transformers import init_transformer
 
-parameter_dict_P_STN = {
+# smaller models for regular MNIST experiments 
+MNIST_parameter_dict_P_STN = {
     'loc_kernel_size': 5,
     'resulting_size_localizer': 14 * 4 * 4,
     'max_pool_res': 2,
@@ -13,13 +14,34 @@ parameter_dict_P_STN = {
     'color_channels': 1
 }
 
-parameter_dict_STN = {
+MNIST_parameter_dict_STN = {
     'loc_kernel_size': 5,
     'resulting_size_localizer': 18 * 4 * 4,
     'max_pool_res': 2,
     'hidden_layer_localizer': 50,
     'localizer_filters1': 12,
     'localizer_filters2': 18,
+    'color_channels': 1
+}
+
+# larger models for rotMNIST + frozen classifier experiments 
+rotMNIST_parameter_dict_P_STN = {
+    'loc_kernel_size': 5,
+    'resulting_size_localizer': 64 * 4 * 4,
+    'max_pool_res': 2,
+    'hidden_layer_localizer': 20,
+    'localizer_filters1': 32,
+    'localizer_filters2': 64,
+    'color_channels': 1
+}
+
+rotMNIST_parameter_dict_STN = {
+    'loc_kernel_size': 5,
+    'resulting_size_localizer': 70 * 4 * 4,
+    'max_pool_res': 2,
+    'hidden_layer_localizer': 26,
+    'localizer_filters1': 35,
+    'localizer_filters2': 70,
     'color_channels': 1
 }
 
@@ -34,7 +56,7 @@ class MnistPSTN(nn.Module):
         self.beta_p = opt.beta_p
         self.channels = 1
         self.transformer, self.theta_dim = init_transformer(opt)
-        self.parameter_dict = parameter_dict_P_STN
+        self.parameter_dict = load_specifications(opt)
         if opt.dataset.lower() == 'random_placement_mnist':
             self.parameter_dict['resulting_size_localizer'] = 6174
 
@@ -56,14 +78,14 @@ class MnistPSTN(nn.Module):
         if opt.transformer_type == 'affine':
             self.fc_loc_mu = nn.Sequential(
                 nn.Linear(self.parameter_dict['resulting_size_localizer'], self.theta_dim))
-        # Regressor for the diffeomorphic param's
-        elif opt.transformer_type == 'diffeomorphic':
+        # # Regressor for the diffeomorphic param's
+        if opt.transformer_type == 'diffeomorphic' or opt.modeltype == 'large_loc':
             self.fc_loc_mu = nn.Sequential(
                 nn.Linear(self.parameter_dict['resulting_size_localizer'],
-                          self.parameter_dict['hidden_layer_localizer']),
+                            self.parameter_dict['hidden_layer_localizer']),
                 nn.ReLU(True),
                 nn.Linear(self.parameter_dict['hidden_layer_localizer'], self.theta_dim)
-            )
+                )
 
         if opt.transformer_type == 'affine':
             self.fc_loc_beta = nn.Sequential(
@@ -71,10 +93,10 @@ class MnistPSTN(nn.Module):
                 # add activation function for positivity
                 nn.Softplus()) # beta needs to be positive, and also small so maybe a logscale parametrisation would be better
 
-        elif opt.transformer_type == 'diffeomorphic':
+        if opt.transformer_type == 'diffeomorphic' or opt.modeltype == 'large_loc':
             self.fc_loc_beta = nn.Sequential(
                 nn.Linear(self.parameter_dict['resulting_size_localizer'],
-                          self.parameter_dict['hidden_layer_localizer']),
+                            self.parameter_dict['hidden_layer_localizer']),
                 nn.ReLU(False),
                 nn.Linear(self.parameter_dict['hidden_layer_localizer'], self.theta_dim),
                 # add activation function for positivity
@@ -122,7 +144,7 @@ class MnistSTN(nn.Module):
         self.test_samples = opt.test_samples
         self.channels = 1
         self.transformer, self.theta_dim = init_transformer(opt)
-        self.parameter_dict = parameter_dict_STN
+        self.parameter_dict  = load_specifications(opt)
         if opt.dataset.lower() == 'random_placement_mnist':
             self.parameter_dict['resulting_size_localizer'] = 7938
 
@@ -148,7 +170,7 @@ class MnistSTN(nn.Module):
         elif opt.transformer_type == 'diffeomorphic':
             self.fc_loc = nn.Sequential(
                 nn.Linear(self.parameter_dict['resulting_size_localizer'],
-                          self.parameter_dict['hidden_layer_localizer']),
+                            self.parameter_dict['hidden_layer_localizer']),
                 nn.ReLU(True),
                 nn.Linear(self.parameter_dict['hidden_layer_localizer'], self.theta_dim)
             )
@@ -163,3 +185,21 @@ class MnistSTN(nn.Module):
         theta_upsample = theta.view(batch_size * self.N, self.theta_dim)
         x = self.transformer(x, theta_upsample)
         return x, theta
+
+
+def load_specifications(opt):
+    if opt.model.lower() in ['stn']:
+        if opt.modeltype == 'large_loc':
+            parameter_dict = rotMNIST_parameter_dict_STN
+        else:
+            parameter_dict = MNIST_parameter_dict_STN
+
+    elif opt.model.lower() == 'pstn':
+        if opt.modeltype == 'large_loc':
+            parameter_dict = rotMNIST_parameter_dict_P_STN
+        else:
+            parameter_dict = MNIST_parameter_dict_P_STN
+
+    else:
+        print('Pass valid model!')
+    return parameter_dict

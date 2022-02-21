@@ -1,20 +1,22 @@
 #!/bin/sh
 
-DATAPATH="data/"
+DATAPATH="data"
 MODELS=("cnn" "stn" "pstn")
 CRITERION=("nll" "nll" "elbo")
 W_s=(0. 0.00001 0.00003 0.0001 0.0003 0.001 0.003 0.01 0.03 0.1 0.3 1.)
 TEST_SAMPLES=(1 1 10)
 
-for MODEL in {0..2}
+for MODEL in {0..0}
 do
     for w in {2..2}
     do
     echo $MODEL
     echo ${MODELS[$MODEL]}
-    OMP_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=4
+    OMP_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=6
      python train.py --dataroot $DATAPATH \
-                    --dataset "random_rotation_mnist" \
+                    --dataset "MNIST" \
+                    --normalize False \
+                    --fold 0 \
                     --batch_size 64 \
                     --num_classes 10 \
                     --num_threads 2 \
@@ -37,7 +39,7 @@ do
                     --theta_path 'theta_stats' \
                     --download True \
                     --val_check_interval 100 \
-                    --results_folder "14_02_random_rotation_new_normalisation" \
+                    --results_folder "15_02_random_rot_frozen_classifier" \
                     --test_on "test" \
                     --annealing "weight_kl" \
                     --kl_weight ${W_s[$w]}

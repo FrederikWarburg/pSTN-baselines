@@ -46,16 +46,24 @@ class BaseOptions:
         self.parser.add_argument('--subset', type=str, default=None, help='using a subset of MNIST? What size?')
         self.parser.add_argument('--fold', type=str, default=None, help='using a subset of MNIST? Which fold?')
         self.parser.add_argument('--add_kmnist_noise', type=bool, default=False, help='add kmnist noise')
+        self.parser.add_argument('--normalize', type=str2bool, default=True, help='should we normalize MNIST data?')
 
         # model params
         self.parser.add_argument('--alpha_p', type=float, default=1, help='prior alpha (posterior when fixed)')
         self.parser.add_argument('--beta_p', type=float, default=1, help='prior beta')
-
+        self.parser.add_argument('--criterion', type=str, default='nll')
+        self.parser.add_argument('--annealing', type=str, default='no_annealing')
+        self.parser.add_argument('--kl_weight', type=float, default=1.)
+        
         # network params
         self.parser.add_argument('--model', type=str, default='cnn', help='model name')
         self.parser.add_argument('--batch_size', type=int, default=16, help='input batch size')
         #self.parser.add_argument('--resume_ckpt', type=str, default=None, help='path to pretrained model')
         self.parser.add_argument('--resume_from_ckpt', type=str2bool, nargs='?', const=True, default=False, help='Load pre-trained model?')
+        self.parser.add_argument('--pretrained_model_path', type=str, default=None, help='frozen classifier exp; where to load from')
+        self.parser.add_argument('--modeltype', type=str, default='')
+        self.parser.add_argument('--init_large_variance', type=str2bool, default=False)
+
 
         self.parser.add_argument('--dropout_rate', type=float, default=0.5)
         self.parser.add_argument('--N', type=int, default=1, help='number of parallel tracks')

@@ -10,6 +10,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from models import System
 import torch
 from utils.utils import get_exp_name, save_generating_thetas
+import copy 
 
 
 if __name__ == '__main__':
@@ -20,15 +21,6 @@ if __name__ == '__main__':
     # decide unique model name based on parameters
     modelname = get_exp_name(opt)
 
-    if opt.check_already_run:
-        print('performing check:')
-        results_dir = 'experiments/%s/' % opt.results_folder
-        check_path = results_dir + modelname + '_test_accuracy.p'
-        print(check_path)
-        if os.path.exists(check_path):
-            print('already ran this, exiting')
-            exit()
-
     # initialize a train logger for experiment
     logger = TensorBoardLogger(
        save_dir=os.getcwd() + "/lightning_logs/%s/" %opt.results_folder,
@@ -37,17 +29,9 @@ if __name__ == '__main__':
 
     # initialize model
     lightning_system = System(opt)
-
     # use GPU if available
     num_gpus = torch.cuda.device_count()
     print("Let's use {} GPUS!".format(num_gpus))
-
-    # use large batch sizes. We accumulate gradients to avoid memory issues
-    if opt.dataset == 'MNIST':
-      num_batches = None
-    else:
-      num_batches = 256 // opt.batch_size
-
     val_check_interval = opt.val_check_interval if opt.val_check_interval < 1 else int(opt.val_check_interval)
     # Initialize pytorch-lightning trainer with good defaults
     if opt.subset in ['10', '20', '100']: # is the subsets are very small log every step
@@ -61,14 +45,34 @@ if __name__ == '__main__':
                       logger=logger,
                       check_val_every_n_epoch=val_check_interval,
                       checkpoint_callback=False)
-
-    print('printing parameter check:')
+    print('Trainable parameters before freezing')
     check_learnable_parameters(lightning_system.model, opt.model)
 
-    if opt.resume_from_ckpt:
-        print('Loading model.')
+    loader_opt = copy.deepcopy(opt)
+    loader_opt.model = 'cnn'
 
-    else:
+    print('Loading pre-trained classifier model.')
+    loaded_classifier = System.load_from_checkpoint(
+           loader_opt.pretrained_model_path, opt=loader_opt)
+    # print(lightning_system)
+    # print('Assigning from', loaded_classifier.model.cnn)
+    # print('Assigning to', lightning_system.model.classifier)
+
+    if opt.model == 'cnn':
+        lightning_system.model.cnn = loaded_classifier.model.cnn
+        # freeze classifier parameters
+        for param in lightning_system.model.cnn.parameters():
+            param.requires_grad = False
+
+    if opt.model in ['stn', 'pstn']:
+        lightning_system.model.classifier = loaded_classifier.model.cnn
+        for param in lightning_system.model.classifier.parameters():
+            param.requires_grad = False
+
+    print('Trainable parameters after freezing')
+    check_learnable_parameters(lightning_system.model, opt.model)
+
+    if not opt.model == 'cnn':
         # train model
         trainer.fit(lightning_system)
         trainer.save_checkpoint("checkpoints/%s/%s.ckpt" % (opt.results_folder, modelname))
@@ -78,6 +82,7 @@ if __name__ == '__main__':
         test_dataloader = lightning_system.test_dataloader()
 
     elif opt.test_on == 'val':
-        test_dataloader = [lightning_system.val_dataloader()]
-
+        test_dataloader = lightning_system.val_dataloader()
+        
+    print('testing the following model:', lightning_system)
     trainer.test(lightning_system, test_dataloaders=test_dataloader)

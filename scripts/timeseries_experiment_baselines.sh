@@ -1,5 +1,4 @@
 #!/bin/sh
-
 MODELS=("cnn" "stn" "pstn")
 TEST_SAMPELS=(1 1 10)
 TRAIN_SAMPELS=(1 1 1)
@@ -7,21 +6,20 @@ CRITERION=("nll" "nll" "elbo")
 DATASETS=("FaceAll" "wafer" "uWaveGestureLibrary_X" "Two_Patterns"
  "StarLightCurves" "PhalangesOutlinesCorrect" "FordA")
 NR_CLASSES=(14 2 8 4 3 2 2)
-PRIORS=(0.1 0.1 0.1 0.6 0.2 0.1 0.1)
 
-for DATASET in {0..7}
+for DATASET in {0..6}
 do
     echo ${DATASETS[$DATASET]}
     for FOLD in {0..5}
     do
-        for MODEL in {0..2}
+        for MODEL in {1..1}
         do
         echo ${MODELS[$MODEL]}
         echo ${PARAMS[$MODEL]}
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        CUDA_VISIBLE_DEVICES=5 python train.py --dataroot 'data' \
+        CUDA_VISIBLE_DEVICES=6 python train.py --dataroot 'data' \
                         --dataset ${DATASETS[$DATASET]} \
                         --fold ${FOLD} \
                         --batch_size 16 \
@@ -38,7 +36,6 @@ do
                         --save_results True \
                         --lr 0.001 \
                         --lr_loc 0.1 \
-                        --sigma_p ${PRIORS[$DATASET]} \
                         --run_test_freq 200 \
                         --trainval_split True \
                         --save_results True \
@@ -47,7 +44,8 @@ do
                         --transformer_type "diffeomorphic" \
                         --step_size 200 \
                         --val_check_interval 200 \
-                        --results_folder "20_01_timeseries_repros" 
+                        --results_folder "19_02_timeseries_gridsearch" \
+                        --test_on "val" 
         done
     done
 done

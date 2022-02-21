@@ -23,19 +23,25 @@ def transform_image_affine(x, opt):
 
 
 def get_trafo(opt):
-    train_trafo_no_DA = transforms.Compose([
-        transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
+    if opt.normalize: 
+        train_trafo_no_DA = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
+    else:
+        train_trafo_no_DA = transforms.ToTensor()
     test_trafo = train_trafo_no_DA
 
     if opt.data_augmentation == 'None':
         train_trafo = train_trafo_no_DA
 
     elif opt.data_augmentation == 'standard':
-        train_trafo = transforms.Compose(
-            [transforms.ToTensor(),
-             transforms.Normalize((0.1307,), (0.3081,)),
-             lambda x: transform_image_affine(x, opt)])
-
+        if opt.normalize: 
+            train_trafo = transforms.Compose(
+                [transforms.ToTensor(),
+                transforms.Normalize((0.1307,), (0.3081,)),
+                lambda x: transform_image_affine(x, opt)])
+        else: 
+            train_trafo = transforms.Compose(
+                            [transforms.ToTensor(),
+                            lambda x: transform_image_affine(x, opt)])
     # elif opt.data_augmentation == 'RandAugment':
     #     train_trafo = train_trafo_no_DA
     #     train_trafo.transforms.insert(0, RandAugment(opt.rand_augment_N, opt.rand_augment_M, 'full'))
@@ -49,15 +55,39 @@ def get_trafo(opt):
     return train_trafo, test_trafo
 
 
+def make_fashion_mnist(opt, mode):
+    train_trafo, _ = get_trafo(opt)
+    if mode in ['train', 'val']:
+        train = True
+    else:
+        train = False
+    dataset = datasets.FashionMNIST(
+        root=opt.dataroot, train=train, download=True, transform=train_trafo)
+
+    if mode == 'test':
+        return dataset
+        
+    else: 
+        train_set, val_set = torch.utils.data.random_split(dataset, [50000, 10000], generator=torch.Generator().manual_seed(42))
+        if mode =='train':
+            return train_set
+        if mode == 'val':
+            return val_set
+
+
+
 def make_mnist_subset(opt, mode):
     train_trafo, test_trafo = get_trafo(opt)
 
     if mode == 'train':
-        train_indices = np.load(
-            '%s/subset_indices/MNIST%s_train_indices_fold_%s.npy' % (opt.dataroot, opt.subset, opt.fold))
         full_training_data = datasets.MNIST(
             root=opt.dataroot, train=True, download=True, transform=train_trafo)
-        dataset = Subset(full_training_data, train_indices)
+        dataset = full_training_data
+        if opt.subset is not None: 
+            train_indices = np.load(
+                '%s/subset_indices/MNIST%s_train_indices_fold_%s.npy' % (opt.dataroot, opt.subset, opt.fold))
+            dataset = Subset(full_training_data, train_indices)
+
 
     if mode == 'val':
         full_training_data_no_trafo = datasets.MNIST(
@@ -139,22 +169,11 @@ class MnistRandomPlacement(Dataset):
         self.add_kmnist_noise = opt.add_kmnist_noise
         self.mode = mode
 
-        if self.mode == 'val':
-            print('Warning: using hacky validation set. Proper one not yet implemented.')
+        if opt.dataset == 'random_placement_mnist':
+            self.dataset = make_mnist_subset(opt, mode)
 
-        if opt.test_on == 'val':
-            print('RandomPlacementMNIST validation set not yet implemented.')
-            exit()
-
-        # False (test) or True (train,val)
-        trainingset = mode in ['train', 'val']
-
-        self.dataset = datasets.MNIST(opt.dataroot,
-                                            transform=transforms.Compose([
-                                                transforms.ToTensor()
-                                            ]),
-                                            train=trainingset,
-                                            download=opt.download)
+        if opt.dataset == 'random_placement_fashion_mnist':
+            self.dataset =  make_fashion_mnist(opt, mode)    
 
         # make training set smaller if opt.subset is set
         if opt.subset is not None and mode == 'train': 
@@ -167,7 +186,7 @@ class MnistRandomPlacement(Dataset):
                                              transform=transforms.Compose([
                                                  transforms.ToTensor()
                                              ]),
-                                             train=trainingset,
+                                             train=True,
                                              download=opt.download)
 
     def __len__(self):
@@ -221,24 +240,15 @@ class MnistRandomPlacement(Dataset):
 class MnistRandomRotation(Dataset):
     # hardcode num_images=1 for now 
     def __init__(self, opt, mode):
-        self.trafo = transforms.Compose([
-            transforms.Normalize((0.1307,), (0.3081,))])
+        self.normalize = opt.normalize
         self.mode = mode
 
-        if self.mode == 'val':
-            print('Warning: using hacky validation set. Proper one not yet implemented.')
+        if opt.dataset == 'random_placement_mnist':
+            self.dataset = make_mnist_subset(opt, mode)
 
-        if opt.test_on == 'val':
-            print('RandomPlacementMNIST validation set not yet implemented.')
-            exit()
+        if opt.dataset == 'random_placement_fashion_mnist':
+            self.dataset =  make_fashion_mnist(opt, mode)    
 
-        # False (test) or True (train,val)
-        trainingset = mode in ['train', 'val']
-
-        self.dataset = datasets.MNIST(opt.dataroot,
-                                        train=trainingset,
-                                        transform=transforms.ToTensor(),
-                                        download=opt.download)
 
     def __len__(self):
         return self.dataset.__len__()
@@ -248,9 +258,9 @@ class MnistRandomRotation(Dataset):
 
         # add rotation 'noise' in 20% of training cases and every second val/test image:
         if self.mode == 'train':
-            add_noise = (torch.rand(size=[1]) > 0.8)
+            add_noise = True # (torch.rand(size=[1]) > 0.8)
         else: 
-            add_noise = (idx % 2 == 0)
+            add_noise = True # (idx % 2 == 0)
         
         angle = torch.tensor([0.])
         if add_noise:
@@ -266,6 +276,8 @@ class MnistRandomRotation(Dataset):
 
             im = transform_image_affine(im)
         
-        im = self.trafo(im)
+        if self.normalize:
+            trafo = transforms.Normalize((0.1307,), (0.3081,))
+            im = trafo(im)
 
         return im, [target, angle] # also return ground truth angle
