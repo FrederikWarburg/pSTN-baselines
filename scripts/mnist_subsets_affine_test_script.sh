@@ -3,10 +3,10 @@
 SUBSETS=(10 30 100 1000 3000 10000)
 W_s=(0.001 0.001 0.0003 0.0001 0.00003 0.00001)
 
-for SUBSET in {0..5}
+for SUBSET in {0..0}
 do
     echo ${SUBSETS[$SUBSET]}
-        for FOLD in {0..4} # only do 2 folds for the grid search to limit computation time
+        for FOLD in {0..0} # only do 2 folds for the grid search to limit computation time
         do
             CUDA_VISIBLE_DEVICES=3 python test.py --dataroot 'data' \
                                 --dataset "MNIST" \

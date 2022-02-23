@@ -14,7 +14,7 @@ from utils.utils import get_exp_name, save_UQ_results, save_results, mkdir, save
 from utils.visualizations import visualize_stn
 from collections import OrderedDict
 from data import create_dataset
-
+from loss.functional import nll_loss
 
 def create_model(opt):
     # initalize model based on model type
@@ -86,6 +86,7 @@ class System(pl.LightningModule):
         self.model = create_model(opt)
         # initialize criterion
         self.criterion = create_criterion(opt)
+        self.reduction = opt.reduce_samples
 
     def forward(self, x):
         return self.model.forward(x)
@@ -106,12 +107,12 @@ class System(pl.LightningModule):
             y_hat, theta_mu = self.forward(x)
             loss = self.criterion(y_hat, y)
         if self.opt.model.lower() == 'pstn':
-            y_hat, theta_samples, theta_params = self.forward(x)
+            y_hat, theta_samples, theta_params = self.forward(x) # TWO CASES HERE 
             theta_mu, beta = theta_params
             loss, individual_terms = self.criterion(y_hat, beta, y)
             nll_term, kl_term = individual_terms
         # calculate the accuracy
-        acc = accuracy(y_hat, y)
+        acc = accuracy(y_hat, y, reduction=self.reduction) # if reduction is mean it's already averaged across S dim, otherwise not
 
         # Logging
         # log classification loss // (expected) negative log likelihood for all models
@@ -155,7 +156,7 @@ class System(pl.LightningModule):
         else:
             y_hat = self.forward(x)[0]
         # calculate nll and accuracy
-        loss = F.nll_loss(y_hat, y, reduction='mean')
+        loss = F.nll_loss(y_hat, y)
         acc = accuracy(y_hat, y)
         # for the first batch in an epoch visualize the predictions for better debugging
         if batch_idx == 0:

@@ -3,42 +3,12 @@ from __future__ import print_function
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
-
-parameter_dict_classifier_MNIST_CNN = {
-    'nr_target_classes': 10,
-    'CNN_filters1': 12,
-    'CNN_filters2': 24,
-    'CNN_kernel_size': 5,
-    'resulting_size_classifier': 24 * 4 * 4, # default is mnist; we override for random_placement_mnist below
-    'hidden_layer_classifier': 52,
-    'color_channels': 1
-}
-
-parameter_dict_classifier_MNIST_STN = {
-    'nr_target_classes': 10,
-    'CNN_filters1': 10,
-    'CNN_filters2': 20,
-    'CNN_kernel_size': 5,
-    'resulting_size_classifier': 320,
-    'hidden_layer_classifier': 50,
-    'color_channels': 1
-}
-
-parameter_dict_classifier_MNIST_P_STN = {
-    'nr_target_classes': 10,
-    'CNN_filters1': 10,
-    'CNN_filters2': 20,
-    'CNN_kernel_size': 5,
-    'loc_kernel_size': 5,
-    'resulting_size_classifier': 320,
-    'hidden_layer_classifier': 50,
-    'color_channels': 1
-}
+from  .parameter_dicts import *
 
 class MnistClassifier(nn.Module):
     def __init__(self, opt):
         super(MnistClassifier, self).__init__()
-        self.parameter_dict = self.load_specifications(opt)
+        self.parameter_dict = load_specifications(opt)
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.CNN = nn.Sequential(
@@ -75,21 +45,36 @@ class MnistClassifier(nn.Module):
         probs = F.log_softmax(x , dim=1)
         return probs
 
-    def load_specifications(self, opt):
-        if opt.model.lower() == 'cnn':
-            parameter_dict = parameter_dict_classifier_MNIST_CNN
-            if 'random_placement' in opt.dataset.lower(): # random placement MNIST & random placement fashion MNIST
-                parameter_dict['resulting_size_classifier'] = 20 * 21 * 21
-                parameter_dict['CNN_filters2'] = 20
 
-        elif opt.model.lower() in ['stn']:
+def load_specifications(opt):
+    print('loading parameter dict')
+    if opt.model.lower() == 'cnn':
+        # if opt.dataset == 'random_rotation_mnist':
+        #     print('not implemented yet')
+            # parameter_dict = parameter_dict_classifier_rotMNIST_CNN
+        if opt.dataset.lower() == "random_placement_fashion_mnist" and not opt.freeze_classifier:
+            parameter_dict = parameter_dict_classifier_RandomPlacementMNIST_CNN
+        elif "mnist" in opt.dataset.lower():
+            parameter_dict = parameter_dict_classifier_MNIST_CNN
+
+    if opt.model.lower() in ['stn']:
+        # if opt.dataset == 'random_rotation_mnist':
+        #     print('not implemented yet')
+            # parameter_dict = parameter_dict_classifier_rotMNIST_STN
+        if opt.dataset == "random_placement_fashion_mnist" and not opt.freeze_classifier:
+            parameter_dict = parameter_dict_classifier_RandomPlacementMNIST_STN
+        elif  "mnist" in opt.dataset.lower():
             parameter_dict = parameter_dict_classifier_MNIST_STN
-            if  'random_placement' in  opt.dataset.lower():
-                parameter_dict['resulting_size_classifier'] = 20 * 21 * 21
-        elif opt.model.lower() == 'pstn':
+
+    elif opt.model.lower() == 'pstn':
+        # if opt.dataset == 'random_rotation_mnist':
+        #     print('not implemented yet')
+        #     parameter_dict = parameter_dict_classifier_rotMNIST_STN
+        if opt.dataset == "random_placement_fashion_mnist" and not opt.freeze_classifier:
+            parameter_dict = parameter_dict_classifier_RandomPlacementMNIST_P_STN
+        elif "mnist" in opt.dataset.lower():
             parameter_dict = parameter_dict_classifier_MNIST_P_STN
-            if  'random_placement' in opt.dataset.lower():
-                parameter_dict['resulting_size_classifier'] = 20 * 21 * 21
-        else:
-            print('Pass valid model!')
-        return parameter_dict
+
+    else:
+        print('Pass valid model!')
+    return parameter_dict

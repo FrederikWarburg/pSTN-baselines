@@ -243,10 +243,10 @@ class MnistRandomRotation(Dataset):
         self.normalize = opt.normalize
         self.mode = mode
 
-        if opt.dataset == 'random_placement_mnist':
+        if opt.dataset == 'random_rotation_mnist':
             self.dataset = make_mnist_subset(opt, mode)
 
-        if opt.dataset == 'random_placement_fashion_mnist':
+        if opt.dataset == 'random_rotation_fashion_mnist':
             self.dataset =  make_fashion_mnist(opt, mode)    
 
 

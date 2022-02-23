@@ -6,12 +6,12 @@ TRAIN_SAMPELS=(1 1 1)
 CRITERION=("nll" "nll" "elbo")
 SUBSETS=(10 30 100 1000 3000 10000)
 
-for SUBSET in {0..4}
+for SUBSET in {0..0}
 do
     echo ${SUBSETS[$SUBSET]}
-    for FOLD in {0..4}
+    for FOLD in {0..0}
     do
-        for MODEL in {1..2}
+        for MODEL in {0..2}
         do
             echo ${MODELS[$MODEL]}
             echo ${PARAMS[$MODEL]}
@@ -45,7 +45,7 @@ do
                             --step_size 600 \
                             --val_check_interval 1 \
                             --test_on 'test' \
-                            --results_folder "debug"
+                            --results_folder "28_01_kl_weight_finer_grid_search"
         done
     done
 done

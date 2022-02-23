@@ -40,8 +40,16 @@ def get_exp_name(opt):
     if opt.train_samples > 1:
         modelname += '-trainS=' + str(opt.train_samples)
 
-    if opt.init_large_variance:
-        modelname += '-init_large_var'
+    # if opt.init_large_variance:
+    #     modelname += '-init_large_var'
+    if opt.var_init != -2:
+        modelname += '-varinit=' + str(opt.var_init)
+
+    if opt.modeltype in ['large_loc', '2xlarge_loc']:
+        modelname += '_' + str(opt.modeltype) 
+
+    if opt.reduce_samples == 'min':
+        modelname += '_min_agg'
 
     return modelname
 

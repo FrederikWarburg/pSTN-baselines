@@ -62,11 +62,8 @@ class STN(nn.Module):
         # large loc case = default
 
     def forward(self, x):
-        # print(x.shape)
         # zoom in on relevant areas with stn
-        x, theta = self.stn(x)
-
+        x, theta = self.stn(x) 
         # make classification based on these areas
         x = self.classifier(x)
-
         return x, theta

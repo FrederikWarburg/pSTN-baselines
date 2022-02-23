@@ -12,6 +12,7 @@ class PSTN(nn.Module):
         self.num_classes = opt.num_classes
         self.num_param = opt.num_param
         self.N = opt.N
+        self.reduce_samples = opt.reduce_samples
 
         # Spatial transformer localization-network
         self.init_localizer(opt)
@@ -76,14 +77,10 @@ class PSTN(nn.Module):
                 self.pstn.fc_loc_beta[-2].bias.data.copy_(
                      torch.tensor([-2], dtype=torch.float).repeat(self.pstn.theta_dim))
 
-        if opt.modeltype == 'large_loc' or opt.transformer_type == 'diffeomorphic':
-            if opt.init_large_variance:
-                self.pstn.fc_loc_beta[-2].bias.data.copy_(
-                    torch.tensor([1], dtype=torch.float).repeat(self.pstn.theta_dim)) 
-                    # large variance for the frozen classifier experiment, mean init as default
-            else:               
-                self.pstn.fc_loc_beta[-2].bias.data.copy_(
-                    torch.tensor([-3], dtype=torch.float).repeat(self.pstn.theta_dim)) 
+        if opt.modeltype in ['large_loc', '2xlarge_loc'] or opt.transformer_type == 'diffeomorphic':
+            self.pstn.fc_loc_beta[-2].bias.data.copy_(
+                torch.tensor([opt.var_init], dtype=torch.float).repeat(self.pstn.theta_dim)) 
+                # large variance for the frozen classifier experiment, mean init as default
         
     
     def forward(self, x):
@@ -101,9 +98,16 @@ class PSTN(nn.Module):
         x = x.view(self.pstn.S, batch_size * self.num_classes)
 
         if self.training:
-            # calculate mean across samples
-            x = x.mean(dim=0)
-            x = x.view(batch_size, self.num_classes)
+            if self.reduce_samples == 'min': 
+                # x [S, bs * classes]
+                x = x.view(self.pstn.S, batch_size, self.num_classes)
+                x = x.permute(1,0,2)
+                # x shape: [S, bs, nr_classes]
+            else: 
+                # calculate mean across samples
+                x = x.mean(dim=0)
+                x = x.view(batch_size, self.num_classes)
+                # x shape: [bs, nr_classes]
 
         else:
             x = torch.log(torch.tensor(1.0 / float(self.pstn.S))) + torch.logsumexp(x, dim=0)

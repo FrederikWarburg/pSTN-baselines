@@ -46,6 +46,7 @@ class Elbo(nn.Module):
         self.alpha_p = opt.alpha_p #torch.tensor(opt.alpha_p, requires_grad=False)
         self.beta_p = opt.beta_p #torch.tensor(opt.beta_p, requires_grad=False)
         self.w = opt.kl_weight
+        self.reduce_samples = opt.reduce_samples
 
         self.iter = 0.0
         self.base_kl = 0.0 #, requires_grad=False, device=self.alpha_p.device)  #
@@ -75,7 +76,7 @@ class Elbo(nn.Module):
     def forward(self, x, beta, label):
 
         # calculate terms of elbo
-        self.nll, kl = elbo(x, beta, label, alpha_p=self.alpha_p, beta_p=self.beta_p)
+        self.nll, kl = elbo(x, beta, label, alpha_p=self.alpha_p, beta_p=self.beta_p, reduction=self.reduce_samples)
         self.kl = kl
 
         with torch.no_grad():

@@ -1,7 +1,7 @@
 #!/bin/sh
 MODELS=("cnn" "stn" "pstn")
 TEST_SAMPELS=(1 1 10)
-TRAIN_SAMPELS=(1 1 1)
+TRAIN_SAMPELS=(1 1 10)
 CRITERION=("nll" "nll" "elbo")
 DATASETS=("FaceAll" "wafer" "uWaveGestureLibrary_X" "Two_Patterns"
  "StarLightCurves" "PhalangesOutlinesCorrect" "FordA")
@@ -47,7 +47,7 @@ do
                             --transformer_type "diffeomorphic" \
                             --step_size 200 \
                             --val_check_interval 200 \
-                            --results_folder "19_02_timeseries_gridsearch" \
+                            --results_folder "22_02_timeseries_train_S_10" \
                             --test_on "val" \
                             --annealing "weight_kl" \
                             --kl_weight ${W_s[$w]} 

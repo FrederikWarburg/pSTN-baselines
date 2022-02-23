@@ -4,18 +4,20 @@ DATAPATH="data/"
 MODELS=("cnn" "stn" "pstn")
 CRITERION=("nll" "nll" "elbo")
 W_s=(0. 0.00001 0.00003 0.0001 0.0003 0.001 0.003 0.01 0.03 0.1 0.3 1.)
+LRs=(1e-5 1e-4 1e-3 1e-2)
 TEST_SAMPLES=(1 1 10)
 P=(2 4)
 
-for MODEL in {0..0}
+for MODEL in {1..1} 
 do
-    for w in {2..2}
+    for w in {2..2} # this is taken from rotMNIST experiment, not sure we need to finetune 
     do
-        for nr_p in {0..0}
+        for lr in {0..3}
         do
         echo $MODEL
         echo ${MODELS[$MODEL]}
-        OMP_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=6 python train.py --dataroot $DATAPATH \
+        OMP_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=6 python train.py \
+                        --dataroot $DATAPATH \
                         --dataset "random_placement_fashion_mnist" \
                         --crop_size  96 \
                         --batch_size 64 \
@@ -27,12 +29,12 @@ do
                         --data_augmentation None \
                         --model ${MODELS[$MODEL]} \
                         --modeltype 'large_loc' \
-                        --num_param ${P[$nr_p]} \
+                        --num_param 4 \
                         --N 1 \
                         --test_samples ${TEST_SAMPLES[$MODEL]} \
                         --train_samples 1 \
                         --criterion ${CRITERION[$MODEL]} \
-                        --lr 0.001 \
+                        --lr ${LRs[$lr]}  \
                         --lr_loc 0.1 \
                         --digits 1 \
                         --optimizer 'adam' \
