@@ -8,7 +8,7 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
 from models import System
 import torch
-from utils.utils import get_exp_name, mkdir
+from utils.utils import get_exp_name, mkdir, get_exp_name_timeseries
 import pickle
 
 if __name__ == '__main__':

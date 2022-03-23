@@ -8,21 +8,21 @@ DATASETS=("FaceAll" "wafer" "uWaveGestureLibrary_X" "Two_Patterns"
 NR_CLASSES=(14 2 8 4 3 2 2)
 W_s=(0. 0.00001 0.00003 0.0001 0.0003 0.001 0.003 0.01)
 
-for DATASET in {0..7}
+for DATASET in {6..6}
 do
     echo ${DATASETS[$DATASET]}
-    for FOLD in {0..5}
+    for FOLD in {0..4}
     do
         for MODEL in {2..2}
         do
-            for w in {0..7}
+            for w in {4..7}
             do
             echo ${MODELS[$MODEL]}
             echo ${PARAMS[$MODEL]}
             echo ${TEST_SAMPELS[$MODEL]}
             echo ${TRAIN_SAMPELS[$MODEL]}
             echo ${CRITERION[$MODEL]}
-            CUDA_VISIBLE_DEVICES=4 python train.py --dataroot 'data' \
+            CUDA_VISIBLE_DEVICES=7 python train.py --dataroot 'data' \
                             --dataset ${DATASETS[$DATASET]} \
                             --fold ${FOLD} \
                             --batch_size 16 \
@@ -50,7 +50,7 @@ do
                             --results_folder "22_02_timeseries_train_S_10" \
                             --test_on "val" \
                             --annealing "weight_kl" \
-                            --kl_weight ${W_s[$w]} 
+                            --kl_weight ${W_s[$w]} &
             done
         done
     done

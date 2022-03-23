@@ -3,6 +3,9 @@ from os.path import join, isdir, exists
 import pickle
 import torch
 
+def get_exp_name_timeseries(opt):
+    modelname = 'd=%s-m=%s-p=0-fold=%s-kl=None-betaP=1-lr=0.001-lrloc=0.1' %(opt.dataset, opt.model, opt.fold)
+    return modelname
 
 def get_exp_name(opt):
     modelname = "d={}-m={}-p={}".format(opt.dataset, opt.model, opt.num_param)
@@ -10,12 +13,12 @@ def get_exp_name(opt):
     if opt.subset is not None:
         modelname = "d={}{}-m={}-p={}".format(opt.dataset, opt.subset, opt.model, opt.num_param)
 
-    if opt.fold is not None:
-        modelname += '-fold=' + str(opt.fold)
-
     # if 'RandAugment' in opt.data_augmentation:
     #     modelname += '-randaug_N=%s-randaug_M=%s' % (opt.rand_augment_N, opt.rand_augment_M)
 
+    if opt.fold is not None:
+        modelname += '-fold=' + str(opt.fold)
+        
     if opt.dataset.lower() == 'celeba':
         modelname += '-a=' + str(opt.target_attr)
 
@@ -29,7 +32,9 @@ def get_exp_name(opt):
     else:
         modelname += '-kl=None'
 
-    modelname += '-betaP=' + str(opt.beta_p)
+    #if opt.model.lower() == 'pstn':
+    modelname += '-betaP=' + str(opt.beta_p)[0]
+
     modelname += '-lr=' + str(opt.lr)
 
     if opt.model.lower() in ['stn', 'pstn']:
@@ -42,7 +47,7 @@ def get_exp_name(opt):
 
     # if opt.init_large_variance:
     #     modelname += '-init_large_var'
-    if opt.var_init != -2:
+    if opt.model.lower() in ['pstn', 'stn'] and opt.var_init != -2:
         modelname += '-varinit=' + str(opt.var_init)
 
     if opt.modeltype in ['large_loc', '2xlarge_loc']:
@@ -50,6 +55,7 @@ def get_exp_name(opt):
 
     if opt.reduce_samples == 'min':
         modelname += '_min_agg'
+
 
     return modelname
 

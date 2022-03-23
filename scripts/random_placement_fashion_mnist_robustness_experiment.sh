@@ -3,17 +3,18 @@
 DATAPATH="data/"
 MODELS=("cnn" "stn" "pstn")
 CRITERION=("nll" "nll" "elbo")
-LRs=(0.005 0.001 0.0005 0.0001 0.00005 0.00001)
+LRs=(4.0e-05 6.0e-05 8.0e-05 1.2e-04 1.4e-04)
+
 TEST_SAMPLES=(1 1 10)
 TRAIN_SAMPLES=(1 1 10)
 
-for MODEL in {2..2}
+for MODEL in {0..0}
 do
-    for lr in {0..5}
+    for lr in {0..0}
     do
     echo $MODEL
     echo ${MODELS[$MODEL]}
-    OMP_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=2
+    OMP_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=7
      python train_parts.py --dataroot $DATAPATH \
                     --dataset "random_placement_fashion_mnist" \
                     --normalize False \
@@ -47,6 +48,7 @@ do
                     --pretrained_model_path 'checkpoints/22_02_fashion_mnist_robustness/d=fashion_mnist-m=cnn-p=2-kl=None-betaP=1-lr=0.001-lrloc=None.ckpt' \
                     --var_init -20 \
                     --modeltype 'large_loc' \
-                    --freeze_classifier &
+                    --reduce_samples 'min' \
+                    --freeze_classifier
     done
 done
