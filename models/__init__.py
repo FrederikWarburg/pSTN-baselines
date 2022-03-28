@@ -119,8 +119,11 @@ class System(pl.LightningModule):
         self.prev_epoch = -1
         self.log_images_test = True
 
-    def forward(self, x, x_high_res):
-        return self.model.forward(x, x_high_res)
+    def forward(self, x, x_high_res=None):
+        if x_high_res is None:
+            return self.model.forward(x)
+        else:
+            return self.model.forward(x, x_high_res)
 
     def training_step(self, batch, batch_idx, hidden=0):
         # unpack batch
@@ -175,7 +178,7 @@ class System(pl.LightningModule):
         x, x_high_res, y = batch
         # forward
         if self.opt.model.lower() == 'cnn':
-            y_hat = self.forward(x, x_high_res)
+            y_hat = self.forward(x)
         else:
             y_hat = self.forward(x, x_high_res)[0]
         # calculate nll and accuracy

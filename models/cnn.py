@@ -20,5 +20,4 @@ class CNN(nn.Module):
         self.cnn = Classifier(opt)
 
     def forward(self, x):
-
         return self.cnn(x)
