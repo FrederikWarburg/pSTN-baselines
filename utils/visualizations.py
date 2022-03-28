@@ -83,10 +83,10 @@ def visualize_stn(model, data, opt):
         if opt.xdim == 2:
             data = data[:16]  # just visualize the first 16
             if opt.model.lower() == 'stn':
-                transformed_input_tensor, thetas = model.stn(data)
+                transformed_input_tensor, thetas = model.forward_localizer(data)
 
             elif opt.model.lower() == 'pstn':
-                transformed_input_tensor, thetas, _ = model.pstn(data)
+                transformed_input_tensor, thetas, _ = model.forward_localizer(data)
 
             in_grid = convert_image_np(torchvision.utils.make_grid(data.cpu()), opt.dataset.lower())
             in_grid = (in_grid * 255).astype(np.uint8)

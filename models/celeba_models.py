@@ -8,13 +8,13 @@ import torch.nn.functional as F
 
 class CelebaPSTN(PSTN):
     def __init__(self, opt):
-        super().__init__(opt)
-
         # number of channels
         self.channels = 3
+        super().__init__(opt)
 
     def init_localizer(self, opt):
-        
+        input_size = 512 # hardcoded for now (corresponding to 64 x 64 crop size)
+
         # Spatial transformer localization-network
         self.localization = nn.Sequential(
             nn.Conv2d(self.channels, 8, kernel_size=7),
@@ -92,6 +92,7 @@ class CelebaClassifier(nn.Module):
         self.train_samples = opt.train_samples
         self.test_samples = opt.test_samples
         self.feature_size = 640
+        self.num_classes = opt.num_classes
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.channels = 3
