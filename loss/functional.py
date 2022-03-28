@@ -16,9 +16,12 @@ def kl_div(x, beta,  alpha_p, beta_p, reduction='mean', weights=None):
         return kl_loss.sum()
 
 
-def elbo(x, beta, label, alpha_p, beta_p):
+def elbo(x, beta, label, alpha_p, beta_p, reduction="mean"):
     # NLL LOSS
-    nll_loss = F.nll_loss(x, label, reduction='mean')
+    if reduction == "mean":
+        nll_loss = F.nll_loss(x, label, reduction='mean')
+    else:
+        nll_loss = F.nll_loss(x, label, reduction='none').min()
 
     # KL LOSS
     kl_loss = kl_div(x, beta, alpha_p, beta_p, reduction='mean')

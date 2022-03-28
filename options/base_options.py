@@ -78,9 +78,15 @@ class BaseOptions:
         # visualization params
         self.parser.add_argument('--export_folder', type=str, default='',
                                  help='exports intermediate collapses to this folder')
+        self.parser.add_argument('--pretrained_model_path', type=str, default='',
+                                 help='load checkpoint')
         self.parser.add_argument('--heatmap', type=bool, default=False, help='visualize bbox as heat map or bbox')
+        self.parser.add_argument('--bbox_size', default=0, type=int, help='the sizes of the bounding box around the bounding box for mtsd')
+
         #
         self.initialized = True
+
+
 
     def parse(self):
         if not self.initialized:

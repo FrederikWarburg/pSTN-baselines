@@ -30,7 +30,7 @@ class STN(nn.Module):
         raise NotImplementedError
 
     def init_model_weights(self, opt):
-        # self.fc_loc[-1].weight.data.zero_()
+        self.fc_loc[-1].weight.data.zero_()
 
         # Initialize the weights/bias with identity transformation
         if opt.transformer_type == 'affine':
@@ -54,7 +54,6 @@ class STN(nn.Module):
 
     def forward(self, x, x_high_res):
         # zoom in on relevant areas with stn
-        
         x, theta = self.forward_localizer(x, x_high_res)
         # make classification based on these areas
         x = self.forward_classifier(x)

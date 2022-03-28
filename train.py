@@ -45,24 +45,34 @@ if __name__ == '__main__':
         logger_steps = 1
     else:
         logger_steps = 10
-    trainer = Trainer(max_epochs=opt.epochs,
-                    log_every_n_steps=logger_steps,
-                      # accumulate_grad_batches=num_batches,
-                      gpus=num_gpus,
-                      logger=logger,
-                      check_val_every_n_epoch=val_check_interval,
-                      checkpoint_callback=False)
-
-    print('printing parameter check:')
-    check_learnable_parameters(lightning_system.model, opt.model)
 
     if opt.resume_from_ckpt:
         print('Loading model.')
 
+        trainer = Trainer(max_epochs=opt.epochs,
+                        log_every_n_steps=logger_steps,
+                        # accumulate_grad_batches=num_batches,
+                        resume_from_checkpoint = opt.pretrained_model_path,
+                        gpus=num_gpus,
+                        logger=logger,
+                        check_val_every_n_epoch=val_check_interval,
+                        checkpoint_callback=False)
+
     else:
-        # train model
-        trainer.fit(lightning_system)
-        trainer.save_checkpoint("checkpoints/%s/%s.ckpt" % (opt.results_folder, modelname))
+        trainer = Trainer(max_epochs=opt.epochs,
+                        log_every_n_steps=logger_steps,
+                        # accumulate_grad_batches=num_batches,
+                        gpus=num_gpus,
+                        logger=logger,
+                        check_val_every_n_epoch=val_check_interval,
+                        checkpoint_callback=False)
+
+    print('printing parameter check:')
+    check_learnable_parameters(lightning_system.model, opt.model)
+    
+    # train model
+    trainer.fit(lightning_system)
+    trainer.save_checkpoint("checkpoints/%s/%s.ckpt" % (opt.results_folder, modelname))
 
     # test model
     if opt.test_on == 'test':

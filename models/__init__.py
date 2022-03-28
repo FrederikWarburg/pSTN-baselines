@@ -128,7 +128,7 @@ class System(pl.LightningModule):
         theta_mu, beta = None, None
         # forward and calculate loss, the output is packaged a bit differently for all models
         if self.opt.model.lower() == 'cnn':
-            y_hat = self.forward(x)
+            y_hat = self.forward(x, x_high_res)
             loss = self.criterion(y_hat, y)
         if self.opt.model.lower() == 'stn':
             y_hat, theta_mu = self.forward(x, x_high_res)
@@ -201,7 +201,7 @@ class System(pl.LightningModule):
         theta_mu, beta = None, None
         # forward image
         if self.opt.model.lower() == 'cnn':
-            y_hat = self.forward(x)
+            y_hat = self.forward(x, x_high_res)
             loss = self.criterion(y_hat, y)
         if self.opt.model.lower() == 'stn':
             y_hat, theta_mu = self.forward(x, x_high_res)

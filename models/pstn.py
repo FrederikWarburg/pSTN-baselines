@@ -35,7 +35,7 @@ class PSTN(nn.Module):
         raise NotImplementedError
 
     def init_model_weights(self, opt):
-        # self.fc_loc_mu[-1].weight.data.zero_()
+        self.fc_loc_mu[-1].weight.data.zero_()
 
         # Initialize the weights/bias with identity transformation
         if opt.transformer_type == 'affine':
@@ -57,7 +57,7 @@ class PSTN(nn.Module):
             # initialize beta network
             self.fc_loc_beta[-2].weight.data.zero_() # TODO: check that this is still a good init
             self.fc_loc_beta[-2].bias.data.copy_(
-                torch.tensor([-5], dtype=torch.float).repeat(self.num_param * self.N))
+                torch.tensor([-20], dtype=torch.float).repeat(self.num_param * self.N))
 
         elif opt.transformer_type == 'diffeomorphic':
             # initialize param's as identity, default ok for variance in this case
