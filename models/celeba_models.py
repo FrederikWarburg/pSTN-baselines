@@ -16,7 +16,6 @@ class CelebaPSTN(PSTN):
         # 275 K
 
     def init_localizer(self, opt):
-        
         # Spatial transformer localization-network
         self.localization = nn.Sequential(
             nn.Conv2d(self.channels, 8, kernel_size=7),
@@ -94,7 +93,6 @@ class CelebaClassifier(nn.Module):
         self.dropout_rate = opt.dropout_rate
         self.num_classes = opt.num_classes
         self.feature_size = 640
-
         self.channels = 3
 
         # initialize a classifier for each branch
