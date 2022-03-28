@@ -15,7 +15,7 @@ do
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        CUDA_VISIBLE_DEVICES=0 python train.py --dataroot $DATAPATH \
+        CUDA_VISIBLE_DEVICES=3 python train.py --dataroot $DATAPATH \
                         --dataset "celeba" \
                         --batch_size 256 \
                         --num_classes 2 \
@@ -39,5 +39,5 @@ do
                         --trainval_split True \
                         --annealing "${ANNEALING[$ANNEAL]}" \
                         --save_results True \
-                        --results_folder "24_03_celeba_cnn"  
+                        --results_folder "28_03_celeba_cnn_upweigh_exp"  
 done

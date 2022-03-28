@@ -9,7 +9,7 @@ GPUs=(0 1 2 3 4 5 6 7)
 
 for MODEL in {2..2}
 do
-    for w in {0..7} 
+    for w in {0..0} 
     do
         echo ${MODELS[$MODEL]}
         echo ${PARAMS[$MODEL]}
@@ -42,6 +42,6 @@ do
                         --annealing "weight_kl" \
                         --kl_weight ${W_s[$w]} \
                         --save_results True \
-                        --results_folder "28_03_celeba_pstn_new_decay" &
+                        --results_folder "debug" 
     done
 done
