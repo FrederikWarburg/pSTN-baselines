@@ -62,14 +62,8 @@ class MnistPSTN(PSTN):
     def __init__(self, opt):
         self.parameter_dict = self.load_specifications(opt)
         super().__init__(opt)
-        self.N = opt.N
-        self.train_samples = opt.train_samples
-        self.S = opt.test_samples
-        self.test_samples = opt.test_samples
-        self.alpha_p = opt.alpha_p
-        self.beta_p = opt.beta_p
+
         self.channels = 1
-        self.transformer, self.theta_dim = init_transformer(opt)
 
     def init_localizer(self, opt):
         # Spatial transformer localization-network
@@ -129,7 +123,7 @@ class MnistSTN(STN):
     def __init__(self, opt):
         self.parameter_dict = self.load_specifications(opt)
         super().__init__(opt)
-        self.N = opt.N
+
         self.test_samples = opt.test_samples
         self.channels = 1
 

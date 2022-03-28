@@ -32,10 +32,13 @@ class CelebA(torch.utils.data.Dataset):
             transform.extend([transforms.ToTensor(), normalize])
 
             self.transform = transforms.Compose(transform)
+            
                 
         elif mode in ['test','val']:
             self.transform = transforms.Compose(
                 [transforms.Resize((64, 73)), transforms.CenterCrop((64, 64)), transforms.ToTensor(), normalize])
+
+        self.transform_high_res = transforms.Compose([transforms.ToTensor(), normalize])
 
         self.root = opt.dataroot
         self.base_folder = 'celeba'
@@ -77,6 +80,7 @@ class CelebA(torch.utils.data.Dataset):
         image = Image.open(self.fn("img_align_celeba", self.filename[idx]))
         target = self.target[idx]
 
+        image_high_res = self.transform_high_res(image)
         image = self.transform(image)
 
-        return image, target.astype('long')
+        return image, image_high_res, target.astype('long')

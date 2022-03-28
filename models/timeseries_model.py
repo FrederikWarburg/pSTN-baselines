@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import torch.nn as nn
 import torch.nn.functional as F
-import torch
 
 from utils import timeseries_io as io
 
@@ -34,12 +33,84 @@ parameter_dict_timeseries_STN = {
 parameter_dict_timeseries_P_STN = parameter_dict_timeseries_STN
 
 
+class TimeseriesPSTN(nn.Module):
+    def __init__(self, opt):
+        super().__init__()
+
+        self.sigma_p = opt.sigma_p
+        self.sigma_n = opt.sigma_n
+        
+    def init_localizer(self, opt):
+        self.localization = nn.Sequential(
+            nn.Conv1d(1, 64, kernel_size=8),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+            ###
+            nn.Conv1d(64,
+                      164, kernel_size=5),
+            nn.BatchNorm1d(164),
+            nn.ReLU(),
+            ###
+            nn.Conv1d(164, 64, kernel_size=3),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+            ###
+            nn.AdaptiveAvgPool1d(1),
+            nn.Dropout()
+        )
+
+        # Regressor for the mean
+        self.fc_loc_mu = nn.Sequential(
+            nn.Linear(64, self.theta_dim)
+        )
+
+        # Regressor for the variance
+        self.fc_loc_beta = nn.Sequential(
+            nn.Linear(64, self.theta_dim),
+            nn.Softplus()
+        )
+
+    def init_classifier(self, opt):
+        self.classifier = TimeseriesClassifier(opt)
+
+
+class TimeseriesSTN(TimeseriesPSTN):
+    def __init__(self, opt):
+        super().__init__(opt)
+
+    def init_localizer(self, opt):
+        self.localization = nn.Sequential(
+            nn.Conv1d(1, 64, kernel_size=8),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+            ###
+            nn.Conv1d(64,
+                      164, kernel_size=5),
+            nn.BatchNorm1d(164),
+            nn.ReLU(),
+            ###
+            nn.Conv1d(164, 64, kernel_size=3),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+            ###
+            nn.AdaptiveAvgPool1d(1),
+            nn.Dropout()
+        )
+
+        # Regressor for the mean
+        self.fc_loc = nn.Sequential(
+            nn.Linear(64, self.theta_dim)
+        )
+
+    def init_classifier(self, opt):
+        self.classifier = TimeseriesClassifier(opt)
+
+
 class TimeseriesClassifier(nn.Module):
     def __init__(self, opt):
         super(TimeseriesClassifier, self).__init__()
         self.parameter_dict = self.load_specifications(opt)
         self.nr_classes = io.get_nr_classes_and_features(opt.dataset)[0]
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.CNN = nn.Sequential(
             nn.Conv1d(1, self.parameter_dict['CNN_filters1'],

@@ -76,17 +76,18 @@ def normalize(images):
     return images / torch.max(images)
 
 
-def visualize_stn(model, data, opt):
+def visualize_stn(model, data, x_high_res, opt):
     with torch.no_grad():
 
         # IMAGE VISUALIZATION
         if opt.xdim == 2:
             data = data[:16]  # just visualize the first 16
+            x_high_res = x_high_res[:16]  # just visualize the first 16
             if opt.model.lower() == 'stn':
-                transformed_input_tensor, thetas = model.forward_localizer(data)
+                transformed_input_tensor, thetas = model.forward_localizer(data, x_high_res)
 
             elif opt.model.lower() == 'pstn':
-                transformed_input_tensor, thetas, _ = model.forward_localizer(data)
+                transformed_input_tensor, thetas, _ = model.forward_localizer(data, x_high_res)
 
             in_grid = convert_image_np(torchvision.utils.make_grid(data.cpu()), opt.dataset.lower())
             in_grid = (in_grid * 255).astype(np.uint8)
@@ -101,7 +102,7 @@ def visualize_stn(model, data, opt):
             out_grid = np.transpose(out_grid, (2, 0, 1))
 
             bbox_images = None
-            if opt.num_param < 5:
+            if opt.num_param < 4:
                 affine_params = make_affine_parameters(thetas)
                 bbox_images = visualize_bbox(data.cpu(), affine_params, opt)
             # TODO: implement bounding boxed for 4 param trafos
@@ -124,7 +125,7 @@ def visualize_stn(model, data, opt):
                 return image, None, None, None
 
             if opt.model.lower() == 'stn':
-                transformed_input, _, theta = model.stn(data)
+                transformed_input, _, theta = model.forward_localizer(data)
                 transformed_input = transformed_input.cpu().numpy()
                 # prepare the STN output plot
                 out_plot_buf = gen_plot_input(transformed_input, nr_plots)
@@ -133,7 +134,7 @@ def visualize_stn(model, data, opt):
                 return image, out_image, theta, None
 
             elif opt.model.lower() == 'pstn':
-                transformed_input, _, sampled_theta = model.pstn(data)
+                transformed_input, _, sampled_theta = model.forward_localizer(data)
                 transformed_input = transformed_input.cpu().numpy()
                 # prepare the P-STN output plot
                 out_plot_buf = gen_plot_output(transformed_input, nr_plots, batch_size)
