@@ -35,7 +35,7 @@ class MtsdPSTN(PSTN):
     def init_classifier(self, opt):
         self.classifier = MtsdClassifier(opt)
 
-    def get_theta_beta(self, x):
+    def compute_theta_beta(self, x):
         bs, c, h, w = x.shape
         x = self.localization(x)
         x = self.pool(x).view(bs, -1)
@@ -68,7 +68,7 @@ class MtsdSTN(STN):
     def init_classifier(self, opt):
         self.classifier = MtsdClassifier(opt)
 
-    def get_theta(self, x):
+    def compute_theta(self, x):
         bs, c, h, w = x.shape
         x = self.localization(x)
         x = self.pool(x).view(bs, -1)

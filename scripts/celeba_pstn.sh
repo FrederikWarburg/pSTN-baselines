@@ -5,11 +5,11 @@ MODELS=("cnn" "stn" "pstn")
 PARAMS=(1 4 4)
 CRITERION=("nll" "nll" "elbo")
 W_s=(0. 0.00001 0.00003 0.0001 0.0003 0.001 0.003 0.01)
-GPUs=(0 1 2 3 4 5 6 7)
+GPUs=(2 2 3 3 4 4 6 6)
 
 for MODEL in {2..2}
 do
-    for w in {0..0} 
+    for w in {0..7} 
     do
         echo ${MODELS[$MODEL]}
         echo ${PARAMS[$MODEL]}
@@ -42,6 +42,6 @@ do
                         --annealing "weight_kl" \
                         --kl_weight ${W_s[$w]} \
                         --save_results True \
-                        --results_folder "debug" 
+                        --results_folder '29_03_celeba_refactor_tests' &
     done
 done

@@ -35,8 +35,11 @@ class STN(nn.Module):
         # Initialize the weights/bias with identity transformation
         if opt.transformer_type == 'affine':
             if self.num_param == 2:
-                # We initialize bounding boxes with tiling
-                bias = torch.tensor([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=torch.float) * 0.5
+                if self.N == 1:
+                    bias = torch.tensor([0, 0], dtype=torch.float) 
+                else:
+                    # We initialize bounding boxes with tiling
+                    bias = torch.tensor([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=torch.float) * 0.5
                 self.fc_loc[-1].bias.data.copy_(bias[:self.N].view(-1))
             elif self.num_param == 3:
                 self.fc_loc[-1].bias.data.copy_(torch.tensor([1, 0, 0] * self.N, dtype=torch.float))
@@ -60,20 +63,20 @@ class STN(nn.Module):
         return x, theta
 
     def forward_localizer(self, x, x_high_res):
+        if x_high_res is None: # in some cases (mnist, time series, ...) we only use the low res data
+            x_high_res = x
         batch_size, c, w, h = x.shape
-        theta = self.get_theta(x)
+        theta = self.compute_theta(x)
         # repeat x in the batch dim so we avoid for loop
         x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
         theta_upsample = theta.view(batch_size * self.N, self.theta_dim)
-        x = self.transformer(x_high_res, theta_upsample)
-        # x = F.interpolate(x, size=(64,64), mode="bilinear")
+        x = self.transformer(x_high_res, theta_upsample, small_image_shape=(w, h))
         return x, theta
 
-    def get_theta(self, x):
-        batch_size, c, w, h = x.shape
+    def compute_theta(self, x):
+        batch_size = x.shape[0]
         xs = self.localization(x)
         xs = xs.view(batch_size, -1)
-        # input size = xs.shape[1]
         theta = self.fc_loc(xs)
         return theta
 

@@ -5,32 +5,35 @@ MODELS=("cnn" "stn" "pstn")
 CRITERION=("nll" "nll" "elbo")
 W_s=(0. 0.00001 0.00003 0.0001 0.0003 0.001 0.003 0.01 0.03 0.1 0.3 1.)
 TEST_SAMPLES=(1 1 10)
+TRAIN_SAMPLES=(1 10 10)
+VAR_INIT=(-50 -20 -12 -8 -4)
 
-for MODEL in {0..2}
+
+for MODEL in {2..2}
 do
-    for w in {2..2}
+    for var_init in {4..4}
     do
     echo $MODEL
     echo ${MODELS[$MODEL]}
-    OMP_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=4
-     python train.py --dataroot $DATAPATH \
-                    --dataset "random_placement_mnist" \
-                    --subset 10000 \
+    OMP_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=1 python train_parts.py --dataroot $DATAPATH \
+                    --dataset "random_placement_fashion_mnist" \
+                    --normalize False \
                     --crop_size  96 \
+                    --normalize False \
                     --batch_size 64 \
                     --num_classes 10 \
                     --num_threads 2 \
-                    --epochs 100 \
-                    --step_size 10 \
+                    --epochs 600 \
+                    --step_size 200 \
                     --seed 42 \
                     --data_augmentation None \
                     --model ${MODELS[$MODEL]} \
-                    --num_param 2 \
+                    --num_param 4 \
                     --N 1 \
                     --test_samples ${TEST_SAMPLES[$MODEL]} \
-                    --train_samples 1 \
+                    --train_samples ${TRAIN_SAMPLES[$MODEL]} \
                     --criterion ${CRITERION[$MODEL]} \
-                    --lr 0.001 \
+                    --lr 0.0001 \
                     --lr_loc 0.1 \
                     --digits 1 \
         	        --optimizer 'adam' \
@@ -38,10 +41,14 @@ do
                     --save_results True \
                     --theta_path 'theta_stats' \
                     --download True \
-                    --val_check_interval 100 \
-                    --results_folder "08_02_random_placement_no_noise" \
+                    --val_check_interval 20 \
+                    --results_folder "max_agg_debug" \
                     --test_on "test" \
                     --annealing "weight_kl" \
-                    --kl_weight ${W_s[$w]}
+                    --kl_weight 0.00003 \
+                    --pretrained_model_path 'checkpoints/22_02_fashion_mnist_robustness/d=fashion_mnist-m=cnn-p=2-kl=None-betaP=1-lr=0.001-lrloc=None.ckpt' \
+                    --modeltype 'large_loc' \
+                    --var_init -20 \
+                    --freeze_classifier 
     done
 done

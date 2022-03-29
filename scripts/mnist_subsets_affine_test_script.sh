@@ -1,16 +1,14 @@
 #!/bin/sh
 
 SUBSETS=(10 30 100 1000 3000 10000)
-W_s=(0. 0.00001 0.00003 0.0001 0.0003 0.001 0.003 0.01)
+W_s=(0.001 0.001 0.0003 0.0001 0.00003 0.00001)
 
 for SUBSET in {0..5}
 do
     echo ${SUBSETS[$SUBSET]}
-    for w in {0..7}
-    do
         for FOLD in {0..4} # only do 2 folds for the grid search to limit computation time
         do
-            CUDA_VISIBLE_DEVICES=1 python train.py --dataroot 'data' \
+            CUDA_VISIBLE_DEVICES=4ba python test.py --dataroot 'data' \
                                 --dataset "MNIST" \
                                 --subset ${SUBSETS[$SUBSET]} \
                                 --fold ${FOLD} \
@@ -19,16 +17,15 @@ do
                                 --num_threads 1 \
                                 --epochs 600 \
                                 --seed 42 \
-                                --model "pstn" \
+                                --model "cnn" \
+                                --beta_p 1 \
                                 --num_param 4 \
                                 --N 1 \
                                 --test_samples 10 \
                                 --train_samples 1 \
-                                --criterion  "elbo" \
+                                --criterion  "nll" \
                                 --save_results True \
-                                --lr 0.001 \
-                                --lr_loc 0.1 \
-                                --beta_p 1. \
+                                --num_param 4 \
                                 --trainval_split True \
                                 --save_results True \
                                 --optimizer "adam" \
@@ -37,10 +34,8 @@ do
                                 --step_size 600 \
                                 --val_check_interval 600 \
                                 --results_folder "28_01_kl_weight_finer_grid_search" \
-                                --test_on "val" \
-                                --annealing "weight_kl" \
-                                --kl_weight ${W_s[$w]} \
-                                --check_already_run True 
+                                --test_on "test" \
+                                --lr 0.001            
+
         done
-    done
 done

@@ -14,48 +14,72 @@ from utils.utils import get_exp_name, save_UQ_results, save_results, mkdir, save
 from utils.visualizations import visualize_stn
 from collections import OrderedDict
 from data import create_dataset
-
+from loss.functional import nll_loss
 from models.celeba_models import CelebaPSTN, CelebaSTN, CelebaClassifier
 from models.mnist_models import MnistPSTN, MnistSTN, MnistClassifier
 from models.mtsd_models import MtsdPSTN, MtsdSTN, MtsdClassifier
+from models.timeseries_models import TimeseriesSTN, TimeseriesPSTN, TimeseriesClassifier
 
 
 STN = {
     'celeba': CelebaSTN,
     'mnist': MnistSTN,
     'random_placement_mnist': MnistSTN,
-    "mtsd": MtsdSTN,
+    "mtsd": MtsdSTN
 }
 
 PSTN = {
     'celeba': CelebaPSTN,
     'mnist': MnistPSTN,
     'random_placement_mnist': MnistPSTN,
-    "mtsd": MtsdPSTN,
+    "mtsd": MtsdPSTN
 }
 
 CNN = {
     "celeba": CelebaClassifier,
     "mnist": MnistClassifier,
     "random_placement_mnist": MnistClassifier,
-    "mtsd": MtsdClassifier,
+    "mtsd": MtsdClassifier
 }
 
 
 def create_model(opt):
     # initalize model based on model type
     if opt.model.lower() == 'cnn':
-        model = CNN[opt.dataset.lower()](opt)
+        if opt.dataset in opt.TIMESERIESDATASETS:
+            model = TimeseriesClassifier(opt)
+        else: 
+            model = CNN[opt.dataset.lower()](opt)
     elif opt.model.lower() == 'stn':
-        model = STN[opt.dataset.lower()](opt)
+        if opt.dataset in opt.TIMESERIESDATASETS:
+            model = TimeseriesSTN(opt)
+        else:
+            model = STN[opt.dataset.lower()](opt)
     elif opt.model.lower() == 'pstn':
-        model = PSTN[opt.dataset.lower()](opt)
+        if opt.dataset in opt.TIMESERIESDATASETS:
+            model = TimeseriesPSTN(opt)
+        else:
+            model = PSTN[opt.dataset.lower()](opt)
 
     else:
         raise ValueError('Unsupported or model: {}!'.format(opt.model))
 
 
     return model
+
+def unpack_batch(batch, opt):
+    target_trafo = None
+    # helper to unpack batch depending on what it constains
+    if len(batch) == 3: # mtsd and celeba also contain x_high_res 
+        x, x_high_res, y = batch
+    else: 
+        x, y = batch
+        x_high_res = None
+    if opt.dataset in ['random_placement_mnist', 'random_rotation_mnist', 'random_placement_fashion_mnist',  'random_rotation_fashion_mnist']:
+        # in this case we also return trafo
+        y = y[0]
+        target_trafo = y[1]
+    return x, x_high_res, y, target_trafo
 
 
 def create_optimizer(model, opt, criterion):
@@ -114,35 +138,38 @@ class System(pl.LightningModule):
         self.model = create_model(opt)
         # initialize criterion
         self.criterion = create_criterion(opt)
+        self.reduction = opt.reduce_samples
 
         # for logging purposes
         self.prev_epoch = -1
         self.log_images_test = True
 
-    def forward(self, x, x_high_res=None):
-        if x_high_res is None:
-            return self.model.forward(x)
-        else:
-            return self.model.forward(x, x_high_res)
-
-    def training_step(self, batch, batch_idx, hidden=0):
-        # unpack batch
-        x, x_high_res, y = batch
+    def forward(self, x, y, x_high_res=None):
         theta_mu, beta = None, None
-        # forward and calculate loss, the output is packaged a bit differently for all models
         if self.opt.model.lower() == 'cnn':
-            y_hat = self.forward(x, x_high_res)
-            loss = self.criterion(y_hat, y)
+            y_hat = self.model.forward(x)
         if self.opt.model.lower() == 'stn':
-            y_hat, theta_mu = self.forward(x, x_high_res)
-            loss = self.criterion(y_hat, y)
+            y_hat, theta_mu = self.model.forward(x, x_high_res)
         if self.opt.model.lower() == 'pstn':
-            y_hat, theta_samples, theta_params = self.forward(x, x_high_res)
+            y_hat, _, theta_params = self.model.forward(x, x_high_res)
             theta_mu, beta = theta_params
+        return y_hat, theta_mu, beta
+
+    def compute_loss(self, y_hat,y, beta=None):
+        nll_term, kl_term = None, None
+        if self.opt.criterion.lower() == 'nll':
+            loss = self.criterion(y_hat, y)
+        elif self.opt.criterion.lower() == 'elbo':
             loss, individual_terms = self.criterion(y_hat, beta, y)
             nll_term, kl_term = individual_terms
-        # calculate the accuracy
-        acc = accuracy(y_hat, y)
+        return loss, nll_term, kl_term
+
+
+    def training_step(self, batch, batch_idx, hidden=0):
+        x, x_high_res, y, _ = unpack_batch(batch, self.opt)
+        y_hat, theta_mu, beta = self.forward(x, y, x_high_res)
+        loss, nll_term, kl_term = self.compute_loss(y_hat,y, beta)
+        acc = accuracy(y_hat, y, reduction=self.reduction) # if reduction is mean it's already averaged across S dim, otherwise not
 
         # Logging
         # log classification loss // (expected) negative log likelihood for all models
@@ -153,7 +180,6 @@ class System(pl.LightningModule):
              # log KL loss if loss if applicable
             self.log("kl", kl_term, on_step=True, on_epoch=False, prog_bar=True, logger=True)
         self.log("train_nll", nll, on_step=True, on_epoch=False, prog_bar=True, logger=True)
-        
         self.log("train_acc", acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         return {"loss": loss, "theta_mu": theta_mu, "beta": beta} 
 
@@ -174,15 +200,10 @@ class System(pl.LightningModule):
 
 
     def validation_step(self, batch, batch_idx):
-        # unpack batch
-        x, x_high_res, y = batch
-        # forward
-        if self.opt.model.lower() == 'cnn':
-            y_hat = self.forward(x)
-        else:
-            y_hat = self.forward(x, x_high_res)[0]
+        x, x_high_res, y, _ = unpack_batch(batch, self.opt)
+        y_hat, theta_mu, beta = self.forward(x, y, x_high_res)
         # calculate nll and accuracy
-        loss = F.nll_loss(y_hat, y, reduction='mean')
+        loss = F.nll_loss(y_hat, y)
         acc = accuracy(y_hat, y)
 
         # for the first batch in an epoch visualize the predictions for better debugging
@@ -191,29 +212,14 @@ class System(pl.LightningModule):
             grid_in, grid_out, _, bbox_images = visualize_stn(self.model, x, x_high_res, self.opt)
             # add these to tensorboard
             self.add_images(grid_in, grid_out, bbox_images)
-
             self.prev_epoch += 1
 
         self.log('val_nll', loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         self.log('val_acc', acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
 
     def test_step(self, batch, batch_idx):
-        # unpack batch
-        x, x_high_res, y = batch
-
-        theta_mu, beta = None, None
-        # forward image
-        if self.opt.model.lower() == 'cnn':
-            y_hat = self.forward(x, x_high_res)
-            loss = self.criterion(y_hat, y)
-        if self.opt.model.lower() == 'stn':
-            y_hat, theta_mu = self.forward(x, x_high_res)
-            loss = self.criterion(y_hat, y)
-        if self.opt.model.lower() == 'pstn':
-            y_hat, theta_samples, theta_params = self.forward(x, x_high_res)
-            theta_mu, beta = theta_params
-            loss = self.criterion(y_hat, beta, y)
-
+        x, x_high_res, y, target_trafo = unpack_batch(batch, self.opt)
+        y_hat, theta_mu, beta = self.forward(x, y, x_high_res)
         # calculate nll and loss
         batch_nll = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
@@ -236,7 +242,8 @@ class System(pl.LightningModule):
                 'correct_prediction': y.data,
                 'correct': check_predictions.data,
                 "theta_mu": theta_mu, 
-                "beta": beta}
+                "beta": beta,
+                'ground_truth_trafo': target_trafo}
 
 
     def test_epoch_end(self, outputs):

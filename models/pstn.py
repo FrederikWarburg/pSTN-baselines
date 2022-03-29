@@ -20,6 +20,7 @@ class PSTN(nn.Module):
         self.test_samples = opt.test_samples
         self.alpha_p = opt.alpha_p
         self.beta_p = opt.beta_p
+        self.reduce_samples = opt.reduce_samples
 
         # Spatial transformer localization-network
         self.init_localizer(opt)
@@ -39,11 +40,13 @@ class PSTN(nn.Module):
 
         # Initialize the weights/bias with identity transformation
         if opt.transformer_type == 'affine':
-
             # initialize mean network
             if self.num_param == 2:
-                # We initialize bounding boxes with tiling
-                bias = torch.tensor([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=torch.float) * 0.5
+                if self.N == 1:
+                    bias = torch.tensor([0, 0], dtype=torch.float) 
+                else:
+                    # We initialize bounding boxes with tiling
+                    bias = torch.tensor([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=torch.float) * 0.5
                 self.fc_loc_mu[-1].bias.data.copy_(bias[:self.N].view(-1))
             elif self.num_param == 3:
                 self.fc_loc_mu[-1].bias.data.copy_(torch.tensor([1, 0, 0] * self.N, dtype=torch.float))
@@ -57,17 +60,14 @@ class PSTN(nn.Module):
             # initialize beta network
             self.fc_loc_beta[-2].weight.data.zero_() # TODO: check that this is still a good init
             self.fc_loc_beta[-2].bias.data.copy_(
-                torch.tensor([-20], dtype=torch.float).repeat(self.num_param * self.N))
+                torch.tensor([opt.var_init], dtype=torch.float).repeat(self.num_param * self.N))
 
         elif opt.transformer_type == 'diffeomorphic':
             # initialize param's as identity, default ok for variance in this case
             self.fc_loc_mu[-1].bias.data.copy_(
                 torch.tensor([1e-5], dtype=torch.float).repeat(self.theta_dim))
-            self.fc_loc_beta[-2].weight.data.zero_()
-
-            if opt.dataset in opt.TIMESERIESDATASETS:
-                self.fc_loc_beta[-2].bias.data.copy_(
-                     torch.tensor([-2], dtype=torch.float).repeat(self.theta_dim))
+            self.fc_loc_beta[-2].bias.data.copy_(
+                    torch.tensor([opt.var_init], dtype=torch.float).repeat(self.theta_dim))
 
     def forward(self, x, x_high_res):
         # get input shape
@@ -85,9 +85,16 @@ class PSTN(nn.Module):
         x = x.view(self.S, batch_size * self.num_classes)
 
         if self.training:
-            # calculate mean across samples
-            x = x.mean(dim=0)
-            x = x.view(batch_size, self.num_classes)
+            if self.reduce_samples == 'min': 
+                # x [S, bs * classes]
+                x = x.view(self.pstn.S, batch_size, self.num_classes)
+                x = x.permute(1,0,2)
+                # x shape: [S, bs, nr_classes]
+            else: 
+                # calculate mean across samples
+                x = x.mean(dim=0)
+                x = x.view(batch_size, self.num_classes)
+                # x shape: [bs, nr_classes]
 
         else:
             x = torch.log(torch.tensor(1.0 / float(self.S))) + torch.logsumexp(x, dim=0)
@@ -96,10 +103,13 @@ class PSTN(nn.Module):
         return x, thetas, beta
 
     def forward_localizer(self, x, x_high_res):
+        if x_high_res is None: 
+            x_high_res = x
         batch_size, c, h, w = x_high_res.shape
+        _, _, small_h, small_w = x.shape
         self.S = self.train_samples if self.training else self.test_samples
         
-        theta_mu, beta = self.get_theta_beta(x)
+        theta_mu, beta = self.compute_theta_beta(x)
 
         # repeat x in the batch dim so we avoid for loop
         # (this doesn't do anything for N=1)
@@ -118,13 +128,13 @@ class PSTN(nn.Module):
         # repeat for the number of samples
         x_high_res = x_high_res.repeat(self.S, 1, 1, 1)
         x_high_res = x_high_res.view([self.S * batch_size, c, h, w])
-        x = self.transformer(x_high_res, theta_samples)
+        x = self.transformer(x_high_res, theta_samples, small_image_shape=(small_h, small_w))
 
         # theta samples: [S, bs, nr_params]
         return x, theta_samples, (theta_mu, beta)
 
-    def get_theta_beta(self, x):
-        batch_size, c, w, h = x.shape
+    def compute_theta_beta(self, x):
+        batch_size = x.shape[0]
         x = self.localization(x)
         x = x.view(batch_size, -1)
         

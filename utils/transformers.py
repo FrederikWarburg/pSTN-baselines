@@ -3,7 +3,7 @@ from random import sample
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-#from libcpab.cpab import Cpab
+from libcpab.cpab import Cpab
 from torch.distributions.utils import _standard_normal
 
 def init_transformer(opt):
@@ -39,12 +39,12 @@ class AffineTransformer(nn.Module):
         super().__init__()
         print("Use affine transformer")
 
-    def forward(self, x, params):
+    def forward(self, x, params, small_image_shape):
         
         affine_params = make_affine_parameters(params)
         big_grid = F.affine_grid(affine_params, x.size())
         
-        small_grid = F.interpolate(big_grid.permute(0,3,1,2), size=(224,224), mode="nearest").permute(0,2, 3, 1)
+        small_grid = F.interpolate(big_grid.permute(0,3,1,2), size=small_image_shape, mode="nearest").permute(0,2, 3, 1)
         x = F.grid_sample(x, small_grid)
 
         # x = F.grid_sample(x, big_grid)
@@ -67,7 +67,15 @@ def make_affine_matrix(theta, scale_x, scale_y, translation_x, translation_y):
     affine_matrix = param_tensor.view([-1, 2, 3])
     return affine_matrix
 
+
 def make_affine_parameters(params):
+    if params.shape[-1] == 1:  # only learn rotation
+        angle = params[:, 0]
+        scale = torch.ones([params.shape[0]], device=params.device)
+        translation_x = torch.zeros([params.shape[0]], device=params.device)
+        translation_y = torch.zeros([params.shape[0]], device=params.device)
+        affine_matrix = make_affine_matrix(angle, scale, translation_x, translation_y)
+
     if params.shape[-1] == 2:  # only perform crop - fix scale and rotation.
         theta = torch.zeros([params.shape[0]], device=params.device)
         scale_x = 0.5 * torch.ones([params.shape[0]], device=params.device)
