@@ -5,7 +5,7 @@ TRAIN_SAMPELS=(1 1 1)
 CRITERION=("nll" "nll" "elbo")
 DATASETS=("FaceAll" "wafer" "uWaveGestureLibrary_X" "Two_Patterns"
  "PhalangesOutlinesCorrect")
-NR_CLASSES=(14 2 8 4 3 2 2)
+NR_CLASSES=(14 2 8 4 2)
 WEIGHTS=(0.0001 1e-05 0.001 0.0 0.0001)
 
 
@@ -21,7 +21,7 @@ do
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        CUDA_VISIBLE_DEVICES=4 python train.py --dataroot 'data' \
+        CUDA_VISIBLE_DEVICES=2 python train.py --dataroot 'data' \
                         --dataset ${DATASETS[$DATASET]} \
                         --fold ${FOLD} \
                         --batch_size 16 \

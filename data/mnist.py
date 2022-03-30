@@ -75,6 +75,25 @@ def make_fashion_mnist(opt, mode):
             return val_set
 
 
+def make_mnist(opt, mode):
+    train_trafo, _ = get_trafo(opt)
+    if mode in ['train', 'val']:
+        train = True
+    else:
+        train = False
+    dataset = datasets.MNIST(
+        root=opt.dataroot, train=train, download=True, transform=train_trafo)
+
+    if mode == 'test':
+        return dataset
+        
+    else: 
+        train_set, val_set = torch.utils.data.random_split(dataset, [50000, 10000], generator=torch.Generator().manual_seed(42))
+        if mode =='train':
+            return train_set
+        if mode == 'val':
+            return val_set
+
 
 def make_mnist_subset(opt, mode):
     train_trafo, test_trafo = get_trafo(opt)
@@ -236,7 +255,6 @@ class MnistRandomPlacement(Dataset):
         return im, [target, ground_truth_trafo] # also return around truth x and y
 
 
-
 class MnistRandomRotation(Dataset):
     # hardcode num_images=1 for now 
     def __init__(self, opt, mode):
@@ -244,7 +262,10 @@ class MnistRandomRotation(Dataset):
         self.mode = mode
 
         if opt.dataset == 'random_rotation_mnist':
-            self.dataset = make_mnist_subset(opt, mode)
+            if opt.subset is None:
+                self.dataset = make_mnist(opt, mode)
+            else:
+                self.dataset = make_mnist_subset(opt, mode)
 
         if opt.dataset == 'random_rotation_fashion_mnist':
             self.dataset =  make_fashion_mnist(opt, mode)    
@@ -267,7 +288,7 @@ class MnistRandomRotation(Dataset):
             angle = - torch.tensor(math.pi) + 2 * torch.tensor(math.pi) * torch.rand(size=[1])
 
             def transform_image_affine(x):
-                random_params = torch.tensor([angle, 1., 0, 0])
+                random_params = torch.tensor([angle, 1., 1., 0, 0])
                 theta = make_affine_matrix(*random_params)
                 x = x.unsqueeze(0)
                 grid = F.affine_grid(theta, x.size())  # makes the flow field on a grid

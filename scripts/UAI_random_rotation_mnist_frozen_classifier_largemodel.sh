@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DATAPATH="data/"
+DATAPATH="data"
 MODELS=("cnn" "stn" "pstn")
 CRITERION=("nll" "nll" "elbo")
 W_s=(0. 0.00001 0.00003 0.0001 0.0003 0.001 0.003 0.01 0.03 0.1 0.3 1.)
@@ -12,8 +12,9 @@ do
     do
     echo $MODEL
     echo ${MODELS[$MODEL]}
-    OMP_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=1
-     python train_parts.py --dataroot $DATAPATH \
+    OMP_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=0
+    
+     python train_localizer.py --dataroot $DATAPATH \
                     --dataset "random_rotation_mnist" \
                     --normalize False \
                     --batch_size 64 \
@@ -38,12 +39,11 @@ do
                     --theta_path 'theta_stats' \
                     --download True \
                     --val_check_interval 100 \
-                    --results_folder "17_02_frozen_cl_small_var_large_LR_small_weights" \
+                    --results_folder "29_03_UAI_repros_rotMNIST" \
                     --test_on "test" \
                     --annealing "weight_kl" \
                     --kl_weight ${W_s[$w]} \
-                    --pretrained_model_path 'checkpoints/15_02_random_rot_frozen_classifier/d=MNIST-m=cnn-p=1-fold=0-kl=None-betaP=1-lr=0.001-lrloc=None.ckpt' \
-                    --modeltype 'large_loc' \
-                    --init_large_variance False
+                    --pretrained_model_path 'checkpoints/29_03_UAI_repros_rotMNIST/d=MNIST-m=cnn-p=1-fold=0-kl=None-betaP=1-lr=0.001-lrloc=None.ckpt' \
+                    --modeltype 'large_loc' 
     done
 done

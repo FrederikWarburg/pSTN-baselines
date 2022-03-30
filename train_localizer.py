@@ -61,7 +61,7 @@ if __name__ == '__main__':
         for param in lightning_system.model.net.parameters():
             param.requires_grad = False
     else:
-        lightning_system.model.classifier.net = loaded_classifier.model.net
+        lightning_system.model.classifier = loaded_classifier.model
         # freeze classifier parameters
         for param in lightning_system.model.classifier.parameters():
             param.requires_grad = False

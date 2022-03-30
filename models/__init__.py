@@ -25,6 +25,7 @@ STN = {
     'celeba': CelebaSTN,
     'mnist': MnistSTN,
     'random_placement_mnist': MnistSTN,
+    'random_rotation_mnist': MnistSTN,
     "mtsd": MtsdSTN
 }
 
@@ -32,6 +33,7 @@ PSTN = {
     'celeba': CelebaPSTN,
     'mnist': MnistPSTN,
     'random_placement_mnist': MnistPSTN,
+    'random_rotation_mnist': MnistPSTN,
     "mtsd": MtsdPSTN
 }
 
@@ -39,6 +41,7 @@ CNN = {
     "celeba": CelebaClassifier,
     "mnist": MnistClassifier,
     "random_placement_mnist": MnistClassifier,
+    'random_rotation_mnist': MnistClassifier,
     "mtsd": MtsdClassifier
 }
 
