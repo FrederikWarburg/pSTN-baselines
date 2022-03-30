@@ -77,6 +77,7 @@ class TimeseriesPSTN(PSTN):
         self.S = self.train_samples if self.training else self.test_samples
         
         theta_mu, beta = self.compute_theta_beta(x)
+        # breakpoint()
         alpha_upsample = self.alpha_p * torch.ones_like(theta_mu) # upsample scalar alpha
 
         # make the T-dist object and sample it here? 

@@ -28,7 +28,7 @@ do
                     --num_param 1 \
                     --N 1 \
                     --test_samples ${TEST_SAMPLES[$MODEL]} \
-                    --train_samples 1 \
+                    --train_samples 10 \
                     --criterion ${CRITERION[$MODEL]} \
                     --lr 0.001 \
                     --lr_loc 1. \
@@ -39,7 +39,8 @@ do
                     --theta_path 'theta_stats' \
                     --download True \
                     --val_check_interval 100 \
-                    --results_folder "29_03_UAI_repros_rotMNIST" \
+                    --results_folder "30r_03_UAI_repros_rotMNIST_retry" \
+                    --var_init -3 \
                     --test_on "test" \
                     --annealing "weight_kl" \
                     --kl_weight ${W_s[$w]} \

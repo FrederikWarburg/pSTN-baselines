@@ -80,8 +80,8 @@ def unpack_batch(batch, opt):
         x_high_res = None
     if opt.dataset in ['random_placement_mnist', 'random_rotation_mnist', 'random_placement_fashion_mnist',  'random_rotation_fashion_mnist']:
         # in this case we also return trafo
-        y = y[0]
         target_trafo = y[1]
+        y = y[0]
     return x, x_high_res, y, target_trafo
 
 

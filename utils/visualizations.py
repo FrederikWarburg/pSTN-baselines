@@ -103,7 +103,7 @@ def visualize_stn(model, data, x_high_res, opt):
             out_grid = np.transpose(out_grid, (2, 0, 1))
 
             bbox_images = None
-            if opt.num_param < 4:
+            if opt.num_param < 4 and opt.num_param > 1:
                 affine_params = make_affine_parameters(thetas)
                 bbox_images = visualize_bbox(data.cpu(), affine_params, opt)
             # TODO: implement bounding boxed for 4 param trafos
