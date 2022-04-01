@@ -1,7 +1,7 @@
 #!/bin/sh
 MODELS=("cnn" "stn" "pstn")
 TEST_SAMPELS=(1 1 10)
-TRAIN_SAMPELS=(1 1 1)
+TRAIN_SAMPELS=(1 1 10)
 CRITERION=("nll" "nll" "elbo")
 DATASETS=("FaceAll" "wafer" "uWaveGestureLibrary_X" "Two_Patterns"
  "PhalangesOutlinesCorrect")
@@ -14,14 +14,14 @@ do
     echo ${DATASETS[$DATASET]}
     for FOLD in {0..4}
     do
-        for MODEL in {0..0}
+        for MODEL in {2..2}
         do
         echo ${MODELS[$MODEL]}
         echo ${PARAMS[$MODEL]}
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        CUDA_VISIBLE_DEVICES=2 python train.py --dataroot 'data' \
+        CUDA_VISIBLE_DEVICES=1 python train.py --dataroot 'data' \
                         --dataset ${DATASETS[$DATASET]} \
                         --fold ${FOLD} \
                         --batch_size 16 \
@@ -48,8 +48,8 @@ do
                         --var_init -2.0 \
                         --annealing "weight_kl" \
                         --kl_weight ${WEIGHTS[$DATASET]} \
-                        --results_folder "30_03_UAI_repros_timeseries_noseed" \
-                        --test_on "val" 
+                        --results_folder "31_03_UAI_repros_timeseries_rerun" \
+                        --test_on "test" 
         done
     done
 done

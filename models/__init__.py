@@ -24,7 +24,9 @@ from models.timeseries_models import TimeseriesSTN, TimeseriesPSTN, TimeseriesCl
 STN = {
     'celeba': CelebaSTN,
     'mnist': MnistSTN,
+    'fashion_mnist': MnistSTN,
     'random_placement_mnist': MnistSTN,
+    'random_placement_fashion_mnist': MnistSTN,
     'random_rotation_mnist': MnistSTN,
     "mtsd": MtsdSTN
 }
@@ -32,7 +34,9 @@ STN = {
 PSTN = {
     'celeba': CelebaPSTN,
     'mnist': MnistPSTN,
+    'fashion_mnist': MnistPSTN,
     'random_placement_mnist': MnistPSTN,
+    'random_placement_fashion_mnist': MnistPSTN,
     'random_rotation_mnist': MnistPSTN,
     "mtsd": MtsdPSTN
 }
@@ -40,7 +44,9 @@ PSTN = {
 CNN = {
     "celeba": CelebaClassifier,
     "mnist": MnistClassifier,
+    'fashion_mnist': MnistClassifier,
     "random_placement_mnist": MnistClassifier,
+    'random_placement_fashion_mnist': MnistClassifier,
     'random_rotation_mnist': MnistClassifier,
     "mtsd": MtsdClassifier
 }

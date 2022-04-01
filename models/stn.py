@@ -15,6 +15,7 @@ class STN(nn.Module):
         self.num_param = opt.num_param
         self.N = opt.N
         self.transformer, self.theta_dim = init_transformer(opt)
+        self.opt = opt
 
         # Spatial transformer localization-network
         self.init_localizer(opt)
@@ -70,6 +71,9 @@ class STN(nn.Module):
         # repeat x in the batch dim so we avoid for loop
         x = x.unsqueeze(1).repeat(1, self.N, 1, 1, 1).view(self.N * batch_size, c, w, h)
         theta_upsample = theta.view(batch_size * self.N, self.theta_dim)
+        # a hack for random placement
+        if self.opt.dataset == 'random_placement_fashion_mnist' and self.opt.freeze_classifier:
+            w, h = 28, 28
         x = self.transformer(x_high_res, theta_upsample, small_image_shape=(w, h))
         return x, theta
 

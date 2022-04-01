@@ -14,14 +14,14 @@ do
     echo ${DATASETS[$DATASET]}
     for FOLD in {0..4}
     do
-        for MODEL in {0..1}
+        for MODEL in {2..2}
         do
         echo ${MODELS[$MODEL]}
         echo ${PARAMS[$MODEL]}
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        CUDA_VISIBLE_DEVICES=2 python test.py --dataroot 'data' \
+        CUDA_VISIBLE_DEVICES=0 python test.py --dataroot 'data' \
                         --dataset ${DATASETS[$DATASET]} \
                         --fold ${FOLD} \
                         --batch_size 16 \
@@ -49,7 +49,7 @@ do
                         --var_init -2.0 \
                         --annealing "weight_kl" \
                         --kl_weight ${WEIGHTS[$DATASET]} \
-                        --results_folder "29_03_UAI_repros_timeseries" \
+                        --results_folder "30_03_UAI_repros_timeseries_noseed" \
                         --test_on "test" 
         done
     done
