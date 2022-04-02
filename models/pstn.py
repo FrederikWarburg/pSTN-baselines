@@ -21,6 +21,7 @@ class PSTN(nn.Module):
         self.alpha_p = opt.alpha_p
         self.beta_p = opt.beta_p
         self.reduce_samples = opt.reduce_samples
+        self.opt = opt
 
         # Spatial transformer localization-network
         self.init_localizer(opt)
@@ -75,8 +76,6 @@ class PSTN(nn.Module):
 
         # get output for pstn module
         x, thetas, beta = self.forward_localizer(x, x_high_res) # fix alpha for now 
-        # x, thetas, (theta_mu, theta_sigma) = self.pstn(x)
-
         # make classification based on pstn output
         x = self.forward_classifier(x)
 
@@ -87,7 +86,7 @@ class PSTN(nn.Module):
         if self.training:
             if self.reduce_samples == 'min': 
                 # x [S, bs * classes]
-                x = x.view(self.pstn.S, batch_size, self.num_classes)
+                x = x.view(self.train_samples, batch_size, self.num_classes)
                 x = x.permute(1,0,2)
                 # x shape: [S, bs, nr_classes]
             else: 
@@ -128,6 +127,8 @@ class PSTN(nn.Module):
         # repeat for the number of samples
         x_high_res = x_high_res.repeat(self.S, 1, 1, 1)
         x_high_res = x_high_res.view([self.S * batch_size, c, h, w])
+        if self.opt.dataset == 'random_placement_fashion_mnist' and self.opt.freeze_classifier:
+            small_h, small_w = 28, 28
         x = self.transformer(x_high_res, theta_samples, small_image_shape=(small_h, small_w))
 
         # theta samples: [S, bs, nr_params]
