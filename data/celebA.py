@@ -44,15 +44,15 @@ class CelebA(torch.utils.data.Dataset):
         self.base_folder = 'celeba'
 
         self.fn = partial(os.path.join, self.root, self.base_folder)
-        csv_file = pd.read_csv(self.fn("list_attr_celeba.txt"))
+        self.csv_file = pd.read_csv(self.fn("list_attr_celeba.txt"))
         splits = pd.read_csv(self.fn("list_eval_partition.txt"))
 
         target = attribute_map[opt.target_attr]
         print("target attribute ==> ", target)
-        target = csv_file[target].values
+        target = self.csv_file[target].values
         target[target == -1] = 0
 
-        filename = csv_file['image_id'].values
+        filename = self.csv_file['image_id'].values
 
         split_map = {
             "train": 0,
@@ -84,3 +84,17 @@ class CelebA(torch.utils.data.Dataset):
         image = self.transform(image)
 
         return image, image_high_res, target.astype('long')
+
+    def get_over_sample_probs(self, opt):
+        attribute = self.csv_file['Young'].values
+        attribute[attribute == -1] = 0
+        is_oldie = 1 - attribute
+
+        if opt.upsample_oldies: 
+            pass 
+        return
+            
+        # elif opt.upsample_attractive_oldies: 
+
+
+

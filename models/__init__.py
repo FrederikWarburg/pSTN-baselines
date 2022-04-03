@@ -285,9 +285,13 @@ class System(pl.LightningModule):
     def train_dataloader(self):
         dataset = create_dataset(self.opt, mode='train')
         # dataloader params
-        opt = {"batch_size": self.opt.batch_size, "shuffle": True, "pin_memory": True, "num_workers": int(self.opt.num_threads), 'drop_last': True}
+        optimiser_opt = {"batch_size": self.opt.batch_size, "shuffle": True, "pin_memory": True, "num_workers": int(self.opt.num_threads), 'drop_last': True}
+        if self.opt.upsample_oldies: 
+            sample_probabilities = dataset.get_over_sample_probs(self.opt)
+            weighted_sampler = torch.utils.data.sampler.WeightedRandomSampler(sample_probabilities, epoch_length)
+            optimiser_opt['sampler'] = weighted_sampler
         # return data loader
-        dataloader = DataLoader(dataset, **opt)
+        dataloader = DataLoader(dataset, **optimiser_opt)
         return dataloader
 
     def val_dataloader(self):
