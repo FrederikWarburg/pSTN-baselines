@@ -1,7 +1,7 @@
 #!/bin/sh
 MODELS=("cnn" "stn" "pstn")
 TEST_SAMPELS=(1 1 10)
-TRAIN_SAMPELS=(1 1 1)
+TRAIN_SAMPELS=(1 1 10)
 CRITERION=("nll" "nll" "elbo")
 DATASETS=("FaceAll" "wafer" "uWaveGestureLibrary_X" "Two_Patterns"
  "PhalangesOutlinesCorrect")
@@ -21,14 +21,13 @@ do
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        CUDA_VISIBLE_DEVICES=0 python test.py --dataroot 'data' \
+        CUDA_VISIBLE_DEVICES=1 python train.py --dataroot 'data' \
                         --dataset ${DATASETS[$DATASET]} \
                         --fold ${FOLD} \
                         --batch_size 16 \
                         --num_classes ${NR_CLASSES[$DATASET]}  \
                         --num_threads 1 \
                         --epochs 200 \
-                        --seed 42 \
                         --model ${MODELS[$MODEL]} \
                         --num_param 0 \
                         --N 1 \
@@ -49,7 +48,7 @@ do
                         --var_init -20.0 \
                         --annealing "weight_kl" \
                         --kl_weight ${WEIGHTS[$DATASET]} \
-                        --results_folder "30_03_UAI_repros_timeseries_noseed" \
+                        --results_folder "02_04_UAI_repros_timeseries_small_var_10_samples" \
                         --test_on "test" 
         done
     done
