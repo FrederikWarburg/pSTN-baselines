@@ -56,6 +56,8 @@ def get_exp_name(opt):
     if opt.reduce_samples == 'min':
         modelname += '_min_agg'
 
+    if opt.upsample_oldies:
+        modelname += '_upsample_oldies=%s' %opt.desired_old_rate
 
     return modelname
 

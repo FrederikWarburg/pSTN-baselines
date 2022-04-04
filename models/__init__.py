@@ -78,8 +78,11 @@ def create_model(opt):
 
 def unpack_batch(batch, opt):
     target_trafo = None
+    is_oldie = None
     # helper to unpack batch depending on what it constains
-    if len(batch) == 3: # mtsd and celeba also contain x_high_res 
+    if len(batch) == 4: # celeba also contains x_high_res + is_oldie 
+        x, x_high_res, y, is_oldie = batch
+    elif len(batch) == 3: # mtsd and celeba also contain x_high_res 
         x, x_high_res, y = batch
     else: 
         x, y = batch
@@ -88,7 +91,7 @@ def unpack_batch(batch, opt):
         # in this case we also return trafo
         target_trafo = y[1]
         y = y[0]
-    return x, x_high_res, y, target_trafo
+    return x, x_high_res, y, target_trafo, is_oldie
 
 
 def create_optimizer(model, opt, criterion):
@@ -175,7 +178,7 @@ class System(pl.LightningModule):
 
 
     def training_step(self, batch, batch_idx, hidden=0):
-        x, x_high_res, y, _ = unpack_batch(batch, self.opt)
+        x, x_high_res, y, _, is_oldie = unpack_batch(batch, self.opt)
         y_hat, theta_mu, beta = self.forward(x, y, x_high_res)
         loss, nll_term, kl_term = self.compute_loss(y_hat,y, beta)
         acc = accuracy(y_hat, y, reduction=self.reduction) # if reduction is mean it's already averaged across S dim, otherwise not
@@ -190,7 +193,7 @@ class System(pl.LightningModule):
             self.log("kl", kl_term, on_step=True, on_epoch=False, prog_bar=True, logger=True)
         self.log("train_nll", nll, on_step=True, on_epoch=False, prog_bar=True, logger=True)
         self.log("train_acc", acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
-        return {"loss": loss, "theta_mu": theta_mu, "beta": beta} 
+        return {"loss": loss, "theta_mu": theta_mu, "beta": beta, "is_oldie": is_oldie} 
 
     # this might override on_epoch above?
     def training_epoch_end(self, outputs):
@@ -206,10 +209,14 @@ class System(pl.LightningModule):
             # log theta samples
             for i in range(self.opt.num_param):
                 self.logger.experiment.add_histogram("train_beta_%s" %i, beta[:, :, i], self.current_epoch)
+        if self.opt.dataset == 'celeba':
+            is_oldie = torch.stack([x['is_oldie'] for x in outputs]).flatten()
+            self.log("old_sample_ratio", sum(is_oldie) / len(is_oldie))
+
 
 
     def validation_step(self, batch, batch_idx):
-        x, x_high_res, y, _ = unpack_batch(batch, self.opt)
+        x, x_high_res, y, _, _ = unpack_batch(batch, self.opt)
         y_hat, theta_mu, beta = self.forward(x, y, x_high_res)
         # calculate nll and accuracy
         loss = F.nll_loss(y_hat, y)
@@ -227,7 +234,7 @@ class System(pl.LightningModule):
         self.log('val_acc', acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
 
     def test_step(self, batch, batch_idx):
-        x, x_high_res, y, target_trafo = unpack_batch(batch, self.opt)
+        x, x_high_res, y, target_trafo, _ = unpack_batch(batch, self.opt)
         y_hat, theta_mu, beta = self.forward(x, y, x_high_res)
         # calculate nll and loss
         batch_nll = F.nll_loss(y_hat, y, reduction='mean')
@@ -288,8 +295,9 @@ class System(pl.LightningModule):
         optimiser_opt = {"batch_size": self.opt.batch_size, "shuffle": True, "pin_memory": True, "num_workers": int(self.opt.num_threads), 'drop_last': True}
         if self.opt.upsample_oldies: 
             sample_probabilities = dataset.get_over_sample_probs(self.opt)
-            weighted_sampler = torch.utils.data.sampler.WeightedRandomSampler(sample_probabilities, epoch_length)
+            weighted_sampler = torch.utils.data.sampler.WeightedRandomSampler(sample_probabilities, num_samples=len(dataset), replacement=True)
             optimiser_opt['sampler'] = weighted_sampler
+            optimiser_opt['shuffle'] = False # if sampler is used shuffle needs to be set to False
         # return data loader
         dataloader = DataLoader(dataset, **optimiser_opt)
         return dataloader

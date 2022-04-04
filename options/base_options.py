@@ -47,6 +47,8 @@ class BaseOptions:
         self.parser.add_argument('--fold', type=str, default=None, help='using a subset of MNIST? Which fold?')
         self.parser.add_argument('--add_kmnist_noise', type=bool, default=False, help='add kmnist noise')
         self.parser.add_argument('--normalize', type=str2bool, default=True, help='should we normalize MNIST data?')
+        self.parser.add_argument('--upsample_oldies', action='store_true', help='flag for celeba upsampling experiment')
+        self.parser.add_argument('--desired_old_rate', type=float, default=None, help='To what proportion should oldies be upsampled?')
 
         # model params
         self.parser.add_argument('--alpha_p', type=float, default=1, help='prior alpha (posterior when fixed)')
