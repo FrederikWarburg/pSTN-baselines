@@ -47,6 +47,9 @@ class BaseOptions:
         self.parser.add_argument('--fold', type=str, default=None, help='using a subset of MNIST? Which fold?')
         self.parser.add_argument('--add_kmnist_noise', type=bool, default=False, help='add kmnist noise')
         self.parser.add_argument('--normalize', type=str2bool, default=True, help='should we normalize MNIST data?')
+        self.parser.add_argument('--upsample_oldies', action='store_true', help='flag for celeba upsampling experiment')
+        self.parser.add_argument('--upsample_attractive_oldies', action='store_true', help='flag for celeba upsampling experiment')
+        self.parser.add_argument('--desired_rate', type=float, default=None, help='To what proportion should oldies be upsampled?')
 
         # model params
         self.parser.add_argument('--alpha_p', type=float, default=1, help='prior alpha (posterior when fixed)')
@@ -55,6 +58,8 @@ class BaseOptions:
         self.parser.add_argument('--annealing', type=str, default='no_annealing')
         self.parser.add_argument('--kl_weight', type=float, default=1.)
         self.parser.add_argument('--reduce_samples', type=str, default='mean')
+        self.parser.add_argument('--identity_mean', action='store_true', help='only learn variance, flag for celeba experiment')
+        self.parser.add_argument('--aug_training_only', action='store_true', help='only augment/use pstn at training time, flag for celeba experiment')
 
         # network params
         self.parser.add_argument('--model', type=str, default='cnn', help='model name')

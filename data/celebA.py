@@ -44,15 +44,15 @@ class CelebA(torch.utils.data.Dataset):
         self.base_folder = 'celeba'
 
         self.fn = partial(os.path.join, self.root, self.base_folder)
-        self.csv_file = pd.read_csv(self.fn("list_attr_celeba.txt"))
+        csv_file = pd.read_csv(self.fn("list_attr_celeba.txt"))
         splits = pd.read_csv(self.fn("list_eval_partition.txt"))
 
         target = attribute_map[opt.target_attr]
         print("target attribute ==> ", target)
-        target = self.csv_file[target].values
+        target = csv_file[target].values
         target[target == -1] = 0
 
-        filename = self.csv_file['image_id'].values
+        filename = csv_file['image_id'].values
 
         split_map = {
             "train": 0,
@@ -65,6 +65,11 @@ class CelebA(torch.utils.data.Dataset):
 
         self.filename = np.asarray(filename[mask])
         self.target = np.asarray(target[mask])
+        # for fairness experiments
+        young = csv_file['Young'].values[mask]
+        young[young == -1] = 0
+        old = 1 - young
+        self.is_oldie = np.asarray(old)
 
         # make sure we only look at the first max_dataset_size images.
         if mode == 'train':
@@ -83,18 +88,32 @@ class CelebA(torch.utils.data.Dataset):
         image_high_res = self.transform_high_res(image)
         image = self.transform(image)
 
-        return image, image_high_res, target.astype('long')
+        return image, image_high_res, target.astype('long'), self.is_oldie[idx]
 
     def get_over_sample_probs(self, opt):
-        attribute = self.csv_file['Young'].values
-        attribute[attribute == -1] = 0
-        is_oldie = 1 - attribute
+        old_count = self.is_oldie.sum()
+        young_count = (1 - self.is_oldie).sum()
 
         if opt.upsample_oldies: 
-            pass 
-        return
-            
-        # elif opt.upsample_attractive_oldies: 
-
-
-
+            if opt.desired_rate == 1: # only sample oldies
+                weights = self.is_oldie / self.__len__()
+            elif opt.desired_rate == 0: # only sample young folks
+                weights = (1 - self.is_oldie) / self.__len__()
+            else: # non-degenerate case 
+                upsampling_factor = (opt.desired_rate * young_count) / ((1 - opt.desired_rate) * old_count) 
+                weights = (upsampling_factor * self.is_oldie + (1 - self.is_oldie)) / self.__len__()
+        
+        elif opt.upsample_attractive_oldies: 
+            old_attr = np.logical_and(self.is_oldie, self.target).astype(int)
+            old_non_attr = np.logical_and(self.is_oldie, self.target==0).astype(int)
+            old_attr_count = old_attr.sum()
+            old_non_attr_count = old_non_attr.sum()
+            if opt.desired_rate == 1:
+                weights = (old_attr / self.__len__()) * (old_count / old_attr_count) 
+            elif opt.desired_rate == 0: 
+                weights = (old_non_attr / self.__len__()) * (old_count / old_non_attr_count) 
+            else:
+                upsampling_factor = (opt.desired_rate * old_non_attr_count) / ((1 - opt.desired_rate) * old_attr_count)
+                weights = old_attr * upsampling_factor / self.__len__() + old_non_attr / self.__len__() 
+            weights += (1 - self.is_oldie) / self.__len__() # in either case add young people unchanged
+        return weights

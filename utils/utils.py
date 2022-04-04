@@ -56,6 +56,11 @@ def get_exp_name(opt):
     if opt.reduce_samples == 'min':
         modelname += '_min_agg'
 
+    if opt.upsample_oldies:
+        modelname += '_upsample_oldies=%s' %opt.desired_rate
+
+    if opt.upsample_attractive_oldies:
+        modelname += '_upsample_attr_oldies=%s' %opt.desired_rate
 
     return modelname
 
@@ -130,11 +135,13 @@ def save_learned_thetas(opt, outputs, mode='train', epoch=None):
         mkdir(theta_path)
 
     if 'stn' in opt.model.lower():
-        theta_mu = torch.stack([x['theta_mu'] for x in outputs]).cpu().numpy()
-        pickle.dump(theta_mu, open(theta_path + '_mu.p', 'wb'))
+        if outputs[0]['theta_mu'] is not None: # DA upsampling experiment (mean id. / None)
+            theta_mu = torch.stack([x['theta_mu'] for x in outputs]).cpu().numpy()
+            pickle.dump(theta_mu, open(theta_path + '_mu.p', 'wb'))
     if opt.model.lower() == 'pstn':
-        beta = torch.stack([x['beta'] for x in outputs]).cpu().numpy()
-        pickle.dump(beta, open(theta_path + '_beta.p', 'wb'))
+        if outputs[0]['beta'] is not None:
+            beta = torch.stack([x['beta'] for x in outputs]).cpu().numpy()
+            pickle.dump(beta, open(theta_path + '_beta.p', 'wb'))
 
     if outputs[0]['ground_truth_trafo'] is not None:
         target_trafo = torch.stack([x['ground_truth_trafo'] for x in outputs]).cpu().numpy()

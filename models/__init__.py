@@ -78,8 +78,11 @@ def create_model(opt):
 
 def unpack_batch(batch, opt):
     target_trafo = None
+    is_oldie = None
     # helper to unpack batch depending on what it constains
-    if len(batch) == 3: # mtsd and celeba also contain x_high_res 
+    if len(batch) == 4: # celeba also contains x_high_res + is_oldie 
+        x, x_high_res, y, is_oldie = batch
+    elif len(batch) == 3: # mtsd and celeba also contain x_high_res 
         x, x_high_res, y = batch
     else: 
         x, y = batch
@@ -88,7 +91,7 @@ def unpack_batch(batch, opt):
         # in this case we also return trafo
         target_trafo = y[1]
         y = y[0]
-    return x, x_high_res, y, target_trafo
+    return x, x_high_res, y, target_trafo, is_oldie
 
 
 def create_optimizer(model, opt, criterion):
@@ -153,31 +156,31 @@ class System(pl.LightningModule):
         self.prev_epoch = -1
         self.log_images_test = True
 
-    def forward(self, x, y, x_high_res=None):
+    def forward(self, x, y, x_high_res=None, is_attractive=None, is_oldie=None):
         theta_mu, beta = None, None
         if self.opt.model.lower() == 'cnn':
             y_hat = self.model.forward(x)
         if self.opt.model.lower() == 'stn':
             y_hat, theta_mu = self.model.forward(x, x_high_res)
         if self.opt.model.lower() == 'pstn':
-            y_hat, _, theta_params = self.model.forward(x, x_high_res)
+            y_hat, _, theta_params = self.model.forward(x, x_high_res, is_attractive, is_oldie)
             theta_mu, beta = theta_params
         return y_hat, theta_mu, beta
 
     def compute_loss(self, y_hat,y, beta=None):
-        nll_term, kl_term = None, None
+        nll_term, weighted_kl_term, unweighted_kl_term = None, None, None
         if self.opt.criterion.lower() == 'nll':
             loss = self.criterion(y_hat, y)
         elif self.opt.criterion.lower() == 'elbo':
             loss, individual_terms = self.criterion(y_hat, beta, y)
-            nll_term, kl_term = individual_terms
-        return loss, nll_term, kl_term
+            nll_term, weighted_kl_term, unweighted_kl_term = individual_terms
+        return loss, nll_term, weighted_kl_term, unweighted_kl_term
 
 
     def training_step(self, batch, batch_idx, hidden=0):
-        x, x_high_res, y, _ = unpack_batch(batch, self.opt)
-        y_hat, theta_mu, beta = self.forward(x, y, x_high_res)
-        loss, nll_term, kl_term = self.compute_loss(y_hat,y, beta)
+        x, x_high_res, y, _, is_oldie = unpack_batch(batch, self.opt)
+        y_hat, theta_mu, beta = self.forward(x, y, x_high_res, is_attractive=y, is_oldie=is_oldie)
+        loss, nll_term, weighted_kl_term, unweighted_kl_term = self.compute_loss(y_hat,y, beta)
         acc = accuracy(y_hat, y, reduction=self.reduction) # if reduction is mean it's already averaged across S dim, otherwise not
 
         # Logging
@@ -187,10 +190,14 @@ class System(pl.LightningModule):
         else:
             nll = nll_term
              # log KL loss if loss if applicable
-            self.log("kl", kl_term, on_step=True, on_epoch=False, prog_bar=True, logger=True)
+            self.log("kl, weighted", weighted_kl_term, on_step=True, on_epoch=False, prog_bar=True, logger=True)
+            self.log("kl, unweighted", unweighted_kl_term, on_step=True, on_epoch=False, prog_bar=True, logger=True)
+            self.log("avg. beta", beta.mean(), on_step=True, on_epoch=False, prog_bar=True, logger=True)
+
         self.log("train_nll", nll, on_step=True, on_epoch=False, prog_bar=True, logger=True)
         self.log("train_acc", acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
-        return {"loss": loss, "theta_mu": theta_mu, "beta": beta} 
+        return {"loss": loss, "theta_mu": theta_mu, "beta": beta, "is_oldie": is_oldie, "y": y} 
+
 
     # this might override on_epoch above?
     def training_epoch_end(self, outputs):
@@ -206,11 +213,19 @@ class System(pl.LightningModule):
             # log theta samples
             for i in range(self.opt.num_param):
                 self.logger.experiment.add_histogram("train_beta_%s" %i, beta[:, :, i], self.current_epoch)
+        if self.opt.dataset == 'celeba':
+            is_oldie = torch.stack([x['is_oldie'] for x in outputs]).flatten()
+            self.log("old_sample_ratio", sum(is_oldie) / len(is_oldie))
+            if self.opt.upsample_attractive_oldies: 
+                is_attractive = torch.stack([x['y'] for x in outputs]).flatten()
+                is_old_and_attractive = torch.logical_and(is_oldie, is_attractive)
+                old_attractive_sample_ratio = sum(is_old_and_attractive) / sum(is_oldie)
+                self.log("old_attractive_sample_ratio", old_attractive_sample_ratio)
 
 
     def validation_step(self, batch, batch_idx):
-        x, x_high_res, y, _ = unpack_batch(batch, self.opt)
-        y_hat, theta_mu, beta = self.forward(x, y, x_high_res)
+        x, x_high_res, y, _, is_oldie = unpack_batch(batch, self.opt)
+        y_hat, theta_mu, beta = self.forward(x, y, x_high_res, is_attractive=y, is_oldie=is_oldie)
         # calculate nll and accuracy
         loss = F.nll_loss(y_hat, y)
         acc = accuracy(y_hat, y)
@@ -218,7 +233,7 @@ class System(pl.LightningModule):
         # for the first batch in an epoch visualize the predictions for better debugging
         if  self.current_epoch > self.prev_epoch:
             # calculate different visualizations
-            grid_in, grid_out, _, bbox_images = visualize_stn(self.model, x, x_high_res, self.opt)
+            grid_in, grid_out, _, bbox_images = visualize_stn(self.model, x, x_high_res, self.opt, is_attractive=y, is_oldie=is_oldie)
             # add these to tensorboard
             self.add_images(grid_in, grid_out, bbox_images)
             self.prev_epoch += 1
@@ -227,15 +242,17 @@ class System(pl.LightningModule):
         self.log('val_acc', acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
 
     def test_step(self, batch, batch_idx):
-        x, x_high_res, y, target_trafo = unpack_batch(batch, self.opt)
-        y_hat, theta_mu, beta = self.forward(x, y, x_high_res)
+        x, x_high_res, y, target_trafo, is_oldie = unpack_batch(batch, self.opt)
+        y_hat, theta_mu, beta = self.forward(x, y, x_high_res, is_attractive=y, is_oldie=is_oldie) # in reality.. 
+        # ... we wouldn't have access to y at test time 
+        
         # calculate nll and loss
         batch_nll = F.nll_loss(y_hat, y, reduction='mean')
         acc = accuracy(y_hat, y)
 
         if self.log_images_test:
             # calculate different visualizations
-            grid_in, grid_out, _, bbox_images = visualize_stn(self.model, x, x_high_res, self.opt)
+            grid_in, grid_out, _, bbox_images = visualize_stn(self.model, x, x_high_res, self.opt, is_attractive=y, is_oldie=is_oldie)
             # add these to tensorboard
             self.add_images(grid_in, grid_out, bbox_images)
 
@@ -286,10 +303,11 @@ class System(pl.LightningModule):
         dataset = create_dataset(self.opt, mode='train')
         # dataloader params
         optimiser_opt = {"batch_size": self.opt.batch_size, "shuffle": True, "pin_memory": True, "num_workers": int(self.opt.num_threads), 'drop_last': True}
-        if self.opt.upsample_oldies: 
+        if self.opt.upsample_oldies or self.opt.upsample_attractive_oldies: 
             sample_probabilities = dataset.get_over_sample_probs(self.opt)
-            weighted_sampler = torch.utils.data.sampler.WeightedRandomSampler(sample_probabilities, epoch_length)
+            weighted_sampler = torch.utils.data.sampler.WeightedRandomSampler(sample_probabilities, num_samples=len(dataset), replacement=True) 
             optimiser_opt['sampler'] = weighted_sampler
+            optimiser_opt['shuffle'] = False # if sampler is used shuffle needs to be set to False
         # return data loader
         dataloader = DataLoader(dataset, **optimiser_opt)
         return dataloader

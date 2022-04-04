@@ -1,4 +1,5 @@
 from __future__ import print_function
+from numpy import identity
 
 import torch
 import torch.nn as nn
@@ -70,17 +71,38 @@ class PSTN(nn.Module):
             self.fc_loc_beta[-2].bias.data.copy_(
                     torch.tensor([opt.var_init], dtype=torch.float).repeat(self.theta_dim))
 
-    def forward(self, x, x_high_res):
+    def make_DA_upsample_mask(self, is_oldie, is_attractive):
+        if self.opt.upsample_oldies:
+            DA_upsample_mask = is_oldie
+        elif self.opt.upsample_attractive_oldies: 
+            DA_upsample_mask = torch.logical_and(is_oldie, is_attractive)
+        else: 
+            DA_upsample_mask = None
+        return DA_upsample_mask
+
+
+    def forward(self, x, x_high_res, is_attractive=None, is_oldie=None): # last three arguments for celebA experiments at training time
         # get input shape
         batch_size = x.shape[0]
+        # determine upsample strategy from meta-data
+        DA_upsample_mask = self.make_DA_upsample_mask(is_oldie, is_attractive)
 
         # get output for pstn module
-        x, thetas, beta = self.forward_localizer(x, x_high_res) # fix alpha for now 
+        x, theta_samples, theta_mu_beta = self.forward_localizer(x, x_high_res, DA_upsample_mask) 
+
         # make classification based on pstn output
         x = self.forward_classifier(x)
-
         # format according to number of samples
-        x = torch.stack(x.split([batch_size] * self.S))
+        x = torch.stack(x.split([batch_size] * self.S)) # shape: [S, batch_size, 2]
+        
+        # slow, naive DA upsampling fix for now, maybe vectorize later 
+        # (only use first prediction when we're not upsampling)
+        # we implement it this way bc of dropout, i.e. even if theta is identity we get different predictions
+        if DA_upsample_mask is not None: 
+            for i in range(batch_size):
+                if torch.logical_not(DA_upsample_mask)[i]:
+                    x[:, i, :] = x[0, i, :]
+       
         x = x.view(self.S, batch_size * self.num_classes)
 
         if self.training:
@@ -99,16 +121,23 @@ class PSTN(nn.Module):
             x = torch.log(torch.tensor(1.0 / float(self.S))) + torch.logsumexp(x, dim=0)
             x = x.view(batch_size, self.num_classes)
 
-        return x, thetas, beta
+        return x, theta_samples, theta_mu_beta
 
-    def forward_localizer(self, x, x_high_res):
+    def forward_localizer(self, x, x_high_res, DA_upsample_mask, visualise=False): # visualise=True triggers train time behaviour for validation run
         if x_high_res is None: 
             x_high_res = x
         batch_size, c, h, w = x_high_res.shape
         _, _, small_h, small_w = x.shape
         self.S = self.train_samples if self.training else self.test_samples
         
-        theta_mu, beta = self.compute_theta_beta(x)
+        # figure out whether to do anything here (when in train only mode)
+        apply_trafos = self.training or not self.opt.aug_training_only or visualise
+        if not apply_trafos:
+            x = x.repeat(self.S, 1, 1, 1)
+            x = x.view([self.S * batch_size, c, small_h, small_w])
+            return x, None, (None, None)
+        
+        theta_mu, beta = self.compute_theta_beta(x, DA_upsample_mask)
 
         # repeat x in the batch dim so we avoid for loop
         # (this doesn't do anything for N=1)
@@ -122,7 +151,14 @@ class PSTN(nn.Module):
         # maybe we could do this more efficiently because of the independence assumptions within theta? 
         T_dist = distributions.studentT.StudentT(df= 2* alpha_upsample, loc=theta_mu_upsample, scale=torch.sqrt(beta_upsample / alpha_upsample))
         theta_samples = T_dist.rsample([self.S]) # shape: [self.S, batch_size, self.theta_dim]
+        if DA_upsample_mask is not None: 
+            # fill in idenitity if we don't want to augment (see DA_upsample_mask)
+            zero_out = torch.logical_not(DA_upsample_mask) 
+            theta_samples[:, zero_out, :] = torch.tensor([0., 1., 0., 0.]).to(x.device) #.unsqueeze(0).repeat(self.S, 1)# those aren't used so they shouldn't contribute to KL
+
         theta_samples = theta_samples.view([self.S * batch_size, self.theta_dim])
+
+        
 
         # repeat for the number of samples
         x_high_res = x_high_res.repeat(self.S, 1, 1, 1)
@@ -134,13 +170,22 @@ class PSTN(nn.Module):
         # theta samples: [S, bs, nr_params]
         return x, theta_samples, (theta_mu, beta)
 
-    def compute_theta_beta(self, x):
+    def compute_theta_beta(self, x, DA_upsample_mask):
         batch_size = x.shape[0]
         x = self.localization(x)
         x = x.view(batch_size, -1)
         
-        theta_mu = self.fc_loc_mu(x)
+        if self.opt.identity_mean: 
+            theta_mu = torch.tensor([0, 1, 0, 0] * self.N, dtype=torch.float).repeat(batch_size, 1).to(x.device)
+        else:
+            theta_mu = self.fc_loc_mu(x)
+    
         beta = self.fc_loc_beta(x)
+        if DA_upsample_mask is not None: 
+            # "zero out" if we don't want to augment (see DA_upsample_mask)
+            zero_out = torch.logical_not(DA_upsample_mask)
+            beta[zero_out] = 5e-5 # those aren't used, but contribute to KL... try to use init values 
+
         return theta_mu, beta
 
     def forward_classifier(self, x):

@@ -55,4 +55,4 @@ class Elbo(nn.Module):
         # weighting of kl term
         alpha = self.annealing(self.iter, self.M, base_kl=self.base_kl, weight=self.w)
 
-        return self.nll + alpha * self.kl, (self.nll, alpha * self.kl)
+        return self.nll + alpha * self.kl, (self.nll, alpha * self.kl, self.kl)

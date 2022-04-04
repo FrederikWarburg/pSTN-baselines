@@ -31,9 +31,9 @@ class CelebaPSTN(PSTN):
 
         # Regressor for the 3 * 2 affine matrix
         self.fc_loc_mu = nn.Sequential(
-           nn.Linear(self.input_size, 100),
-           nn.ReLU(True),
-           nn.Linear(100, self.theta_dim)
+            nn.Linear(self.input_size, 100),
+            nn.ReLU(True),
+            nn.Linear(100, self.theta_dim)
         )
 
         # Regressor for the 3 * 2 affine matrix
