@@ -21,7 +21,7 @@ do
         echo ${TEST_SAMPELS[$MODEL]}
         echo ${TRAIN_SAMPELS[$MODEL]}
         echo ${CRITERION[$MODEL]}
-        CUDA_VISIBLE_DEVICES=1 python train.py --dataroot 'data' \
+        CUDA_VISIBLE_DEVICES=0 python train.py --dataroot 'data' \
                         --dataset ${DATASETS[$DATASET]} \
                         --fold ${FOLD} \
                         --batch_size 16 \
@@ -45,7 +45,7 @@ do
                         --transformer_type "diffeomorphic" \
                         --step_size 200 \
                         --val_check_interval 200 \
-                        --var_init -20.0 \
+                        --var_init -5.0 \
                         --annealing "weight_kl" \
                         --kl_weight ${WEIGHTS[$DATASET]} \
                         --results_folder "02_04_UAI_repros_timeseries_small_var_10_samples" \
