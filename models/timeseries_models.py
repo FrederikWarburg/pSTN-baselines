@@ -2,9 +2,10 @@ from __future__ import print_function
 
 import torch.nn as nn
 import torch.nn.functional as F
-import torch
-
 from utils import timeseries_io as io
+from models.stn import STN
+from models.pstn import PSTN
+import torch
 
 parameter_dict_timeseries_CNN = {
     'CNN_filters1': 164,
@@ -34,12 +35,110 @@ parameter_dict_timeseries_STN = {
 parameter_dict_timeseries_P_STN = parameter_dict_timeseries_STN
 
 
+class TimeseriesPSTN(PSTN):
+    def __init__(self, opt):
+        super().__init__(opt)
+
+    def init_localizer(self, opt):
+        self.localization = nn.Sequential(
+            nn.Conv1d(1, 64, kernel_size=8),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+            ###
+            nn.Conv1d(64,
+                      164, kernel_size=5),
+            nn.BatchNorm1d(164),
+            nn.ReLU(),
+            ###
+            nn.Conv1d(164, 64, kernel_size=3),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+            ###
+            nn.AdaptiveAvgPool1d(1),
+            nn.Dropout()
+        )
+
+        # Regressor for the mean
+        self.fc_loc_mu = nn.Sequential(
+            nn.Linear(64, self.theta_dim)
+        )
+
+        # Regressor for the variance
+        self.fc_loc_beta = nn.Sequential(
+            nn.Linear(64, self.theta_dim),
+            nn.Softplus()
+        )
+
+    def init_classifier(self, opt):
+        self.classifier = TimeseriesClassifier(opt)
+
+    def forward_localizer(self, x, x_high_res):
+        batch_size, c, l = x.shape
+        self.S = self.train_samples if self.training else self.test_samples
+        
+        theta_mu, beta = self.compute_theta_beta(x)
+        # breakpoint()
+        alpha_upsample = self.alpha_p * torch.ones_like(theta_mu) # upsample scalar alpha
+
+        # make the T-dist object and sample it here? 
+        # it's apparently ok to generate distribution anew in each forward pass (e.g. https://github.com/kampta/pytorch-distributions/blob/master/gaussian_vae.py
+        # maybe we could do this more efficiently because of the independence assumptions within theta? 
+        T_dist = torch.distributions.studentT.StudentT(df= 2* alpha_upsample, loc=theta_mu, scale=torch.sqrt(beta / alpha_upsample))
+        theta_samples = T_dist.rsample([self.S]) # shape: [self.S, batch_size, self.theta_dim]
+        theta_samples = theta_samples.view([self.S * batch_size, self.theta_dim])
+
+        # repeat for the number of samples
+        x = x.repeat(self.S, 1, 1)
+        x = x.view([self.S * batch_size, c, l])
+        x = self.transformer(x, theta_samples)
+
+        # theta samples: [S, bs, nr_params]
+        return x, theta_samples, (theta_mu, beta)
+
+
+class TimeseriesSTN(STN):
+    def __init__(self, opt):
+        super().__init__(opt)
+
+    def init_localizer(self, opt):
+        self.localization = nn.Sequential(
+            nn.Conv1d(1, 64, kernel_size=8),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+            ###
+            nn.Conv1d(64,
+                      164, kernel_size=5),
+            nn.BatchNorm1d(164),
+            nn.ReLU(),
+            ###
+            nn.Conv1d(164, 64, kernel_size=3),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+            ###
+            nn.AdaptiveAvgPool1d(1),
+            nn.Dropout()
+        )
+
+        # Regressor for the mean
+        self.fc_loc = nn.Sequential(
+            nn.Linear(64, self.theta_dim)
+        )
+
+    def init_classifier(self, opt):
+        self.classifier = TimeseriesClassifier(opt)
+
+    # override the forward function since it's different for time series 
+    def forward_localizer(self, x, x_high_res):
+        theta = self.compute_theta(x)
+        x = self.transformer(x, theta)
+        return x, theta
+
+
 class TimeseriesClassifier(nn.Module):
     def __init__(self, opt):
         super(TimeseriesClassifier, self).__init__()
         self.parameter_dict = self.load_specifications(opt)
         self.nr_classes = io.get_nr_classes_and_features(opt.dataset)[0]
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.CNN = nn.Sequential(
             nn.Conv1d(1, self.parameter_dict['CNN_filters1'],

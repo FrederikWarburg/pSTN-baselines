@@ -45,22 +45,34 @@ class BaseOptions:
         # data params - MNIST subset experiment
         self.parser.add_argument('--subset', type=str, default=None, help='using a subset of MNIST? What size?')
         self.parser.add_argument('--fold', type=str, default=None, help='using a subset of MNIST? Which fold?')
+        self.parser.add_argument('--add_kmnist_noise', type=bool, default=False, help='add kmnist noise')
+        self.parser.add_argument('--normalize', type=str2bool, default=True, help='should we normalize MNIST data?')
 
         # model params
         self.parser.add_argument('--alpha_p', type=float, default=1, help='prior alpha (posterior when fixed)')
-        self.parser.add_argument('--beta_p', type=float, default=1e-5, help='prior beta')
+        self.parser.add_argument('--beta_p', type=float, default=1, help='prior beta')
+        self.parser.add_argument('--criterion', type=str, default='nll')
+        self.parser.add_argument('--annealing', type=str, default='no_annealing')
+        self.parser.add_argument('--kl_weight', type=float, default=1.)
+        self.parser.add_argument('--reduce_samples', type=str, default='mean')
 
         # network params
         self.parser.add_argument('--model', type=str, default='cnn', help='model name')
         self.parser.add_argument('--batch_size', type=int, default=16, help='input batch size')
         #self.parser.add_argument('--resume_ckpt', type=str, default=None, help='path to pretrained model')
         self.parser.add_argument('--resume_from_ckpt', type=str2bool, nargs='?', const=True, default=False, help='Load pre-trained model?')
+        self.parser.add_argument('--pretrained_model_path', type=str, default=None, help='frozen classifier exp; where to load from')
+        self.parser.add_argument('--modeltype', type=str, default='')
+        self.parser.add_argument('--init_large_variance', type=str2bool, default=False)
+        self.parser.add_argument('--var_init', type=float, default=-20.0)
+
 
         self.parser.add_argument('--dropout_rate', type=float, default=0.5)
         self.parser.add_argument('--N', type=int, default=1, help='number of parallel tracks')
         self.parser.add_argument('--test_samples', type=int, default=1, help='number of samples')
         self.parser.add_argument('--train_samples', type=int, default=1, help='number of samples')
         self.parser.add_argument('--basenet', type=str, help='base network to use')
+        self.parser.add_argument('--freeze_classifier', type=str2bool, nargs='?', const=True, default=False)
 
         # logger params 
         self.parser.add_argument('--save_results', type=bool, default=False, help='should we save the results?')
@@ -74,13 +86,19 @@ class BaseOptions:
                                  help='name of the experiment. It decides where to store samples and models')
         self.parser.add_argument('--checkpoints_dir', type=str, default='checkpoints', help='models are saved here')
         self.parser.add_argument('--test_on', type=str, default='test', help='evaluate on validation or test?')
+        self.parser.add_argument('--check_already_run', type=bool, default=False, help='check whether this config has already been run')
+        
 
         # visualization params
         self.parser.add_argument('--export_folder', type=str, default='',
                                  help='exports intermediate collapses to this folder')
         self.parser.add_argument('--heatmap', type=bool, default=False, help='visualize bbox as heat map or bbox')
+        self.parser.add_argument('--bbox_size', default=0, type=int, help='the sizes of the bounding box around the bounding box for mtsd')
+
         #
         self.initialized = True
+
+
 
     def parse(self):
         if not self.initialized:

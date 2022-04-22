@@ -23,9 +23,6 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--prior_type', type=str, default='mean_zero_gaussian')  # mean_zero_gaussian, moving_mean, mixture_of_gaussians
         self.parser.add_argument('--learnable_prior', type=str2bool, nargs='?', const=True, default=False)  # mean_zero_gaussian, moving_mean, mixture_of_gaussians
 
-        self.parser.add_argument('--criterion', type=str, default='nll')
-        self.parser.add_argument('--annealing', type=str, default='no_annealing')
-        self.parser.add_argument('--kl_weight', type=float, default=1.)
 
         # network related
         self.parser.add_argument('--freeze_layers', type=int, default=np.inf)
@@ -45,3 +42,4 @@ class TrainOptions(BaseOptions):
 
         self.is_train = True
         self.no_shuffle = False  # shuffle
+

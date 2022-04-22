@@ -12,13 +12,12 @@ class CNN(nn.Module):
             from .cubclassifier import CubClassifier as Classifier
         elif opt.dataset.lower() in ['celeba', 'mnistxkmnist']:
             from .celebaclassifier import CelebaClassifier as Classifier
-        elif opt.dataset.lower() in ['mnist', 'random_placement_mnist']:
+        elif 'mnist' in opt.dataset.lower():
             from .mnistclassifier import MnistClassifier as Classifier
         elif opt.dataset in opt.TIMESERIESDATASETS:
             from .timeseriesclassifier import TimeseriesClassifier as Classifier
 
         self.cnn = Classifier(opt)
 
-    def forward(self, x):
-
+    def forward(self, x, x_high_res=None): # cnn doesn't need high res input
         return self.cnn(x)

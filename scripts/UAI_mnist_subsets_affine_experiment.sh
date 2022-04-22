@@ -4,14 +4,16 @@ PARAMS=(1 4 4)
 TEST_SAMPELS=(1 1 10)
 TRAIN_SAMPELS=(1 1 1)
 CRITERION=("nll" "nll" "elbo")
-SUBSETS=(10 30 100 1000 3000 10000)
+SUBSETS=(30 100 1000 3000 10000)
+W_s=(0.001 0.0003 0.0001 0.00003 0.00001) # optimal W_s determined previously 
+LR_s=(0.001 0.0001 0.001)
 
 for SUBSET in {0..4}
 do
     echo ${SUBSETS[$SUBSET]}
     for FOLD in {0..4}
     do
-        for MODEL in {1..2}
+        for MODEL in {1..1}
         do
             echo ${MODELS[$MODEL]}
             echo ${PARAMS[$MODEL]}
@@ -33,9 +35,8 @@ do
                             --test_samples ${TEST_SAMPELS[$MODEL]} \
                             --train_samples ${TRAIN_SAMPELS[$MODEL]} \
                             --criterion ${CRITERION[$MODEL]} \
-                            --lr 0.001 \
+                            --lr  ${LR_s[$MODEL]}  \
                             --lr_loc 0.1 \
-                            --sigma_p 0.05 \
                             --num_param ${PARAMS[$MODEL]} \
                             --trainval_split True \
                             --save_results True \
@@ -43,9 +44,13 @@ do
                             --weightDecay 0.01 \
                             --transformer_type "affine" \
                             --step_size 600 \
-                            --val_check_interval 1 \
+                            --val_check_interval 200 \
                             --test_on 'test' \
-                            --results_folder "debug"
+                            --beta_p 1. \
+                            --var_init -5 \
+                            --annealing "weight_kl" \
+                            --kl_weight ${W_s[$SUBSET]} \
+                            --results_folder "29_03_UAI_repros_mnist_affine_retry" 
         done
     done
 done

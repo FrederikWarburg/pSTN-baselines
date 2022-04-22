@@ -20,6 +20,15 @@ if __name__ == '__main__':
     # decide unique model name based on parameters
     modelname = get_exp_name(opt)
 
+    if opt.check_already_run:
+        print('performing check:')
+        results_dir = 'experiments/%s/' % opt.results_folder
+        check_path = results_dir + modelname + '_test_accuracy.p'
+        print(check_path)
+        if os.path.exists(check_path):
+            print('already ran this, exiting')
+            exit()
+
     # initialize a train logger for experiment
     logger = TensorBoardLogger(
        save_dir=os.getcwd() + "/lightning_logs/%s/" %opt.results_folder,
@@ -45,30 +54,40 @@ if __name__ == '__main__':
         logger_steps = 1
     else:
         logger_steps = 10
-    trainer = Trainer(max_epochs=opt.epochs,
-                    log_every_n_steps=logger_steps,
-                      # accumulate_grad_batches=num_batches,
-                      gpus=num_gpus,
-                      logger=logger,
-                      check_val_every_n_epoch=val_check_interval,
-                      checkpoint_callback=False)
-
-    print('printing parameter check:')
-    check_learnable_parameters(lightning_system.model, opt.model)
 
     if opt.resume_from_ckpt:
         print('Loading model.')
 
+        trainer = Trainer(max_epochs=opt.epochs,
+                        log_every_n_steps=logger_steps,
+                        # accumulate_grad_batches=num_batches,
+                        resume_from_checkpoint = opt.pretrained_model_path,
+                        gpus=num_gpus,
+                        logger=logger,
+                        check_val_every_n_epoch=val_check_interval,
+                        checkpoint_callback=False)
+
     else:
-        # train model
-        trainer.fit(lightning_system)
-        trainer.save_checkpoint("checkpoints/%s/%s.ckpt" % (opt.results_folder, modelname))
+        trainer = Trainer(max_epochs=opt.epochs,
+                        log_every_n_steps=logger_steps,
+                        # accumulate_grad_batches=num_batches,
+                        gpus=num_gpus,
+                        logger=logger,
+                        check_val_every_n_epoch=val_check_interval,
+                        checkpoint_callback=False)
+
+    print('printing parameter check:')
+    check_learnable_parameters(lightning_system.model, opt.model)
+    
+    # train model
+    trainer.fit(lightning_system)
+    trainer.save_checkpoint("checkpoints/%s/%s.ckpt" % (opt.results_folder, modelname))
 
     # test model
     if opt.test_on == 'test':
         test_dataloader = lightning_system.test_dataloader()
 
     elif opt.test_on == 'val':
-        test_dataloader = [lightning_system.val_dataloader()]
+        test_dataloader = lightning_system.val_dataloader()
 
     trainer.test(lightning_system, test_dataloaders=test_dataloader)

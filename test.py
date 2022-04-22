@@ -2,20 +2,22 @@ import os
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
-from options.test_options import TestOptions
+# from options.test_options import TestOptions TODO: clean this up
+from options.train_options import TrainOptions
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
 from models import System
 import torch
-from utils.utils import get_exp_name
+from utils.utils import get_exp_name, mkdir, get_exp_name_timeseries
+import pickle
 
 if __name__ == '__main__':
 
     # get parameters
-    opt = TestOptions().parse()
+    opt = TrainOptions().parse()
 
     # decide unique model name based on parameters
-    modelname = 'testing_' + opt.checkpoints_dir 
+    modelname = get_exp_name(opt)
 
     # initialize a test logger for experiment
     logger = TensorBoardLogger(
@@ -35,10 +37,19 @@ if __name__ == '__main__':
     trainer = Trainer(gpus=num_gpus,
                       logger=logger)
 
-    if opt.resume_from_ckpt:
-        print('Loading model.')
-        lightning_system = lightning_system.load_from_checkpoint(
-            checkpoint_path="checkpoints/%s/%s.ckpt" % (opt.results_folder, modelname))
+
+    print('\n Loading model: ', modelname)
+
+    lightning_system_loaded = System.load_from_checkpoint(
+            "checkpoints/%s/%s.ckpt" % (opt.results_folder, modelname), opt=opt)
+
+    lightning_system.model = lightning_system_loaded.model
 
     # test model
-    trainer.test()
+    results = trainer.test(lightning_system)
+
+    # save results 
+    results_dir = 'experiments/%s/test_performance/' % opt.results_folder
+    RESULTS_PATH = results_dir + modelname
+    mkdir(RESULTS_PATH)
+    pickle.dump(results, open(RESULTS_PATH + '/test_performance.p', 'wb'))
