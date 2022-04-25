@@ -50,8 +50,11 @@ def get_exp_name(opt):
     if opt.model.lower() in ['pstn', 'stn'] and opt.var_init != -2:
         modelname += '-varinit=' + str(opt.var_init)
 
-    if opt.modeltype in ['large_loc', '2xlarge_loc']:
-        modelname += '_' + str(opt.modeltype) 
+    if opt.modeltype != '':
+        modelname += '_' + str(opt.modeltype)
+
+    if opt.modeltype_classifier != '':
+        modelname += '_' + str(opt.modeltype_classifier)
 
     if opt.reduce_samples == 'min':
         modelname += '_min_agg'

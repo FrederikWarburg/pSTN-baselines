@@ -151,29 +151,7 @@ class MnistClassifier(nn.Module):
     def __init__(self, opt):
         super(MnistClassifier, self).__init__()
         self.parameter_dict = load_specifications_classifier(opt)
-
-        self.CNN = nn.Sequential(
-            # first conv layer
-            nn.Conv2d(
-                self.parameter_dict['color_channels'], self.parameter_dict['CNN_filters1'],
-                kernel_size=self.parameter_dict['CNN_kernel_size']),
-            nn.MaxPool2d(2, stride=2),  # 2 for 28 x 28 datasets
-            nn.ReLU(True),
-            # second conv layer
-            nn.Conv2d(
-                self.parameter_dict['CNN_filters1'], self.parameter_dict['CNN_filters2'],
-                kernel_size=self.parameter_dict['CNN_kernel_size']),
-            nn.MaxPool2d(2, stride=2),
-            nn.ReLU(True)
-        )
-
-        self.fully_connected = nn.Sequential(
-            # first fully connected layer
-            nn.Linear(self.parameter_dict['resulting_size_classifier'], self.parameter_dict['hidden_layer_classifier']),
-            nn.ReLU(True),
-            nn.Dropout(),
-            # second fully connected layer
-            nn.Linear(self.parameter_dict['hidden_layer_classifier'], self.parameter_dict['nr_target_classes']))
+        self.CNN, self.fully_connected = self.make_classifier(opt)
 
     def classifier(self, x):
         x = self.CNN(x)
@@ -185,3 +163,91 @@ class MnistClassifier(nn.Module):
         x = self.classifier(x)
         probs = F.log_softmax(x , dim=1)
         return probs
+    
+    def make_classifier(self, opt):
+        if opt.modeltype == '': # no special model type defined 
+            CNN = nn.Sequential(
+                # first conv layer
+                nn.Conv2d(
+                    self.parameter_dict['color_channels'], self.parameter_dict['CNN_filters1'],
+                    kernel_size=self.parameter_dict['CNN_kernel_size']),
+                nn.MaxPool2d(2, stride=2),  # 2 for 28 x 28 datasets
+                nn.ReLU(True),
+                # second conv layer
+                nn.Conv2d(
+                    self.parameter_dict['CNN_filters1'], self.parameter_dict['CNN_filters2'],
+                    kernel_size=self.parameter_dict['CNN_kernel_size']),
+                nn.MaxPool2d(2, stride=2),
+                nn.ReLU(True)
+            )
+            fully_connected = nn.Sequential(
+                # first fully connected layer
+                nn.Linear(self.parameter_dict['resulting_size_classifier'], self.parameter_dict['hidden_layer_classifier']),
+                nn.ReLU(True),
+                nn.Dropout(),
+                # second fully connected layer
+                nn.Linear(self.parameter_dict['hidden_layer_classifier'], self.parameter_dict['nr_target_classes']))
+        else: 
+            CNN = nn.Sequential() # no CNN in any of these
+            if opt.modeltype_classifier == 'nn1_classifier': # 1 layer classifier
+                fully_connected = nn.Sequential(
+                    nn.Linear(self.parameter_dict['resulting_size_classifier'], self.parameter_dict['nr_target_classes']))
+
+            elif opt.modeltype_classifier == 'nn2_classifier': # 2 layer classifier
+                fully_connected = nn.Sequential(
+                    nn.Linear(self.parameter_dict['resulting_size_classifier'], 128),
+                    nn.ReLU(True),
+                    nn.Dropout(),
+                    # second fully connected layer
+                    nn.Linear(128, self.parameter_dict['nr_target_classes'])
+                    )
+            elif opt.modeltype_classifier == 'nn3_classifier': # 3 layer classifier
+                fully_connected = nn.Sequential(
+                    nn.Linear(self.parameter_dict['resulting_size_classifier'], 256),
+                    nn.ReLU(True),
+                    nn.Dropout(),
+                    # second fully connected layer
+                    nn.Linear(256, 128),
+                    nn.ReLU(True),
+                    nn.Dropout(),
+                    # third
+                    nn.Linear(128, self.parameter_dict['nr_target_classes'])
+                    )          
+            elif opt.modeltype_classifier == 'nn4_classifier': # 4 layer classifier
+                fully_connected = nn.Sequential(
+                    nn.Linear(self.parameter_dict['resulting_size_classifier'], 256),
+                    nn.ReLU(True),
+                    nn.Dropout(),
+                    # second fully connected layer
+                    nn.Linear(256, 256),
+                    nn.ReLU(True),
+                    nn.Dropout(),
+                    # third
+                    nn.Linear(256, 128),
+                    nn.ReLU(True),
+                    nn.Dropout(),
+                    # fourth
+                    nn.Linear(128, self.parameter_dict['nr_target_classes'])
+                    )      
+            elif opt.modeltype_classifier == 'nn5_classifier': # 4 layer classifier
+                                fully_connected = nn.Sequential(
+                    nn.Linear(self.parameter_dict['resulting_size_classifier'], 256),
+                    nn.ReLU(True),
+                    nn.Dropout(),
+                    # second fully connected layer
+                    nn.Linear(256, 256),
+                    nn.ReLU(True),
+                    nn.Dropout(),
+                    # third
+                    nn.Linear(256, 128),
+                    nn.ReLU(True),
+                    nn.Dropout(),
+                    # fourth
+                    nn.Linear(128, 128),
+                    nn.ReLU(True),
+                    nn.Dropout(),
+                    # fifth
+                    nn.Linear(128, self.parameter_dict['nr_target_classes'])
+                    )    
+
+            return CNN, fully_connected

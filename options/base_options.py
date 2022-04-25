@@ -63,6 +63,7 @@ class BaseOptions:
         self.parser.add_argument('--resume_from_ckpt', type=str2bool, nargs='?', const=True, default=False, help='Load pre-trained model?')
         self.parser.add_argument('--pretrained_model_path', type=str, default=None, help='frozen classifier exp; where to load from')
         self.parser.add_argument('--modeltype', type=str, default='')
+        self.parser.add_argument('--modeltype_classifier', type=str, default='')
         self.parser.add_argument('--init_large_variance', type=str2bool, default=False)
         self.parser.add_argument('--var_init', type=float, default=-20.0)
 

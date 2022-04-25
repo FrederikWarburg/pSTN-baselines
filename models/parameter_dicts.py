@@ -171,9 +171,6 @@ def load_specifications_localizer(opt):
 def load_specifications_classifier(opt):
     print('loading parameter dict')
     if opt.model.lower() == 'cnn':
-        # if opt.dataset == 'random_rotation_mnist':
-        #     print('not implemented yet')
-            # parameter_dict = parameter_dict_classifier_rotMNIST_CNN
         if opt.dataset.lower() == "random_placement_fashion_mnist" and not opt.freeze_classifier:
             parameter_dict = parameter_dict_classifier_RandomPlacementMNIST_CNN
         elif "mnist" in opt.dataset.lower():
@@ -199,4 +196,8 @@ def load_specifications_classifier(opt):
 
     else:
         print('Pass valid model!')
+
+    if opt.modeltype_classifier in ['nn1_classifier', 'nn2_classifier', 'nn3_classifier', 'nn4_classifier', 'nn5_classifier']:
+        parameter_dict['resulting_size_classifier'] = 28 * 28 # MNIST experiment with linear layers only
+
     return parameter_dict
