@@ -19,3 +19,5 @@ data/FashionMNIST
 p_stn.egg-info/
 .DS_Store
 .ipynb*
+notebooks/data/*
+notebooks/attractiveness_ground_truth.p
