@@ -19,3 +19,4 @@ data/FashionMNIST
 p_stn.egg-info/
 .DS_Store
 .ipynb*
+notebooks/*
