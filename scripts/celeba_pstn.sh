@@ -3,12 +3,12 @@
 DATAPATH="/scratch/posc/" # on tethys
 W_s=(0.000003 0.00001 0.00003)
 GPUs=(2 3 4 5 6)
-OLD_RATIOS=(0. 0.23 0.5 0.75 1.)
+OLD_RATIOS=(0. 0.15 0.23 0.5 0.75 1.)
 
 
-for w in {0..4} 
+for w in {1..1} 
 do
-    CUDA_VISIBLE_DEVICES=4 python test.py --dataroot $DATAPATH \
+    CUDA_VISIBLE_DEVICES=${GPUs[$w]} python train.py --dataroot $DATAPATH \
                     --dataset "celeba" \
                     --test_on "test" \
                     --batch_size 256 \
@@ -35,9 +35,9 @@ do
                     --annealing "weight_kl" \
                     --kl_weight 0.000003 \
                     --save_results True \
-                    --results_folder '20_04_celeba_pstn_upsampling_testaug' \
+                    --results_folder '27_04_celeba_vanilla_pstn_upsampling' \
                     --identity_mean \
                     --var_init -10.0 \
-                    --upsample_oldies \
+                    --upsample_attractive_oldies \
                     --desired_rate ${OLD_RATIOS[$w]} 
 done

@@ -243,7 +243,7 @@ class System(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         x, x_high_res, y, target_trafo, is_oldie = unpack_batch(batch, self.opt)
-        y_hat, theta_mu, beta = self.forward(x, y, x_high_res, is_attractive=y, is_oldie=is_oldie) # in reality.. 
+        y_hat, theta_mu, beta = self.forward(x, y, x_high_res, is_oldie=is_oldie) #, is_attractive=y, is_oldie=is_oldie) # in reality.. 
         # ... we wouldn't have access to y at test time 
         
         # calculate nll and loss

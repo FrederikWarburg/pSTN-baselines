@@ -72,7 +72,7 @@ class PSTN(nn.Module):
                     torch.tensor([opt.var_init], dtype=torch.float).repeat(self.theta_dim))
 
     def make_DA_upsample_mask(self, is_oldie, is_attractive):
-        if self.opt.upsample_oldies:
+        if self.opt.upsample_oldies or (self.opt.upsample_attractive_oldies and not self.training):
             DA_upsample_mask = is_oldie
         elif self.opt.upsample_attractive_oldies: 
             DA_upsample_mask = torch.logical_and(is_oldie, is_attractive)
@@ -85,6 +85,7 @@ class PSTN(nn.Module):
         # get input shape
         batch_size = x.shape[0]
         # determine upsample strategy from meta-data
+        # breakpoint()
         DA_upsample_mask = self.make_DA_upsample_mask(is_oldie, is_attractive)
 
         # get output for pstn module
