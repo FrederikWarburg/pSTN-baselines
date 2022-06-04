@@ -163,7 +163,7 @@ class System(pl.LightningModule):
         if self.opt.model.lower() == 'stn':
             y_hat, theta_mu = self.model.forward(x, x_high_res)
         if self.opt.model.lower() == 'pstn':
-            y_hat, _, theta_params = self.model.forward(x, x_high_res, is_attractive, is_oldie)
+            y_hat, _, theta_params = self.model.forward(x, x_high_res) #, is_attractive, is_oldie)
             theta_mu, beta = theta_params
         return y_hat, theta_mu, beta
 
@@ -179,7 +179,7 @@ class System(pl.LightningModule):
 
     def training_step(self, batch, batch_idx, hidden=0):
         x, x_high_res, y, _, is_oldie = unpack_batch(batch, self.opt)
-        y_hat, theta_mu, beta = self.forward(x, y, x_high_res, is_attractive=y, is_oldie=is_oldie)
+        y_hat, theta_mu, beta = self.forward(x, y, x_high_res) #, is_attractive=y, is_oldie=is_oldie)
         loss, nll_term, weighted_kl_term, unweighted_kl_term = self.compute_loss(y_hat,y, beta)
         acc = accuracy(y_hat, y, reduction=self.reduction) # if reduction is mean it's already averaged across S dim, otherwise not
 
@@ -225,7 +225,7 @@ class System(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         x, x_high_res, y, _, is_oldie = unpack_batch(batch, self.opt)
-        y_hat, theta_mu, beta = self.forward(x, y, x_high_res, is_attractive=y, is_oldie=is_oldie)
+        y_hat, theta_mu, beta = self.forward(x, y, x_high_res) #, is_attractive=y, is_oldie=is_oldie)
         # calculate nll and accuracy
         loss = F.nll_loss(y_hat, y)
         acc = accuracy(y_hat, y)
@@ -233,7 +233,7 @@ class System(pl.LightningModule):
         # for the first batch in an epoch visualize the predictions for better debugging
         if  self.current_epoch > self.prev_epoch:
             # calculate different visualizations
-            grid_in, grid_out, _, bbox_images = visualize_stn(self.model, x, x_high_res, self.opt, is_attractive=y, is_oldie=is_oldie)
+            grid_in, grid_out, _, bbox_images = visualize_stn(self.model, x, x_high_res, self.opt) #, is_attractive=y, is_oldie=is_oldie)
             # add these to tensorboard
             self.add_images(grid_in, grid_out, bbox_images)
             self.prev_epoch += 1
@@ -243,7 +243,7 @@ class System(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         x, x_high_res, y, target_trafo, is_oldie = unpack_batch(batch, self.opt)
-        y_hat, theta_mu, beta = self.forward(x, y, x_high_res, is_oldie=is_oldie) #, is_attractive=y, is_oldie=is_oldie) # in reality.. 
+        y_hat, theta_mu, beta = self.forward(x, y, x_high_res) #, is_oldie=is_oldie) #, is_attractive=y, is_oldie=is_oldie) # in reality.. 
         # ... we wouldn't have access to y at test time 
         
         # calculate nll and loss
@@ -252,7 +252,7 @@ class System(pl.LightningModule):
 
         if self.log_images_test:
             # calculate different visualizations
-            grid_in, grid_out, _, bbox_images = visualize_stn(self.model, x, x_high_res, self.opt, is_attractive=y, is_oldie=is_oldie)
+            grid_in, grid_out, _, bbox_images = visualize_stn(self.model, x, x_high_res, self.opt) #, is_attractive=y, is_oldie=is_oldie)
             # add these to tensorboard
             self.add_images(grid_in, grid_out, bbox_images)
 

@@ -76,7 +76,7 @@ def normalize(images):
     return images / torch.max(images)
 
 
-def visualize_stn(model, data, x_high_res, opt, is_attractive=None, is_oldie=None): # the last two args are to sanity check upsampling DA mask 
+def visualize_stn(model, data, x_high_res, opt): #, is_attractive=None, is_oldie=None): # the last two args are to sanity check upsampling DA mask 
     with torch.no_grad():
 
         # IMAGE VISUALIZATION
@@ -95,10 +95,10 @@ def visualize_stn(model, data, x_high_res, opt, is_attractive=None, is_oldie=Non
                 transformed_input_tensor, thetas = model.forward_localizer(data, x_high_res)
 
             elif opt.model.lower() == 'pstn':
-                DA_upsample_mask = model.make_DA_upsample_mask(is_oldie, is_attractive)
-                if DA_upsample_mask is not None:
-                    DA_upsample_mask = DA_upsample_mask[:16]
-                transformed_input_tensor, thetas, _ = model.forward_localizer(data, x_high_res, DA_upsample_mask, visualise=True)
+                # DA_upsample_mask = model.make_DA_upsample_mask(is_oldie, is_attractive)
+                # if DA_upsample_mask is not None:
+                #     DA_upsample_mask = DA_upsample_mask[:16]
+                transformed_input_tensor, thetas, _ = model.forward_localizer(data, x_high_res) #, DA_upsample_mask, visualise=True)
 
             out_grid = convert_image_np(torchvision.utils.make_grid(transformed_input_tensor.cpu()),
                                         opt.dataset.lower())
