@@ -25,7 +25,7 @@ bash script/UAI_fashion_mnist_pretrain.sh
 If you use this code, please consider citing our work
 
 ```bibtex
-@article{LAE2022,
+@article{Schwobel_2022_pstn,
   title={Probabilistic Spatial Transformers Networks},
   author    = {Pola Schw{\"{o}}bel and
                Frederik Warburg and
