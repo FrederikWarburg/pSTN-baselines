@@ -19,3 +19,20 @@ for example
 cd pSTN-baselines;
 bash script/UAI_fashion_mnist_pretrain.sh
 ```
+
+## Citation
+
+If you use this code, please consider citing our work
+
+```bibtex
+@article{LAE2022,
+  title={Probabilistic Spatial Transformers Networks},
+  author    = {Pola Schw{\"{o}}bel and
+               Frederik Warburg and
+               Martin J{\o}rgensen and
+               Kristoffer H. Madsen and
+               S{\o}ren Hauberg},
+  journal={UAI,
+  year={2022}
+}
+```
