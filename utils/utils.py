@@ -109,6 +109,10 @@ def check_learnable_parameters(model, architecture):
     print([(p[0], p[1].numel()) for p in model.named_parameters() if p[1].requires_grad])
     print('Number of trainable parameters for %s:' %architecture, pytorch_total_params)
 
+    localiser_params = sum(p[1].numel() for p in model.named_parameters() if p[1].requires_grad and 'loc' in p[0])
+    classifier_params = sum(p[1].numel() for p in model.named_parameters() if p[1].requires_grad and 'classifier' in p[0])
+    print('--hereof in localiser:', localiser_params)
+    print('--hereof in classifier:', classifier_params)
 
 def save_generating_thetas(opt, dataloader):
     modelname = get_exp_name(opt)

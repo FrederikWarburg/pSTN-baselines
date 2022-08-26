@@ -36,9 +36,9 @@ do
                     --kl_weight 0.00003 \
                     --download True \
                     --val_check_interval 100 \
-                    --results_folder "01_04_fashion_mnist_reproductions_retry" \
+                    --results_folder "04_06_fashion_mnist_make_plots" \
                     --pretrained_model_path 'checkpoints/31_02_fashion_mnist_reproductions_retry/d=fashion_mnist-m=cnn-p=2-kl=None-betaP=1-lr=0.001-lrloc=None_large_loc.ckpt' \
                     --test_on "test" \
                     --normalize False \
-                    --step_size 200f
+                    --step_size 200
 done

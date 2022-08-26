@@ -165,7 +165,7 @@ class MnistClassifier(nn.Module):
         return probs
     
     def make_classifier(self, opt):
-        if opt.modeltype == '': # no special model type defined 
+        if not 'nn' in opt.modeltype_classifier: # the convolutional model types
             CNN = nn.Sequential(
                 # first conv layer
                 nn.Conv2d(
@@ -230,7 +230,7 @@ class MnistClassifier(nn.Module):
                     nn.Linear(128, self.parameter_dict['nr_target_classes'])
                     )      
             elif opt.modeltype_classifier == 'nn5_classifier': # 4 layer classifier
-                                fully_connected = nn.Sequential(
+                fully_connected = nn.Sequential(
                     nn.Linear(self.parameter_dict['resulting_size_classifier'], 256),
                     nn.ReLU(True),
                     nn.Dropout(),
@@ -250,4 +250,4 @@ class MnistClassifier(nn.Module):
                     nn.Linear(128, self.parameter_dict['nr_target_classes'])
                     )    
 
-            return CNN, fully_connected
+        return CNN, fully_connected

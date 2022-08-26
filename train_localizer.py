@@ -68,6 +68,7 @@ if __name__ == '__main__':
     
     print('Trainable parameters after freezing')
     check_learnable_parameters(lightning_system.model, opt.model)
+    breakpoint()
 
     if not opt.model == 'cnn':
         # train model

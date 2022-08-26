@@ -12,7 +12,7 @@ do
     do
     echo $MODEL
     echo ${MODELS[$MODEL]}
-    OMP_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=0
+    OMP_NUM_THREADS=2 CUDA_VISIBLE_DEVICES=13
     
      python train_localizer.py --dataroot $DATAPATH \
                     --dataset "random_rotation_mnist" \
