@@ -102,11 +102,12 @@ def make_mnist_subset(opt, mode):
         full_training_data = datasets.MNIST(
             root=opt.dataroot, train=True, download=True, transform=train_trafo)
         dataset = full_training_data
-        if opt.subset is not None: 
+        if opt.subset in [30, 100, 1000, 3000, 10000]: # predefined subsets from paper 
             train_indices = np.load(
                 '%s/subset_indices/MNIST%s_train_indices_fold_%s.npy' % (opt.dataroot, opt.subset, opt.fold))
             dataset = Subset(full_training_data, train_indices)
-
+        elif opt.subset in [312, 1250, 5000, 20000, 60000]: # new ones for thesis
+            dataset, _ = torch.utils.data.random_split(dataset, [opt.subset, 60000 - opt.subset], generator=torch.Generator().manual_seed(42))
 
     if mode == 'val':
         full_training_data_no_trafo = datasets.MNIST(
